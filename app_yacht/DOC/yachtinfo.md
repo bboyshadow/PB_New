@@ -1,3 +1,10 @@
+## Observaciones a tomar en cuenta
+
+- El flujo descrito en este documento parece basarse en una versión anterior o legacy del código. En el código actual, el manejo de AJAX para 'createTemplate' se realiza en `bootstrap.php` mediante `handleCreateTemplate()`, que utiliza `YachtInfoService` para extraer datos del yate si se proporciona `yachtUrl`, y luego invoca `RenderEngine::createTemplate()`.
+- No se encontró un handler para la acción AJAX 'extract_yacht_info' mencionada en `interfaz.js`. Esto podría ser un endpoint pendiente o no implementado en el repositorio actual.
+- La extracción real en `YachtInfoService` incluye validación de dominio, caché, y parsers específicos para sitios como charterworld.com, yachtcharterfleet.com y burgessyachts.com, usando wp_remote_get y DOMXPath.
+- El frontend en `interfaz.js` intenta una vista previa al perder foco en #yachtUrl, pero sin handler backend, esto no funcionaría como se describe.
+
 # Yacht URL Data Extraction Flow
 
 This document summarizes how the application retrieves yacht information from a provided URL and renders it in templates.
