@@ -4,7 +4,7 @@ Este documento describe paso a paso cómo la aplicación obtiene la información
 
 ## 1. Captura de la URL y disparo del evento
 - El formulario del módulo de cálculo incluye un campo para la URL del yate (`#yachtUrl`) y el botón **Create Template** (`#createTemplateButton`). El campo se define en `calculator.php`【F:app_yacht/modules/calc/calculator.php†L172-L180】.
-- `template.js` monitorea el campo, habilita o deshabilita el botón según una expresión regular con protocolo y registra un listener que ejecuta `templateManager.createTemplate()` al hacer clic【F:app_yacht/modules/template/js/template.js†L270-L276】【F:app_yacht/modules/template/js/template.js†L385-L387】.
+- `template.js` monitorea el campo, habilita o deshabilita el botón según una expresión regular con protocolo y registra un listener que ejecuta `templateManager.createTemplate()` al hacer clic【F:app_yacht/modules/template/js/template.js†L272-L281】【F:app_yacht/modules/template/js/template.js†L373-L375】.
 
 ## 2. Recolección y envío de datos desde el frontend
 - `TemplateManager.collectFormData()` reúne los datos del formulario y añade la URL del yate al objeto `FormData`【F:app_yacht/shared/js/classes/TemplateManager.js†L52-L65】.
