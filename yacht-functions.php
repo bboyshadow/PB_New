@@ -154,8 +154,7 @@ if ( is_page_template( 'app-yacht.php' ) || ( defined( 'DOING_AJAX' ) && DOING_A
 	require_once get_template_directory() . '/app_yacht/modules/template/php/load-template.php';
 	require_once get_template_directory() . '/app_yacht/modules/template/php/template-data.php';
 
-	// *********** Incluir el módulo de correo *********** 
-	require_once get_template_directory() . '/app_yacht/modules/mail/mail.php'; // esto me daña la app corrigeloooo
+	// El módulo de correo se carga desde core/app-yacht.php.
 }
 
 // Registrar las acciones AJAX globalmente
