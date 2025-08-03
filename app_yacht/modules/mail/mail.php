@@ -1,20 +1,20 @@
 <?php
-// Archivo modules\mail\mail.php
 
-// Incluir funciones de firma
+
+
 require_once get_template_directory() . '/app_yacht/modules/mail/signature/signature-functions.php';
 
-// Cargar todas las funciones de Outlook a través del cargador centralizado
+
 require_once get_template_directory() . '/app_yacht/modules/mail/outlook/outlook-loader.php';
 
-// Generar la URL para autenticar en Outlook
+
 $login_url = function_exists( 'pb_outlook_get_login_url' ) ? pb_outlook_get_login_url() : '#';
 
-// Chequear si el usuario tiene un email de Outlook en user_meta
+
 $user_email = get_user_meta( get_current_user_id(), 'outlook_email', true );
 $user_email = ! empty( $user_email ) ? esc_html( $user_email ) : '';
 
-// Verificar si el usuario está conectado a Outlook
+
 $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_connected( get_current_user_id() ) : false;
 ?>
 <div class="container mail-container">
@@ -134,9 +134,9 @@ $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_con
 				</div>
 				<div class="col-12">
 					<?php 
-					// Llamar al shortcode [outlook_signature]
-					// Esto requiere que el plugin "Mail Signature Pro" (o como lo hayas llamado) esté activo.
-					// De ese modo, do_shortcode('[outlook_signature]') ejecuta el contenido definido en el plugin.
+					
+					
+					
 					echo do_shortcode( '[outlook_signature]' );
 					?>
 				</div>

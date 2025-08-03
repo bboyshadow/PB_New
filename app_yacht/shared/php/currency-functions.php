@@ -1,13 +1,11 @@
 <?php
-// ARCHIVO shared\php\currency-functions.php
-/**
- * Función auxiliar para formatear moneda.
- */
+
+
 function formatCurrency( $value, $currencyCode, $round = false ) {
 	$value    = $round ? ceil( $value ) : $value;
 	$decimals = $round ? 0 : 2;
 
-	// Mapeo de símbolos de moneda
+	
 	$symbols = array(
 		'EUR'  => '€',
 		'USD'  => '$',

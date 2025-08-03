@@ -1,20 +1,11 @@
 <?php
-/**
- * FILE core/data-validation.php
- * Sanitization and validation functions for the app_yacht application.
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; 
 }
 
-/**
- * Sanitizes input data based on the specified type.
- *
- * @param mixed  $data The data to sanitize.
- * @param string $type The data type (email, url, number, int, html, textarea, array, text).
- * @return mixed Sanitized data.
- */
+
 function pb_sanitize_input( $data, $type = 'text' ) {
 	switch ( $type ) {
 		case 'email':

@@ -1,32 +1,13 @@
 <?php
-/**
- * Default Email Template (Main Version).
- *
- * This template generates the main HTML email body for yacht charter details.
- * It receives data via the $templateData variable, processes it using helper functions,
- * and populates the HTML structure.
- *
- * @package App_Yacht
- * @subpackage Modules
- * @since 1.0.0
- *
- * @uses buildYachtInfoArray() To structure yacht details.
- * @uses buildCalcSnippetArray() To structure calculation results.
- *
- * @var array $templateData Associative array containing all necessary data:
- *        'yachtInfo'      => (array) Yacht details.
- *        'resultArray'    => (array) Calculation results.
- *        'lowSeasonText'  => (string) Text for low season.
- *        'highSeasonText' => (string) Text for high season.
- */
 
-// Verify received data
+
+
 if ( empty( $templateData['resultArray'] ) ) {
 	error_log( 'Empty resultArray in default-template.php' );
 	error_log( 'Template data: ' . print_r( $templateData, true ) );
 }
 
-// Prepare data arrays using helper functions
+
 $yachtArr = buildYachtInfoArray( $templateData['yachtInfo'] ?? array() );
 $calcArr  = buildCalcSnippetArray(
 	$templateData['resultArray'] ?? array(),
@@ -34,13 +15,13 @@ $calcArr  = buildCalcSnippetArray(
 	$templateData['highSeasonText'] ?? ''
 );
 
-// Verify processed data
+
 if ( empty( $calcArr['structuredBlock'] ) ) {
 	error_log( 'Empty structuredBlock in default-template.php' );
 	error_log( 'Calc array: ' . print_r( $calcArr, true ) );
 }
 
-// Extract the main structured block for easier access in the template
+
 $block = $calcArr['structuredBlock'] ?? array();
 ?>
 <!-- Template que debe copiarse con el botón Copy Template inicio -->
@@ -113,7 +94,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 								<div id="imageSection" class="template-img-section" style="max-width: 395px; min-width: 300px; display: table-cell; vertical-align: top;">
 									<?php
 									if ( ! empty( $yachtArr['imageUrl'] ) ) :
-										// Añadido width: 100%; para asegurar expansión completa
+										
 										?>
 										<div style="color:#ffffff;border-top-left-radius: 6px; border-top-right-radius: 5px; border-bottom-right-radius: 50px; border-bottom-left-radius: 0px;font-size:20px;display:block;border-bottom: 4px solid #ffbe28;background: #4092df; width: 100%;">
 											<a class="template-yacht-name" href="<?php echo htmlspecialchars( $yachtArr['yachtUrl'] ); ?>" id="yachtLink" style="color:#ffffff;font-weight:bold;text-decoration:none;">
@@ -215,7 +196,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 														<td align="left" valign="middle" style="padding: 5px; color: #4b4f54; width: 70%;">
 															<?php if ( $resultData['discountType'] === 'percentage' ) : ?>
 																Discount Rate (<?php echo htmlspecialchars( number_format( floatval( str_replace( array( ',', '%' ), '', $resultData['discountAmount'] ) ), 0, '.', ',' ) ); ?>%):
-															<?php else : // Assuming 'fixed' ?>
+															<?php else : ?>
 																Discount Rate: - <?php echo htmlspecialchars( $resultData['discountAmount'] ); ?> :
 															<?php endif; ?>
 														</td>
@@ -357,7 +338,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 
 
 											<!-- Extras -->
-											<?php if ( ! empty( $resultData['extras'] ) ) : // Show Extras section only if there are extras ?>
+											<?php if ( ! empty( $resultData['extras'] ) ) : ?>
 												<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"
 													style="width: 100%; border-spacing: 0; border-collapse: collapse; padding: 2px 5px; color: #4b4f54; font-family: Arial, sans-serif; font-size: 12px; margin-top: 5px;">
 													<!-- Extras Title Row -->
@@ -378,9 +359,9 @@ $block = $calcArr['structuredBlock'] ?? array();
 																</td>
 															</tr>
 														<?php endforeach; ?>
-													<?php endif; // End hideExtras condition ?>
+													<?php endif; ?>
 												</table>
-											<?php endif; // End !empty($resultData['extras']) condition ?>
+											<?php endif; ?>
 
 
 											<!-- Grand Total -->

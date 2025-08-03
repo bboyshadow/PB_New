@@ -1,6 +1,6 @@
 <?php
-// ARCHIVO: shared/php/yachtscan.php
-// Funcionalidad centralizada para extracción de info de yates y globalización
+
+
 
 global $yachtInfoGlobal;
 $yachtInfoGlobal = array();
@@ -73,10 +73,10 @@ function extraerInformacionYate( $url ) {
 	$xpath = new DOMXPath( $dom );
 
 	$yachtNameNode = $xpath->query( '//title' )->item( 0 );
-	// Registrar el HTML para depuración
+	
 	error_log( 'YachtScan: HTML snippet: ' . substr( $html, 0, 500 ) . '...' );
 
-	// Consultas a spans que contienen el strong con el label
+	
 	 $lengthNode    = $xpath->query( "//span[contains(strong, 'Length :')]" )->item( 0 );
 	 $builderNode   = $xpath->query( "//span[contains(strong, 'Builder :')]" )->item( 0 );
 	 $yearBuiltNode = $xpath->query( "//span[contains(strong, 'Year Built :')]" )->item( 0 );
@@ -95,7 +95,7 @@ function extraerInformacionYate( $url ) {
 	 error_log( 'YachtScan: kingNode content: ' . ( $kingNode ? $kingNode->textContent : 'null' ) );
 	 error_log( 'YachtScan: queenNode content: ' . ( $queenNode ? $queenNode->textContent : 'null' ) );
 
-	// Registrar resultados de las consultas XPath
+	
 	error_log(
 		'YachtScan: XPath results - Length: ' . ( $lengthNode ? 'found' : 'not found' ) .
 			  ', Builder: ' . ( $builderNode ? 'found' : 'not found' ) .
@@ -134,12 +134,9 @@ function extraerInformacionYate( $url ) {
 	return $result;
 }
 
-/**
- * buildCalcSnippetArray($resultArray, $lowSeasonText, $highSeasonText)
- * Combina la info de "mix text" + el primer (o varios) bloques de $resultArray
- */
+
 function buildCalcSnippetArray( array $resultArray, string $lowSeasonText = '', string $highSeasonText = '' ): array {
-	// 1) Parsear Low Season
+	
 	$lowInfo = '';
 	$lowCost = '';
 	if ( $lowSeasonText ) {
@@ -148,7 +145,7 @@ function buildCalcSnippetArray( array $resultArray, string $lowSeasonText = '', 
 		$lowCost  = trim( $lowParts[1] ?? '' );
 	}
 
-	// 2) Parsear High Season
+	
 	$highInfo = '';
 	$highCost = '';
 	if ( $highSeasonText ) {
@@ -157,31 +154,31 @@ function buildCalcSnippetArray( array $resultArray, string $lowSeasonText = '', 
 		$highCost  = trim( $highParts[1] ?? '' );
 	}
 
-	// 3) Tomar el primer "block"
+	
 	$block = $resultArray[0] ?? array();
 
-	// Asegurarse de que enableExpenses se mantenga en el bloque estructurado
-	// si no está presente en el bloque, pero sí en templateData global
+	
+	
 	global $templateData;
 	if ( isset( $templateData ) && isset( $templateData['enableExpenses'] ) ) {
 		$block['enableExpenses'] = $templateData['enableExpenses'];
 
-		// También aplicar enableExpenses a todos los elementos en resultArray
-		// para asegurar que esté disponible en cada bloque cuando se itera en el template
+		
+		
 		foreach ( $resultArray as $key => $value ) {
 			$resultArray[ $key ]['enableExpenses'] = $templateData['enableExpenses'];
 		}
 	} elseif ( isset( $resultArray[0]['enableExpenses'] ) ) {
-		// Si no está en templateData pero sí en el primer resultado, usamos ese valor
+		
 		$block['enableExpenses'] = $resultArray[0]['enableExpenses'];
 	}
 
-	// 4) Armar array final con nombres consistentes
+	
 	return array(
 		'lowMixInfo'      => $lowInfo,
 		'lowMixCost'      => $lowCost,
 		'highMixInfo'     => $highInfo,
 		'highMixCost'     => $highCost,
-		'structuredBlock' => $block, // nombre consistente con default-template.php
+		'structuredBlock' => $block, 
 	);
 }
