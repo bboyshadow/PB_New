@@ -271,7 +271,7 @@ function toggleCreateTemplateButton() {
     const yachtUrlInput = document.getElementById('yachtUrl');
     const createTemplateButton = document.getElementById('createTemplateButton');
     if (!yachtUrlInput || !createTemplateButton) return;
-    const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/;
+    const urlPattern = /^https?:\/\/(?:[\w-]+\.)+[\w-]{2,}(\/\S*)?$/;
     const yachtUrl = yachtUrlInput.value.trim();
     createTemplateButton.disabled = !(yachtUrl && urlPattern.test(yachtUrl));
 }

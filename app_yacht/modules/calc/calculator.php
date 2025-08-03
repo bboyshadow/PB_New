@@ -169,10 +169,11 @@
 						<button type="button" class="btn btn-primary w-100 mt-4" id="copyButton" onclick="copyToClipboard()" disabled>Copy Result</button>
 					</div>
 
-					  <!-- Campo Yacht URL -->
-					<div class="col-12 col-md-3 col-lg-2 p-1">
-						<input type="text" id="yachtUrl" name="yachtUrl" class="form-control w-100 mt-4" placeholder="Yacht URL" required>
-					</div>
+                                         <!-- Campo Yacht URL -->
+                                       <div class="col-12 col-md-3 col-lg-2 p-1">
+                                               <label for="yachtUrl" class="form-label mt-4">Yacht URL</label>
+                                               <input type="url" id="yachtUrl" name="yachtUrl" class="form-control w-100" placeholder="https://example.com" pattern="https?://.+" required>
+                                       </div>
 
 					<!-- Botón Create Template -->
 					<div class="col-6 col-md-3 col-lg-2 p-1">
