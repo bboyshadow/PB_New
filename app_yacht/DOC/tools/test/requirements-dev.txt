@@ -1,0 +1,27 @@
+# Dependencias de desarrollo para el validador de documentación
+# Instalar con: pip install -r requirements-dev.txt
+
+# Versión mínima de Python requerida
+python_version >= '3.8'
+
+# Dependencias principales
+pytest >= 7.0.0
+pytest-cov >= 3.0.0
+
+# Para pruebas de cobertura de código
+coverage >= 6.0.0
+
+# Para formateo de código
+black >= 22.0.0
+flake8 >= 4.0.0
+
+# Para pruebas de documentación
+sphinx >= 4.0.0
+sphinx-rtd-theme >= 1.0.0
+
+# Dependencias opcionales para desarrollo
+pre-commit >= 2.0.0
+mypy >= 0.900.0
+
+# Dependencias específicas del proyecto
+-r ../../requirements.txt

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2555.1 207.65">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-width: 0px;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #231f20;
+      }
+
+      .cls-3 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-4 {
+        letter-spacing: -.04em;
+      }
+
+      .cls-5 {
+        letter-spacing: -.08em;
+      }
+
+      .cls-6 {
+        letter-spacing: -.07em;
+      }
+
+      .cls-7 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-2 {
+        font-family: AquireBold, Aquire;
+        font-size: 250.33px;
+      }
+
+      .cls-8 {
+        letter-spacing: -.23em;
+      }
+    </style>
+  </defs>
+  <g id="Logo_Black" data-name="Logo Black">
+    <g id="text">
+      <text class="cls-2" transform="translate(0 207.65)"><tspan x="0" y="0">C</tspan><tspan class="cls-4" x="190.25" y="0">r</tspan><tspan class="cls-7" x="364.23" y="0">e</tspan><tspan class="cls-8" x="531.45" y="0">a</tspan><tspan x="690.66" y="0">ti</tspan><tspan class="cls-5" x="924.72" y="0">v</tspan><tspan x="1120.73" y="0">o Y </tspan><tspan class="cls-3" x="1717" y="0">P</tspan><tspan x="1874.71" y="0">UN</tspan><tspan class="cls-6" x="2207.65" y="0">T</tspan><tspan x="2365.11" y="0">O</tspan></text>
+      <circle class="cls-1" cx="1215.36" cy="119.33" r="65.66"/>
+      <circle class="cls-1" cx="2460.73" cy="122.79" r="75.66"/>
+    </g>
+  </g>
+</svg>

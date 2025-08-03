@@ -1,0 +1,395 @@
+/* ARCHIVO modules\mail\mail.css */
+
+.mail-container {
+    margin: 20px auto;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #333;
+}
+
+.mail-container input.form-control, select.form-control {
+    background-color: #f7f7f7;
+    color: #081014;
+    border: 1px solid #555;
+}
+
+.mail-container a {
+	color: #074c61;
+}
+
+.mail-container a:visited {
+	color: #57ffa6;
+}
+
+.mail-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-group textarea.email-content {
+    min-height: 150px;
+    resize: vertical;
+    white-space: pre;
+    font-family: monospace;
+    padding: 5px ;
+    background-color: #ffffff;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#enviartemp {
+    margin-bottom: 20px;
+    background-color: #28a745;
+}
+
+#enviartemp:hover {
+    background-color: #218838;
+}
+
+@media (max-width: 768px) {
+    .mail-container {
+        margin: 10px;
+        padding: 15px;
+    }
+}
+
+/* Mensajes de estado */
+.mail-success {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+}
+
+.mail-error {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* Estilos para la barra de herramientas */
+.toolbar {
+    display: flex;
+    gap: 5px;
+    padding: 5px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    flex-wrap: wrap;
+}
+
+.toolbar button {
+    padding: 5px 10px;
+    min-width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    color: #333;
+    margin: 2px;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.toolbar button:hover {
+    background-color: #e9e9e9;
+    border-color: #aaa;
+}
+
+.toolbar select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    height: 30px;
+    margin: 2px;
+}
+
+/* Estilos para el selector de fuentes seguras para email */
+.email-fonts-select {
+    min-width: 180px;
+    max-width: 200px;
+    font-size: 14px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.email-fonts-select:hover {
+    border-color: #aaa;
+}
+
+.email-fonts-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: none;
+}
+
+/* Estilos para los grupos de opciones */
+.email-fonts-select optgroup {
+    font-weight: bold;
+    color: #555;
+    background-color: #f5f5f5;
+    padding: 5px;
+}
+
+/* Estilos para las opciones individuales */
+.email-fonts-select option {
+    padding: 8px;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Estilos específicos para fuentes seguras para email */
+.email-fonts-select option[value="Arial"] { font-family: Arial, sans-serif; }
+.email-fonts-select option[value="Helvetica"] { font-family: Helvetica, Arial, sans-serif; }
+.email-fonts-select option[value="Times New Roman"] { font-family: 'Times New Roman', Times, serif; }
+.email-fonts-select option[value="Georgia"] { font-family: Georgia, serif; }
+.email-fonts-select option[value="Verdana"] { font-family: Verdana, Geneva, sans-serif; }
+.email-fonts-select option[value="Tahoma"] { font-family: Tahoma, Geneva, sans-serif; }
+.email-fonts-select option[value="Courier New"] { font-family: 'Courier New', Courier, monospace; }
+
+.toolbar input[type="color"] {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Separador para la barra de herramientas */
+.toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #ddd;
+    margin: 0 5px;
+}
+
+/* Estilos para el editor contenteditable */
+#contenido.email-content {
+    min-height: 150px;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    padding: 10px;
+    background-color: #ffffff;
+    overflow-y: auto;
+    word-wrap: break-word;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+}
+
+#contenido.email-content:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Estilos para el menú contextual */
+.context-menu {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 180px;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+.context-menu-item:hover {
+    background-color: #f0f0f0;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: #ddd;
+    margin: 5px 0;
+}
+
+/* Estilos para el contenedor de mensajes */
+.mail-message-container {
+    margin-top: 15px;
+}
+
+/* Animaciones para los mensajes */
+.mail-message {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilo para el botón deshabilitado */
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background-color: #cccccc;
+}
+
+/* Mejoras para la responsividad */
+@media (max-width: 768px) {
+    .toolbar {
+        flex-wrap: wrap;
+    }
+    
+    .toolbar button,
+    .toolbar select {
+        flex: 1 1 auto;
+    }
+}
+
+.mail-container {
+    margin-top: 20px;
+}
+
+.mail-send-form {
+    margin-top: 20px;
+}
+
+.email-content {
+    min-height: 200px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #fff;
+}
+
+.toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.mail-message-container {
+    margin-top: 20px;
+}
+
+.btn.dark {
+    background: #333;
+    color: #fff;
+}
+
+/* --- Estilos para el Modal de Enlace --- */
+.mail-modal {
+    display: none; /* Oculto por defecto */
+    position: absolute; /* Posición absoluta para colocar cerca de la selección */
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+}
+
+.mail-modal .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* min-width: 300px; */ /* Eliminado para permitir tamaño más pequeño */
+    max-width: 280px; /* Ancho máximo reducido */
+    width: auto; /* Ancho automático basado en contenido */
+}
+
+.mail-modal h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.mail-modal label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.mail-modal input[type="url"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box; /* Incluir padding y borde en el ancho */
+}
+
+.mail-modal .modal-actions {
+    text-align: right;
+    margin-top: 10px;
+}
+
+.mail-modal .modal-actions .button {
+    margin-left: 10px;
+}
+
+/* Ocultar el modal cuando tiene display: none */
+.mail-modal:not([style*="display: block"]) {
+    display: none !important; /* Asegurar ocultación */
+}
+
+/* --- Fin Estilos Modal --- */

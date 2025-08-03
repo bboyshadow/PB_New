@@ -1,0 +1,416 @@
+/**
+ * FILE shared/css/app_yacht.css
+ * Styles for the app_yacht application
+ */
+
+/* Global styles */
+body {
+    font-family: Arial, sans-serif;
+    padding-top: 65px;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.container {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* Form styles */
+.form-row {
+    margin-bottom: 10px;
+}
+
+#charterForm input[type="text"],
+#charterForm input[type="number"],
+#charterForm select {
+    background-color: #272727;
+    color: #ffffff;
+    border: 1px solid #444444;
+    outline: none;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#charterForm input[type="text"]:focus,
+#charterForm input[type="number"]:focus,
+#charterForm select:focus {
+    background-color: #060c06;
+    color: #ffffff;
+    border-color: #5cb85c;
+    box-shadow: 0 0 0 0.2rem rgba(92, 184, 92, 0.25);
+}
+
+#charterForm input:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff;
+    -webkit-box-shadow: 0 0 0 1000px #1c1c1c inset;
+    border: 1px solid #444444;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+#charterForm input[type="text"]:focus-visible,
+#charterForm input[type="number"]:focus-visible,
+#charterForm select:focus-visible {
+    outline: none;
+}
+
+#charterForm select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"%3E%3Cpath fill="white" d="M7 10l5 5 5-5z"/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+input.form-control, select.form-control {
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+.form-control:focus {
+    background-color: #333;
+    border: 1px solid #555;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+}
+
+input.form-control::placeholder {
+    color: #b0b0b0;
+}
+
+/* Checkbox styles */
+.checkbox-wrapper-mix input[type="checkbox"] {
+    background-image: -webkit-linear-gradient(hsla(0,0%,0%,.1), hsla(0,0%,100%,.1)),
+                      -webkit-linear-gradient(left, #ffffff 50%, #206440 50%);
+    background-size: 100% 100%, 200% 100%;
+    background-position: 0px 0, 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    height: 25px;
+    padding-right: 25px;
+    width: 75px;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-transition: .25s;
+    transition: .25s;
+}
+
+.checkbox-wrapper-mix input[type="checkbox"]:after {
+    background-color: #eee;
+    background-image: -webkit-linear-gradient(hsla(0,0%,100%,.1), hsla(0,0%,0%,.1));
+    border-radius: 5px;
+    box-shadow: inset 0 1px 1px 1px hsla(0,0%,85%,1),
+                inset 0 -1px 1px 1px hsla(0,0%,0%,.25),
+                0 1px 3px 1px hsla(0,0%,0%,.5),
+                0 0 2px hsla(0,0%,0%,12.25);
+    content: '';
+    display: block;
+    height: 19px;
+    width: 40px;
+    margin-top: 2px;
+}
+
+.checkbox-wrapper-mix input[type="checkbox"]:checked {
+    background-position: 0 0, 35px 0;
+    padding-left: 33px;
+    padding-right: 0;
+}
+
+.form-check-input:checked {
+    background-color: #5cb85c;
+    border-color: #ffffff;
+}
+
+.form-check-input:focus {
+    border-color: #206440;
+    outline: 0;
+    box-shadow: none;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn {
+    overflow: hidden;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transition: all 0.2s ease;
+    font-family: sans-serif;
+    background: #888;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn:before {
+    display: inline-block;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    line-height: 2em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    content: attr(data-tg-off);
+    left: 0;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn:after {
+    display: inline-block;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    line-height: 2em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    content: attr(data-tg-on);
+    left: 100%;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn:active {
+    background: #888;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn:active:before {
+    left: -10%;
+}
+
+.checkbox-taxas .tgl-skewed + .tgl-btn:active:after {
+    left: 10%;
+}
+
+.checkbox-taxas .tgl-skewed:checked + .tgl-btn {
+    background: #285728;
+}
+
+.checkbox-taxas .tgl-skewed:checked + .tgl-btn:before {
+    left: -100%;
+}
+
+.checkbox-taxas .tgl-skewed:checked + .tgl-btn:after {
+    left: 0;
+}
+
+.btn-add-vat-country {
+    height: 17px;
+    width: 20px;
+    padding: 0;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.border-vat {
+    border: 1px solid #545454;
+}
+/* Button styles */
+button.btn {
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    max-height: fit-content;
+    align-self: self-end;
+}
+
+button.btn:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+button.btn-success {
+    background-color: #388e3c;
+}
+
+button.btn-success:hover {
+    background-color: #43a047;
+}
+
+#copyButton {
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+#copyButton:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+#copyButton.copied {
+    background-color: #388e3c;
+    color: #fff;
+}
+
+#copyButton.copied:hover {
+    background-color: #43a047;
+}
+
+#copyButton:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Result container */
+.result {
+    min-height: 400px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f1f1f1;
+    border: 1px solid #333;
+    color: #333333;
+}
+
+.result table,
+.mail-container table {
+    margin: 0;
+}
+
+/* Responsive adjustments for result boxes */
+@media (min-width: 768px) {
+    .result > div {
+        flex: 1 1 48%;
+    }
+}
+
+@media (min-width: 992px) {
+    .result > div {
+        flex: 1 1 22%;
+    }
+}
+
+/* Error styles */
+.error,
+.error-container {
+    border-color: red !important;
+    background-color: #230808 !important;
+    color: #d9d7d7 !important;
+}
+
+.error-container .form-control,
+.error-container .input-group-text {
+    border-color: red !important;
+    background-color: #230808 !important;
+    color: #d9d7d7 !important;
+}
+
+#errorMessage {
+    color: #ff6b6b;
+    display: none;
+    margin-bottom: 10px;
+}
+
+/* Extra field styles */
+.currency-symbol {
+    font-weight: bold;
+    margin-left: 5px;
+    padding-top: 10px;
+    color: #e0e0e0;
+}
+
+.optional-field-container {
+    display: none;
+}
+
+.discount-container {
+    display: flex;
+    align-items: center;
+}
+
+.extra-group .btn {
+    border-radius: 0 5px 5px 0;
+}
+
+.extra-group span {
+    border-radius: 5px 0 0 5px;
+}
+
+.input-group-text {
+    padding: 5px;
+    max-height: 35px;
+    margin-top: 1px;
+}
+
+.btn-quit-extra {
+    margin: 30px 0 0 0;
+}
+
+.hiddenmixresult {
+    display: none;
+}
+
+/* Animations */
+.a-expand {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+    padding: 0;
+}
+
+.a-expand.expanded {
+    max-height: 1000px;
+    padding: 10px;
+}
+
+/* Small screen adjustments */
+@media (max-width: 576px) {
+    .form-row .col-2.guest-night {
+        flex: 1 1 48%;
+        max-width: 48%;
+        margin: 5px 1%;
+    }
+
+    .form-row .col-md-3, .form-row .col-4 {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    #vatField, #apaPercentageField, #apaField, #relocationField, #securityField {
+        flex: 1 1 48%;
+        max-width: 48%;
+        margin: 5px 1%;
+    }
+
+    .extra-group .col-md-5, .extra-group .col-md-6, .extra-group .col-1 {
+        flex: 1 1 32%;
+        max-width: 32%;
+        margin: 5px 1%;
+    }
+
+    .form-row .col-md-2, .form-row .col-2 {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .result > div {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .extra-group {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 5px;
+    }
+
+    .extra-group .col-5, .extra-group .col-2 {
+        flex: 1 1 auto;
+        max-width: 32%;
+    }
+
+    .extra-group .col-2 {
+        max-width: 15%;
+    }
+}
+
+pre {
+    font-family: inherit;
+}
+
+/* Extra group alignment */
+.extra-group .col-5, .extra-group .col-2 {
+    display: flex;
+    flex-direction: column;
+}

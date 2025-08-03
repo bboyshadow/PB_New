@@ -1,0 +1,406 @@
+// ARCHIVO shared/js/classes/Calculator.js
+
+/**
+ * Clase Calculator
+ * Encapsula la lógica de cálculo de tarifas de charter
+ * Implementa un patrón de diseño orientado a objetos para mejorar la mantenibilidad
+ */
+class Calculator {
+    /**
+     * Constructor de la clase Calculator
+     * @param {Object} config - Configuración inicial
+     * @param {string} config.ajaxUrl - URL para peticiones AJAX
+     * @param {string} config.nonce - Nonce de seguridad para peticiones AJAX
+     * @param {Function} config.onCalculationStart - Callback cuando inicia el cálculo
+     * @param {Function} config.onCalculationComplete - Callback cuando finaliza el cálculo
+     * @param {Function} config.onCalculationError - Callback cuando hay un error
+     */
+    constructor(config = {}) {
+        // Configuración por defecto
+        this.config = {
+            ajaxUrl: '',
+            nonce: '',
+            onCalculationStart: null,
+            onCalculationComplete: null,
+            onCalculationError: null,
+            ...config
+        };
+        
+        // Estado interno
+        this.isCalculating = false;
+        this.lastResult = null;
+        
+        // Vincular métodos al contexto actual
+        this.calculate = this.calculate.bind(this);
+        this.collectFormData = this.collectFormData.bind(this);
+        this.displayResult = this.displayResult.bind(this);
+        
+        // Inicializar sistema de eventos si está disponible
+        if (typeof window.eventBus !== 'undefined') {
+            this.eventBus = window.eventBus;
+            console.log('EventBus conectado a Calculator');
+        }
+        
+        console.log('Calculator inicializado');
+    }
+    
+    /**
+     * Recolecta los datos del formulario
+     * @param {string} formId - ID del formulario
+     * @returns {FormData} - Objeto FormData con los datos recolectados
+     */
+    collectFormData(formId = 'charterForm') {
+        console.log('Recolectando datos del formulario:', formId);
+        
+        const form = document.getElementById(formId);
+        if (!form) {
+            throw new Error(`Formulario con ID '${formId}' no encontrado`);
+        }
+        
+        // Crear FormData
+        const formData = new FormData();
+        formData.append('action', 'calculate_charter');
+        formData.append('nonce', this.config.nonce);
+        
+        // Recolectar currency
+        const currency = document.getElementById('currency')?.value || '';
+        formData.append('currency', currency);
+        
+        // Recolectar preferencias de elementos a ocultar
+        const hideVAT = document.getElementById('hideVAT')?.checked || false;
+        const hideAPA = document.getElementById('hideAPA')?.checked || false;
+        const hideRelocation = document.getElementById('hideRelocation')?.checked || false;
+        const hideSecurity = document.getElementById('hideSecurity')?.checked || false;
+        const hideExtras = document.getElementById('hideExtras')?.checked || false;
+        const hideGratuity = document.getElementById('hideGratuity')?.checked || false;
+        
+        formData.append('hideVAT', hideVAT ? '1' : '0');
+        formData.append('hideAPA', hideAPA ? '1' : '0');
+        formData.append('hideRelocation', hideRelocation ? '1' : '0');
+        formData.append('hideSecurity', hideSecurity ? '1' : '0');
+        formData.append('hideExtras', hideExtras ? '1' : '0');
+        formData.append('hideGratuity', hideGratuity ? '1' : '0');
+        
+        // VAT, APA, etc.
+        const vatCheckbox = document.getElementById('vatCheck');
+        if (vatCheckbox?.checked) {
+            formData.append('vatRate', document.getElementById('vatRate')?.value || '');
+        }
+        
+        const apaCheckbox = document.getElementById('apaCheck');
+        if (apaCheckbox?.checked) {
+            formData.append('apaAmount', document.getElementById('apaAmount')?.value || '');
+        }
+        
+        const apaPercentageCheckbox = document.getElementById('apaPercentageCheck');
+        if (apaPercentageCheckbox?.checked) {
+            formData.append('apaPercentage', document.getElementById('apaPercentage')?.value || '');
+        }
+        
+        const relocationCheckbox = document.getElementById('relocationCheck');
+        if (relocationCheckbox?.checked) {
+            formData.append('relocationFee', document.getElementById('relocationFee')?.value || '');
+        }
+        
+        const securityCheckbox = document.getElementById('securityCheck');
+        if (securityCheckbox?.checked) {
+            formData.append('securityFee', document.getElementById('securityFee')?.value || '');
+        }
+        
+        // One Day Charter
+        const enableOneDayCharter = document.getElementById('enableOneDayCharter');
+        const isOneDayActive = (enableOneDayCharter && enableOneDayCharter.checked) ? '1' : '0';
+        formData.append('enableOneDayCharter', isOneDayActive);
+        
+        // Add + Expenses to Base Charter Rate
+        const enableExpenses = document.getElementById('enableExpenses');
+        const isExpensesActive = (enableExpenses && enableExpenses.checked) ? '1' : '0';
+        formData.append('enableExpenses', isExpensesActive);
+        
+        // Mixed Seasons
+        const enableMixedSeasons = document.getElementById('enableMixedSeasons');
+        const isMixedActive = (enableMixedSeasons && enableMixedSeasons.checked) ? '1' : '0';
+        formData.append('enableMixedSeasons', isMixedActive);
+        
+        // Agregar campos de Mixed Seasons si está activo
+        if (isMixedActive === '1') {
+            const lowSeasonNights = document.getElementById('lowSeasonNights')?.value || '';
+            const lowSeasonRate = document.getElementById('lowSeasonRate')?.value || '';
+            const highSeasonNights = document.getElementById('highSeasonNights')?.value || '';
+            const highSeasonRate = document.getElementById('highSeasonRate')?.value || '';
+            
+            formData.append('lowSeasonNights', lowSeasonNights);
+            formData.append('lowSeasonRate', lowSeasonRate);
+            formData.append('highSeasonNights', highSeasonNights);
+            formData.append('highSeasonRate', highSeasonRate);
+        }
+        
+        // Recolectar Charter Rates
+        const charterRateGroups = document.querySelectorAll('.charter-rate-group');
+        charterRateGroups.forEach((group, i) => {
+            const guests = group.querySelector('input[name="guests"]')?.value || '';
+            const nights = group.querySelector('input[name="nights"]')?.value || '';
+            const hoursElem = group.querySelector('input[name="hours"]');
+            let hours = '';
+            
+            // "One day Charter"
+            if (isOneDayActive === '1' && hoursElem) {
+                hours = hoursElem.value || '';
+            }
+            
+            const baseRate = group.querySelector('input[name="baseRate"]')?.value || '';
+            const discountType = group.querySelector('select[name="discountType"]')?.value || '';
+            const discountAmount = group.querySelector('input[name="discountAmount"]')?.value || '';
+            const discountContainer = group.querySelector('.discount-container');
+            const discountActive = discountContainer && discountContainer.style.display !== 'none';
+            
+            formData.append(`charterRates[${i}][guests]`, guests);
+            formData.append(`charterRates[${i}][nights]`, nights);
+            formData.append(`charterRates[${i}][hours]`, hours);
+            formData.append(`charterRates[${i}][baseRate]`, baseRate);
+            formData.append(`charterRates[${i}][discountType]`, discountType);
+            formData.append(`charterRates[${i}][discountAmount]`, discountAmount);
+            formData.append(`charterRates[${i}][discountActive]`, discountActive ? '1' : '0');
+        });
+        
+        // Extras
+        const extrasContainer = document.getElementById('extrasContainer');
+        if (extrasContainer) {
+            const extraGroups = extrasContainer.querySelectorAll('.extra-group');
+            extraGroups.forEach((extra, i) => {
+                const extraName = extra.querySelector('input[name="extraName"]')?.value || '';
+                const extraCost = extra.querySelector('input[name="extraCost"]')?.value || '';
+                formData.append(`extras[${i}][extraName]`, extraName);
+                formData.append(`extras[${i}][extraCost]`, extraCost);
+            });
+            
+            // Guest Fee
+            const extraPerPersonGroups = extrasContainer.querySelectorAll('.extra-per-person-group');
+            extraPerPersonGroups.forEach((extra, i) => {
+                const extraName = extra.querySelector('input[name="extraPerPersonName"]')?.value || '';
+                const extraTotal = extra.querySelector('input[name="extraPerPersonTotal"]')?.value || '';
+                const guests = extra.querySelector('input[name="extraPerPersonGuests"]')?.value || '';
+                const costPerPerson = extra.querySelector('input[name="extraPerPersonCost"]')?.value || '';
+                
+                // Añadimos el prefijo "Guest Fee:" para que sea fácilmente identificable en PHP
+                const formattedName = `Guest Fee: ${extraName} (${guests} guests x ${costPerPerson})`;
+                
+                // Añadimos el guest fee como un extra normal para el cálculo final
+                formData.append(`extras[${extraGroups.length + i}][extraName]`, formattedName);
+                formData.append(`extras[${extraGroups.length + i}][extraCost]`, extraTotal);
+            });
+        }
+        
+        return formData;
+    }
+    
+    /**
+     * Realiza el cálculo de tarifas
+     * @param {string} formId - ID del formulario
+     * @returns {Promise} - Promesa que se resuelve con el resultado del cálculo
+     */
+    async calculate(formId = 'charterForm') {
+        // Validación
+        if (typeof validateFields === 'function') {
+            const isValid = validateFields();
+            if (!isValid) {
+                console.error('Validación fallida');
+                return Promise.reject(new Error('Validación fallida'));
+            }
+        }
+        
+        // Evitar cálculos simultáneos
+        if (this.isCalculating) {
+            console.warn('Ya hay un cálculo en progreso');
+            return Promise.reject(new Error('Ya hay un cálculo en progreso'));
+        }
+        
+        this.isCalculating = true;
+        
+        // Notificar inicio del cálculo
+        if (this.config.onCalculationStart) {
+            this.config.onCalculationStart();
+        }
+        
+        // Publicar evento de inicio si eventBus está disponible
+        if (this.eventBus) {
+            this.eventBus.publish('calculationStart', { formId });
+        }
+        
+        try {
+            // Recolectar datos del formulario
+            const formData = this.collectFormData(formId);
+            
+            // Realizar petición AJAX
+            const response = await fetch(this.config.ajaxUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.data || 'Error de cálculo desconocido');
+            }
+            
+            // Guardar resultado
+            this.lastResult = result.data;
+            
+            // Notificar finalización exitosa
+            if (this.config.onCalculationComplete) {
+                this.config.onCalculationComplete(result.data);
+            }
+            
+            // Publicar evento de finalización si eventBus está disponible
+            if (this.eventBus) {
+                this.eventBus.publish('calculationComplete', result.data);
+            }
+            
+            return result.data;
+        } catch (error) {
+            console.error('Error en el cálculo:', error);
+            
+            // Notificar error
+            if (this.config.onCalculationError) {
+                this.config.onCalculationError(error);
+            }
+            
+            // Publicar evento de error si eventBus está disponible
+            if (this.eventBus) {
+                this.eventBus.publish('calculationError', { error: error.message });
+            }
+            
+            return Promise.reject(error);
+        } finally {
+            this.isCalculating = false;
+        }
+    }
+    
+    /**
+     * Muestra el resultado en el DOM
+     * @param {Object} result - Resultado del cálculo
+     * @param {string} resultContainerId - ID del contenedor donde mostrar el resultado
+     */
+    displayResult(result, resultContainerId = 'result') {
+        const resultContainer = document.getElementById(resultContainerId);
+        if (!resultContainer) {
+            console.error(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`);
+            return;
+        }
+        
+        // Actualizar el contenido del contenedor
+        resultContainer.innerHTML = result.html || '';
+        resultContainer.style.display = 'block';
+        
+        // Actualizar botón de cálculo
+        const calculateBtn = document.getElementById('calculateButton');
+        if (calculateBtn) calculateBtn.textContent = 'Recalcular';
+        
+        // Mostrar botón de copia
+        const copyBtn = document.getElementById('copyButton');
+        if (copyBtn) copyBtn.style.display = 'inline-block';
+        
+        // Ocultar mensaje de error si existe
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) errorMessage.style.display = 'none';
+        
+        // Desplazarse al resultado
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    /**
+     * Copia el resultado al portapapeles
+     * @param {string} resultContainerId - ID del contenedor con el resultado
+     * @returns {Promise} - Promesa que se resuelve cuando se ha copiado el texto
+     */
+    async copyResultToClipboard(resultContainerId = 'result') {
+        const resultContainer = document.getElementById(resultContainerId);
+        if (!resultContainer) {
+            return Promise.reject(new Error(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`));
+        }
+        
+        try {
+            // Crear un elemento temporal para la selección
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = resultContainer.innerHTML;
+            
+            // Eliminar botones y elementos no deseados
+            const buttonsToRemove = tempElement.querySelectorAll('button, .no-copy');
+            buttonsToRemove.forEach(button => button.remove());
+            
+            // Usar la API moderna de portapapeles si está disponible
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(tempElement.innerText);
+                console.log('Resultado copiado al portapapeles usando Clipboard API');
+                return true;
+            }
+            
+            // Fallback para navegadores que no soportan Clipboard API
+            document.body.appendChild(tempElement);
+            const range = document.createRange();
+            range.selectNode(tempElement);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            const success = document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            document.body.removeChild(tempElement);
+            
+            if (success) {
+                console.log('Resultado copiado al portapapeles usando execCommand');
+                return true;
+            } else {
+                throw new Error('No se pudo copiar el texto');
+            }
+        } catch (error) {
+            console.error('Error al copiar al portapapeles:', error);
+            return Promise.reject(error);
+        }
+    }
+}
+
+// Exportar la clase para uso en módulos ES6
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Calculator;
+}
+
+// Hacer disponible globalmente para su uso en navegadores
+if (typeof window !== 'undefined') {
+    window.Calculator = Calculator;
+}
+
+/**
+ * Ejemplo de uso:
+ * 
+ * // Inicializar la calculadora
+ * const calculator = new Calculator({
+ *     ajaxUrl: ajaxCalculatorData.ajaxurl,
+ *     nonce: ajaxCalculatorData.nonce,
+ *     onCalculationComplete: result => {
+ *         console.log('Cálculo completado:', result);
+ *     }
+ * });
+ * 
+ * // Configurar el botón de cálculo
+ * document.getElementById('calculateButton').addEventListener('click', async () => {
+ *     try {
+ *         const result = await calculator.calculate();
+ *         calculator.displayResult(result);
+ *     } catch (error) {
+ *         console.error('Error:', error);
+ *     }
+ * });
+ * 
+ * // Configurar el botón de copia
+ * document.getElementById('copyButton').addEventListener('click', async () => {
+ *     try {
+ *         await calculator.copyResultToClipboard();
+ *         alert('Resultado copiado al portapapeles');
+ *     } catch (error) {
+ *         alert('Error al copiar: ' + error.message);
+ *     }
+ * });
+ */

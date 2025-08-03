@@ -1,0 +1,400 @@
+// ARCHIVO shared/js/classes/TemplateManager.js
+
+/**
+ * Clase TemplateManager
+ * Encapsula la lógica de gestión de plantillas
+ * Implementa un patrón de diseño orientado a objetos para mejorar la mantenibilidad
+ */
+class TemplateManager {
+    /**
+     * Constructor de la clase TemplateManager
+     * @param {Object} config - Configuración inicial
+     * @param {string} config.ajaxUrl - URL para peticiones AJAX
+     * @param {string} config.nonce - Nonce de seguridad para peticiones AJAX
+     * @param {Function} config.onTemplateCreated - Callback cuando se crea una plantilla
+     * @param {Function} config.onTemplateLoaded - Callback cuando se carga una plantilla
+     * @param {Function} config.onError - Callback cuando hay un error
+     */
+    constructor(config = {}) {
+        // Configuración por defecto
+        this.config = {
+            ajaxUrl: '',
+            nonce: '',
+            onTemplateCreated: null,
+            onTemplateLoaded: null,
+            onError: null,
+            ...config
+        };
+        
+        // Estado interno
+        this.isCreating = false;
+        this.currentTemplate = null;
+        
+        // Vincular métodos al contexto actual
+        this.createTemplate = this.createTemplate.bind(this);
+        this.loadTemplate = this.loadTemplate.bind(this);
+        this.collectFormData = this.collectFormData.bind(this);
+        this.toggleOneDayCharter = this.toggleOneDayCharter.bind(this);
+        
+        // Inicializar sistema de eventos si está disponible
+        if (typeof window.eventBus !== 'undefined') {
+            this.eventBus = window.eventBus;
+            console.log('EventBus conectado a TemplateManager');
+        }
+        
+        console.log('TemplateManager inicializado');
+    }
+    
+    /**
+     * Recolecta los datos del formulario para crear una plantilla
+     * @returns {FormData} - Objeto FormData con los datos recolectados
+     */
+    collectFormData() {
+        const formData = new FormData();
+        formData.append('action', 'createTemplate');
+        formData.append('nonce', this.config.nonce);
+        
+        // Recolectar URL del yate
+        const yachtUrl = document.getElementById('yachtUrl')?.value.trim() || '';
+        formData.append('yachtUrl', yachtUrl);
+        
+        // Recolectar tipo de plantilla
+        const templateSelector = document.getElementById('templateSelector');
+        const selectedTemplate = templateSelector ? templateSelector.value : '';
+        const finalTemplate = selectedTemplate || 'default-template';
+        formData.append('template', finalTemplate);
+        
+        // Textos de temporada
+        const lowSeasonText = document.getElementById('lowmixedResult')?.textContent || '';
+        const highSeasonText = document.getElementById('highmixedResult')?.textContent || '';
+        formData.append('lowSeasonText', lowSeasonText);
+        formData.append('highSeasonText', highSeasonText);
+        
+        // Currency
+        const currency = document.getElementById('currency')?.value || '';
+        formData.append('currency', currency);
+        
+        // Actualizar símbolos de moneda si hay un selector de moneda
+        if (document.getElementById('currency') && typeof updateCurrencySymbols === 'function') {
+            updateCurrencySymbols();
+        }
+        
+        // VAT, APA, etc.
+        if (document.getElementById('vatCheck')?.checked) {
+            formData.append('vatRate', document.getElementById('vatRate')?.value || '');
+        }
+        if (document.getElementById('apaCheck')?.checked) {
+            formData.append('apaAmount', document.getElementById('apaAmount')?.value || '');
+        }
+        if (document.getElementById('apaPercentageCheck')?.checked) {
+            formData.append('apaPercentage', document.getElementById('apaPercentage')?.value || '');
+        }
+        if (document.getElementById('relocationCheck')?.checked) {
+            formData.append('relocationFee', document.getElementById('relocationFee')?.value || '');
+        }
+        if (document.getElementById('securityCheck')?.checked) {
+            formData.append('securityFee', document.getElementById('securityFee')?.value || '');
+        }
+        
+        // One Day Charter
+        const enableOneDayCharter = document.getElementById('enableOneDayCharter');
+        const isOneDayActive = (enableOneDayCharter && enableOneDayCharter.checked) ? '1' : '0';
+        formData.append('enableOneDayCharter', isOneDayActive);
+        
+        // Add + Expenses to Base Charter Rate
+        const enableExpenses = document.getElementById('enableExpenses');
+        const isExpensesActive = (enableExpenses && enableExpenses.checked) ? '1' : '0';
+        formData.append('enableExpenses', isExpensesActive);
+        
+        // Mixed Seasons
+        const enableMixedSeasons = document.getElementById('enableMixedSeasons');
+        const isMixedActive = (enableMixedSeasons && enableMixedSeasons.checked) ? '1' : '0';
+        formData.append('enableMixedSeasons', isMixedActive);
+        
+        // Hide Elements
+        formData.append('hideVAT', document.getElementById('hideVAT')?.checked ? '1' : '0');
+        formData.append('hideAPA', document.getElementById('hideAPA')?.checked ? '1' : '0');
+        formData.append('hideRelocation', document.getElementById('hideRelocation')?.checked ? '1' : '0');
+        formData.append('hideSecurity', document.getElementById('hideSecurity')?.checked ? '1' : '0');
+        formData.append('hideExtras', document.getElementById('hideExtras')?.checked ? '1' : '0');
+        formData.append('hideGratuity', document.getElementById('hideGratuity')?.checked ? '1' : '0');
+        
+        // Charter Rates
+        const charterRateGroups = document.querySelectorAll('.charter-rate-group');
+        if (charterRateGroups.length > 0) {
+            charterRateGroups.forEach((group, i) => {
+                const guests = group.querySelector('input[name="guests"]')?.value || '';
+                let nights = '';
+                let hours = '';
+                
+                if (isOneDayActive === '1') {
+                    hours = group.querySelector('input[name="hours"]')?.value || '';
+                } else {
+                    nights = group.querySelector('input[name="nights"]')?.value || '';
+                }
+                
+                const baseRate = group.querySelector('input[name="baseRate"]')?.value || '';
+                
+                const discountContainer = group.querySelector('.discount-container');
+                const discountActive = discountContainer && discountContainer.style.display !== 'none';
+                let discountType = '';
+                let discountAmount = '';
+                if (discountActive) {
+                    discountType = group.querySelector('select[name="discountType"]')?.value || '';
+                    discountAmount = group.querySelector('input[name="discountAmount"]')?.value || '';
+                }
+                
+                formData.append(`charterRates[${i}][guests]`, guests);
+                formData.append(`charterRates[${i}][nights]`, nights);
+                formData.append(`charterRates[${i}][hours]`, hours);
+                formData.append(`charterRates[${i}][baseRate]`, baseRate);
+                formData.append(`charterRates[${i}][discountType]`, discountType);
+                formData.append(`charterRates[${i}][discountAmount]`, discountAmount);
+                formData.append(`charterRates[${i}][discountActive]`, discountActive ? '1' : '0');
+
+                // Promotion handling
+                const promotionContainer = group.querySelector('.promotion-container');
+                const promotionActive = promotionContainer && promotionContainer.style.display !== 'none';
+                let promotionNights = '';
+                if (promotionActive) {
+                    promotionNights = group.querySelector('input[name="promotionNights"]')?.value || '';
+                }
+                formData.append(`charterRates[${i}][promotionNights]`, promotionNights);
+                formData.append(`charterRates[${i}][promotionActive]`, promotionActive ? '1' : '0');
+            });
+        }
+        
+        // Expandir
+        const extrasContainer = document.getElementById('extrasContainer');
+        if (extrasContainer) {
+            const extraGroups = extrasContainer.querySelectorAll('.extra-group');
+            extraGroups.forEach((extra, i) => {
+                const extraName = extra.querySelector('input[name="extraName"]')?.value || '';
+                const extraCost = extra.querySelector('input[name="extraCost"]')?.value || '';
+                formData.append(`extras[${i}][extraName]`, extraName);
+                formData.append(`extras[${i}][extraCost]`, extraCost);
+            });
+            
+            // Guest Fee
+            const extraPerPersonGroups = extrasContainer.querySelectorAll('.extra-per-person-group');
+            extraPerPersonGroups.forEach((extra, i) => {
+                const extraName = extra.querySelector('input[name="extraPerPersonName"]')?.value || '';
+                const extraTotal = extra.querySelector('input[name="extraPerPersonTotal"]')?.value || '';
+                // Añadimos el guest fee como un extra normal para la plantilla
+                formData.append(`extras[${extraGroups.length + i}][extraName]`, extraName);
+                formData.append(`extras[${extraGroups.length + i}][extraCost]`, extraTotal);
+            });
+        }
+        
+        // VAT Mix
+        const vatRateMixCheckbox = document.getElementById('vatRateMix');
+        const vatRateMixEnabled = vatRateMixCheckbox && vatRateMixCheckbox.checked ? '1' : '0';
+        formData.append('vatRateMix', vatRateMixEnabled);
+        if (vatRateMixEnabled === '1') {
+            const vatMixItems = document.querySelectorAll('.country-vat-item-wrapper');
+            vatMixItems.forEach((item) => {
+                const country = item.querySelector('input[name="vatCountryName[]"]')?.value || '';
+                const rate = item.querySelector('input[name="vatRate[]"]')?.value || '';
+                const nights = item.querySelector('input[name="vatNights[]"]')?.value || '';
+                formData.append('vatCountryName[]', country);
+                formData.append('vatRate[]', rate);
+                formData.append('vatNights[]', nights);
+            });
+        }
+
+        return formData;
+    }
+    
+    /**
+     * Crea una nueva plantilla usando async/await
+     * @returns {Promise<Object>} - Promesa que resuelve con los datos de la plantilla creada
+     */
+    async createTemplate() {
+        try {
+            // Validación
+            if (typeof validateFields === 'function') {
+                const isValid = validateFields();
+                if (!isValid) {
+                    throw new Error('Validación fallida');
+                }
+            }
+            
+            // Indicar que estamos creando una plantilla
+            this.isCreating = true;
+            
+            // Notificar inicio si hay callback
+            if (typeof this.config.onTemplateCreated === 'function') {
+                this.config.onTemplateCreated();
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:creating', {});
+            }
+            
+            // Recolectar datos del formulario
+            const formData = this.collectFormData();
+            
+            // Verificar que tenemos los datos mínimos necesarios
+            const yachtUrl = formData.get('yachtUrl');
+            if (!yachtUrl) {
+                throw new Error('La URL del yate es obligatoria');
+            }
+            
+            // Verificar que tenemos un nonce válido
+            const nonce = formData.get('nonce');
+            if (!nonce) {
+                throw new Error('Error de seguridad: nonce no disponible');
+            }
+            
+            // Enviar petición usando fetch con async/await
+            const response = await fetch(this.config.ajaxUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.data || 'Error al crear la plantilla');
+            }
+            
+            // Actualizar la UI si hay un contenedor de resultado
+            const resultDiv = document.getElementById('result');
+            if (resultDiv && result.data) {
+                resultDiv.innerHTML = result.data;
+            }
+            
+            // Habilitar el botón de copiar si existe
+            const copyBtn = document.getElementById('copyTemplateButton');
+            if (copyBtn) {
+                copyBtn.disabled = false;
+                copyBtn.style.display = 'block';
+            }
+            
+            // Guardar la plantilla actual
+            this.currentTemplate = result.data;
+            
+            // Notificar éxito si hay callback
+            if (typeof this.config.onTemplateCreated === 'function') {
+                this.config.onTemplateCreated(result.data);
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:created', result.data);
+            }
+            
+            return result.data;
+        } catch (error) {
+            console.error('Error al crear plantilla:', error);
+            
+            // Notificar error si hay callback
+            if (typeof this.config.onError === 'function') {
+                this.config.onError(error);
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:error', { error: error.message });
+            }
+            
+            throw error;
+        } finally {
+            this.isCreating = false;
+        }
+    }
+    
+    /**
+     * Carga una plantilla existente usando async/await
+     * @param {string} templateId - ID de la plantilla a cargar
+     * @returns {Promise<Object>} - Promesa que resuelve con los datos de la plantilla cargada
+     */
+    async loadTemplate(templateId) {
+        try {
+            // Notificar inicio si hay callback
+            if (typeof this.config.onTemplateLoaded === 'function') {
+                this.config.onTemplateLoaded();
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:loading', { templateId });
+            }
+            
+            // Crear FormData para la petición
+            const formData = new FormData();
+            formData.append('action', 'load_template');
+            formData.append('nonce', this.config.nonce);
+            formData.append('templateId', templateId);
+            
+            // Enviar petición usando fetch con async/await
+            const response = await fetch(this.config.ajaxUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.data || 'Error al cargar la plantilla');
+            }
+            
+            // Guardar la plantilla actual
+            this.currentTemplate = result.data;
+            
+            // Notificar éxito si hay callback
+            if (typeof this.config.onTemplateLoaded === 'function') {
+                this.config.onTemplateLoaded(result.data);
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:loaded', result.data);
+            }
+            
+            return result.data;
+        } catch (error) {
+            console.error('Error al cargar plantilla:', error);
+            
+            // Notificar error si hay callback
+            if (typeof this.config.onError === 'function') {
+                this.config.onError(error);
+            }
+            
+            // Publicar evento si hay eventBus
+            if (this.eventBus) {
+                this.eventBus.publish('template:error', { error: error.message });
+            }
+            
+            throw error;
+        }
+    }
+    
+    /**
+     * Alterna la visibilidad de los campos de One Day Charter
+     * @param {boolean} isEnabled - Indica si One Day Charter está habilitado
+     */
+    toggleOneDayCharter(isEnabled) {
+        const oneDayFields = document.querySelectorAll('.one-day-charter-field');
+        oneDayFields.forEach(field => {
+            field.style.display = isEnabled ? 'block' : 'none';
+        });
+        
+        // Publicar evento si hay eventBus
+        if (this.eventBus) {
+            this.eventBus.publish('template:oneDayCharter', { isEnabled });
+        }
+    }
+}
+
+// Exponer la clase globalmente en lugar de exportarla como módulo
+window.TemplateManager = TemplateManager;
