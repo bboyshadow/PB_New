@@ -209,7 +209,6 @@ function restoreTemplateFormData() {
     });
     
     if (savedData) {
-        console.log('Datos del formulario de plantilla restaurados (SIN extras):', savedData);
         
         // Limpiar contenedor de extras explícitamente al restaurar
         const extrasContainer = document.getElementById('extrasContainer');
@@ -253,10 +252,8 @@ function restoreTemplateFormData() {
 
 // Callbacks para los eventos de TemplateManager
 function handleTemplateCreated(data) {
-    console.log('Plantilla creada correctamente:', data);
 }
 function handleTemplateLoaded(data) {
-    console.log('Plantilla cargada correctamente:', data);
 }
 function handleTemplateError(error) {
     console.error('Error en la plantilla:', error);

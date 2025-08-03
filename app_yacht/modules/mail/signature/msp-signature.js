@@ -1,5 +1,4 @@
 jQuery(document).ready(function($){
-    console.log("msp-signature.js loaded.");
 
     // 1) Intercept paste en #mspEditor
     $("#mspEditor").on("paste", function(e){

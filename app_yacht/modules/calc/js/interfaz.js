@@ -458,7 +458,6 @@ function updateUIConstraints() {
 
 // --- Función de Inicialización del Módulo ---
 function initCalcInterface() {
-    console.log("Inicializando interfaz de calculadora...");
     // Check si funciones compartidas existen
     if (!window.toggleContainer || !window.addDynamicField || !window.removeDynamicField) {
         console.warn('Las funciones UI compartidas (toggleContainer, addDynamicField, removeDynamicField) no están disponibles.');
@@ -500,7 +499,6 @@ function initCalcInterface() {
          // addGuestFeeBtn.addEventListener('click', addExtraPerPersonField);
      }
      
-     console.log("Interfaz de calculadora inicializada.");
 }
 
 // --- Ejecución de Inicialización ---

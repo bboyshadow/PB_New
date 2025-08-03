@@ -37,10 +37,7 @@ class MailComposer {
         // Inicializar sistema de eventos si está disponible
         if (typeof window.eventBus !== 'undefined') {
             this.eventBus = window.eventBus;
-            console.log('EventBus conectado a MailComposer');
         }
-        
-        console.log('MailComposer inicializado');
     }
     
     /**
@@ -85,7 +82,6 @@ class MailComposer {
                         document.getElementById('selected_font').value = selectedFont;
                     }
                 });
-                console.log('Fuente seleccionada guardada:', selectedFont);
                 
                 // Aplicar la fuente al selector para previsualización
                 e.target.style.fontFamily = selectedFont;
@@ -119,7 +115,6 @@ class MailComposer {
         this.updateFontSelector([]); 
         this.restoreSelectedFont();
         
-        console.log('Editor inicializado correctamente');
     }
     
     /**
@@ -248,7 +243,6 @@ class MailComposer {
              if (Array.from(fontSelect.options).some(option => option.value === savedFont)) {
                 fontSelect.value = savedFont;
                 fontSelect.style.fontFamily = savedFont;
-                console.log('Fuente restaurada desde localStorage:', savedFont);
             } else {
                  console.warn('Fuente guardada "' + savedFont + '" no encontrada en el selector.');
             }

@@ -1,7 +1,6 @@
 // Archivo modules\mail\outlook\outlook-ajax.js
 (function($){
     $(document).ready(function() {
-        console.log("outlook-ajax.js cargado.");
         
         // loadGoogleFontsAPI() eliminada - no usar Google Fonts en email.
         
@@ -12,7 +11,7 @@
         if (typeof pbOutlookData === 'undefined') {
             console.error('Error: La variable pbOutlookData no está definida. Asegúrate de que yacht-functions.php está cargando correctamente.');
         } else {
-            console.log('pbOutlookData está disponible:', pbOutlookData);
+            
         }
         
         // Verificar si hay parámetro outlook=success en la URL y mostrar mensaje
