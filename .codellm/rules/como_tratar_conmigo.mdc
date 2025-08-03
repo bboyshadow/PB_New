@@ -1,0 +1,12 @@
+---
+description: este documento es sencillo y dise como debes comportarte con mis instrucciones
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- No debes nunca asumir nada
+- Debes respetar siempre la logica de negocio de mi codigo haciendo solo cambios minimos necesarios.
+- no ofreces mejoras a menos que lo pida. 
+- cada archivo a revisar debes asegurarte de leero complato la primera ves.

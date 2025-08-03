@@ -298,6 +298,47 @@ function addCharterRate(isFirst = false) {
     return newField;
 }
 
+// Función para cargar información del yate
+document.addEventListener('DOMContentLoaded', function() {
+    const yachtUrlInput = document.getElementById('yachtUrl');
+    const yachtImage = document.getElementById('yacht-image');
+    const yachtDetails = document.getElementById('yacht-details');
+
+    yachtUrlInput.addEventListener('blur', function() {
+        const url = this.value.trim();
+        if (!url) return;
+
+        // Llamada AJAX al backend para extraer datos
+        fetch('/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=extract_yacht_info&url=' + encodeURIComponent(url)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                const info = data.data;
+                yachtImage.src = info.image || '';
+                yachtDetails.innerHTML = `
+                    <p><strong>Nombre:</strong> ${info.name || 'N/A'}</p>
+                    <p><strong>Longitud:</strong> ${info.length || 'N/A'}</p>
+                    <p><strong>Tipo:</strong> ${info.type || 'N/A'}</p>
+                    <p><strong>Constructor:</strong> ${info.builder || 'N/A'}</p>
+                    <p><strong>Año:</strong> ${info.year || 'N/A'}</p>
+                `;
+            } else {
+                yachtDetails.innerHTML = '<p>Error al cargar la información del yate.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            yachtDetails.innerHTML = '<p>Error al cargar la información.</p>';
+        });
+    });
+});
+
 // Remueve un grupo de tarifas
 function removeCharterRate(button) {
     const addButton = document.querySelector('.add-rate-btn'); 

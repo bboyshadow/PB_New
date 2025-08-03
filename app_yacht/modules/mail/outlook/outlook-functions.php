@@ -12,11 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 // por core/yacht-functions.php.
 
 // Ajusta las credenciales directamente
-define( 'PB_OUTLOOK_CLIENT_ID', '730ac41d-30c8-446c-b6bc-9470d539fdee' );
-define( 'PB_OUTLOOK_CLIENT_SECRET', '' ); // TODO: Configure este secreto de forma segura, por ejemplo, mediante variables de entorno.
+// Ajusta las credenciales directamente
+define('PB_OUTLOOK_CLIENT_ID', '730ac41d-30c8-446c-b6bc-9470d539fdee');
+define('PB_OUTLOOK_CLIENT_SECRET', '.ii8Q~GeEeqre-rBd568TNxt.oOEiREv9_XzLdeB');
 
-define( 'PB_OUTLOOK_REDIRECT_URI', 'https://www.probroke.com/appyacht/auth' );
-define( 'PB_OUTLOOK_SCOPES', 'openid profile offline_access User.Read Mail.Send' );
+define('PB_OUTLOOK_REDIRECT_URI', 'https://www.probroke.com/appyacht/auth');
+define('PB_OUTLOOK_SCOPES', 'openid profile offline_access User.Read Mail.Send');
 
 /**
  * Genera la URL para iniciar el proceso OAuth con Microsoft
