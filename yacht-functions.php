@@ -1,5 +1,9 @@
 <?php
-// ==================== ARCHIVO yacht-functions.php ====================\\
+/**
+ * Funciones específicas de la aplicación Yacht.
+ *
+ * @package YachtApp
+ */
 
 // --------------------- JS AND CSS START ---------------------\\
 
