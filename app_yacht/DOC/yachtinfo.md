@@ -1,3 +1,10 @@
+## Observations
+
+- The flow described in this document appears to be based on a previous or legacy version of the code. In the current code, AJAX handling for 'createTemplate' is done in `bootstrap.php` via `handleCreateTemplate()`, which uses `YachtInfoService` to extract yacht data if `yachtUrl` is provided, and then invokes `RenderEngine::createTemplate()`.
+- No handler was found for the AJAX action 'extract_yacht_info' mentioned in `interfaz.js`. This could be a pending endpoint or not implemented in the current repository.
+- The actual extraction in `YachtInfoService` includes domain validation, caching, and specific parsers for sites like charterworld.com, yachtcharterfleet.com, and burgessyachts.com, using wp_remote_get and DOMXPath.
+- The frontend in `interfaz.js` attempts a preview on blur of #yachtUrl, but without a backend handler, this would not work as described.
+
 # Yacht URL Data Extraction Flow
 
 This document summarizes how the application retrieves yacht information from a provided URL and renders it in templates.
@@ -29,7 +36,8 @@ This document summarizes how the application retrieves yacht information from a 
 2. `extraerInformacionYate()` retrieves the page with cURL and uses DOMXPath to extract name, length, type, builder, year built, crew, cabins, guest capacity, cabin configuration, image URL, and the source URL.
 3. Cost parameters and flags are packaged into `$data` and passed to `calcularResultadosTemplate()` (in `calculate-template.php`), which delegates to the calculator service.
 4. The template file (e.g., `default-template.php`) is included with `$templateData` containing calculation results, season texts, yacht info, and hide-element flags.
-5. `TemplateManager` receives the HTML, injects it into `#result`, and exposes a copy-to-clipboard function.
+5. `default-template.php` builds arrays using `buildYachtInfoArray()` and `buildCalcSnippetArray()` and outputs a styled HTML snippet displaying yacht details, rates, extras, totals, and gratuity suggestions.
+6. `TemplateManager` receives the HTML, injects it into `#result`, and exposes a copy-to-clipboard function.
 
 ## Data Mapping
 
@@ -37,10 +45,8 @@ This document summarizes how the application retrieves yacht information from a 
 - Cost snippet fields: low/high season labels and costs, structured block with calculated totals and flags like `enableExpenses`.
 - Frontend flags and inputs control optional sections (VAT, APA, relocation, security, extras, mixed seasons, one-day charter).
 
-## Observaciones a tomar en cuenta
+## Observations
 
-- El flujo descrito en este documento parece basarse en una versión anterior o legacy del código. En el código actual, el manejo de AJAX para `createTemplate` se realiza en `bootstrap.php` mediante `handleCreateTemplate()`, que utiliza `YachtInfoService` para extraer datos del yate si se proporciona `yachtUrl`, y luego invoca `RenderEngine::createTemplate()`.
-- No se encontró un handler para la acción AJAX `extract_yacht_info` mencionada en `interfaz.js`.
-- La extracción real en `YachtInfoService` incluye validación de dominio, caché, y parsers específicos para sitios como charterworld.com, yachtcharterfleet.com y burgessyachts.com, usando `wp_remote_get` y `DOMXPath`.
-- El frontend en `interfaz.js` intenta una vista previa al perder foco en `#yachtUrl`, pero sin handler backend, esto no funcionaría como se describe.
+- The blur-based preview in `interfaz.js` calls `extract_yacht_info`, but no corresponding PHP handler exists in the repository; this endpoint may be planned or handled elsewhere.
+- `load-template.php` implements its own scraping via `extraerInformacionYate`, while the modern `YachtInfoService` provides a more modular approach; duplication suggests legacy vs. new architecture.
 
