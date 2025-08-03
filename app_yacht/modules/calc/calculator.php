@@ -179,8 +179,7 @@
 
                                          <!-- Campo Yacht URL -->
                                        <div class="col-12 col-md-3 col-lg-2 p-1">
-                                               <label for="yachtUrl" class="form-label mt-4">Yacht URL</label>
-                                               <input type="url" id="yachtUrl" name="yachtUrl" class="form-control w-100" placeholder="https://example.com" pattern="https?://.+" required>
+                                               <input type="url" id="yachtUrl" name="yachtUrl" class="form-control w-100 mt-4" placeholder="Yacht URL" pattern="https?://.+" required>
                                        </div>
 
 					<!-- Botón Create Template -->
