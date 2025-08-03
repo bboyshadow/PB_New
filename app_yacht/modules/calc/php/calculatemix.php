@@ -1,18 +1,18 @@
 <?php
-// ARCHIVO modules\calc\php\calculatemix.php
 
-// Registrar las acciones AJAX para usuarios autenticados y no autenticados
+
+
 add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
 add_action( 'wp_ajax_nopriv_calculate_mix', 'handle_calculate_mix' );
 
 function handle_calculate_mix() {
-	// 1) Verificar nonce para seguridad
+	
 	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'mix_calculate_nonce' ) ) {
 		wp_send_json_error( array( 'error' => 'Nonce inválido.' ), 400 );
 		return;
 	}
 	
-	// Leer los datos enviados desde el cliente
+	
 	$data = $_POST;
 
 	if ( ! isset( $data['mixnights'], $data['lowSeasonRate'], $data['lowSeasonNights'], $data['highSeasonRate'], $data['highSeasonNights'], $data['currency'] ) ) {
@@ -20,7 +20,7 @@ function handle_calculate_mix() {
 		return;
 	}
 
-	// Convertir a float
+	
 	$mixNights        = (float) str_replace( ',', '', $data['mixnights'] );
 	$lowSeasonRate    = (float) str_replace( ',', '', $data['lowSeasonRate'] );
 	$lowSeasonNights  = (float) str_replace( ',', '', $data['lowSeasonNights'] );
@@ -33,7 +33,7 @@ function handle_calculate_mix() {
 		return;
 	}
 
-	// Calcular
+	
 	$lowSeasonRatePerNight  = $lowSeasonRate / ( $mixNights <= 5 ? 6 : 7 );
 	$lowSeasonTotal         = $lowSeasonRatePerNight * $lowSeasonNights;
 	$highSeasonRatePerNight = $highSeasonRate / ( $mixNights <= 5 ? 6 : 7 );

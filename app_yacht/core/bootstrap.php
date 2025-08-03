@@ -1,63 +1,49 @@
 <?php
-/**
- * Bootstrap principal para la aplicación App_Yacht
- * Inicializa el contenedor DI y los servicios principales
- * 
- * @package AppYacht
- * @version 2.0.0
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; 
 }
 
-// Incluir el contenedor DI
+
 require_once __DIR__ . '/container.php';
 require_once __DIR__ . '/config.php';
 
-// Incluir interfaces
+
 require_once __DIR__ . '/../shared/interfaces/yacht-info-service-interface.php';
 require_once __DIR__ . '/../shared/interfaces/calc-service-interface.php';
 require_once __DIR__ . '/../shared/interfaces/render-engine-interface.php';
 require_once __DIR__ . '/../shared/interfaces/mail-service-interface.php';
 
-// Incluir servicios
+
 require_once __DIR__ . '/../modules/yachtinfo/yacht-info-service.php';
 require_once __DIR__ . '/../modules/calc/calc-service.php';
 require_once __DIR__ . '/../modules/render/render-engine.php';
 require_once __DIR__ . '/../modules/mail/mail-service.php';
 
-/**
- * Clase principal de Bootstrap para App_Yacht
- */
+
 class AppYachtBootstrap {
 	
-	/**
-	 * @var AppYachtContainer
-	 */
+	
 	private static $container = null;
 	
-	/**
-	 * @var bool
-	 */
+	
 	private static $initialized = false;
 	
-	/**
-	 * Inicializa la aplicación
-	 */
+	
 	public static function init() {
 		if ( self::$initialized ) {
 			return self::$container;
 		}
 		
 		try {
-			// Crear contenedor
+			
 			self::$container = new AppYachtContainer();
 			
-			// Registrar servicios
+			
 			self::registerServices();
 			
-			// Registrar hooks de WordPress
+			
 			self::registerWordPressHooks();
 			
 			self::$initialized = true;
@@ -70,14 +56,12 @@ class AppYachtBootstrap {
 		}
 	}
 	
-	/**
-	 * Registra los servicios en el contenedor DI
-	 */
+	
 	private static function registerServices() {
 		$container = self::$container;
 		$config    = AppYachtConfig::get();
 		
-		// Registrar YachtInfoService
+		
 		$container->register(
 			'yacht_info_service',
 			function() use ( $config ) {
@@ -85,7 +69,7 @@ class AppYachtBootstrap {
 			}
 		);
 		
-		// Registrar CalcService
+		
 		$container->register(
 			'calc_service',
 			function() use ( $config ) {
@@ -93,7 +77,7 @@ class AppYachtBootstrap {
 			}
 		);
 		
-		// Registrar RenderEngine
+		
 		$container->register(
 			'render_engine',
 			function() use ( $config ) {
@@ -101,7 +85,7 @@ class AppYachtBootstrap {
 			}
 		);
 		
-		// Registrar MailService
+		
 		$container->register(
 			'mail_service',
 			function() use ( $config, $container ) {
@@ -113,11 +97,9 @@ class AppYachtBootstrap {
 		);
 	}
 	
-	/**
-	 * Registra hooks de WordPress para mantener compatibilidad
-	 */
+	
 	private static function registerWordPressHooks() {
-		// Mantener los hooks AJAX existentes para compatibilidad
+		
 		add_action( 'wp_ajax_calculate_charter', array( __CLASS__, 'handleCalculateCharter' ) );
 		add_action( 'wp_ajax_nopriv_calculate_charter', array( __CLASS__, 'handleCalculateCharter' ) );
 		
@@ -131,9 +113,7 @@ class AppYachtBootstrap {
 		add_action( 'wp_ajax_nopriv_createTemplate', array( __CLASS__, 'handleCreateTemplate' ) );
 	}
 	
-	/**
-	 * Obtiene el contenedor DI
-	 */
+	
 	public static function getContainer() {
 		if ( ! self::$initialized ) {
 			self::init();
@@ -141,9 +121,7 @@ class AppYachtBootstrap {
 		return self::$container;
 	}
 	
-	/**
-	 * Handler para AJAX calculate_charter (compatibilidad)
-	 */
+	
 	public static function handleCalculateCharter() {
 		try {
 			$calcService = self::getContainer()->get( 'calc_service' );
@@ -155,9 +133,7 @@ class AppYachtBootstrap {
 		}
 	}
 	
-	/**
-	 * Handler para AJAX calculate_mix (compatibilidad)
-	 */
+	
 	public static function handleCalculateMix() {
 		try {
 			$calcService = self::getContainer()->get( 'calc_service' );
@@ -169,9 +145,7 @@ class AppYachtBootstrap {
 		}
 	}
 	
-	/**
-	 * Handler para AJAX load_template_preview (compatibilidad)
-	 */
+	
 	public static function handleLoadTemplatePreview() {
 		try {
 			$renderEngine = self::getContainer()->get( 'render_engine' );
@@ -183,15 +157,13 @@ class AppYachtBootstrap {
 		}
 	}
 	
-	/**
-	 * Handler para AJAX createTemplate (compatibilidad)
-	 */
+	
 	public static function handleCreateTemplate() {
 		try {
 			$renderEngine     = self::getContainer()->get( 'render_engine' );
 			$yachtInfoService = self::getContainer()->get( 'yacht_info_service' );
 			
-			// Obtener datos del yacht si hay URL
+			
 			$yachtData = null;
 			if ( ! empty( $_POST['yachtUrl'] ) ) {
 				$yachtData = $yachtInfoService->extractYachtInfo( $_POST['yachtUrl'] );

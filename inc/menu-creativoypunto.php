@@ -1,8 +1,8 @@
 <?php
 
-// Menu Principal adaptacion a WordPress
 
-// bootstrap 5 wp_nav_menu walker
+
+
 class bootstrap_5_menu_creativoypunto extends Walker_Nav_menu {
 
 	private $current_item;
@@ -77,7 +77,7 @@ class bootstrap_5_menu_creativoypunto extends Walker_Nav_menu {
 	}
 }
 
-// register a new menu
+
 register_nav_menu( 'main-menu', 'Main menu' );
 
-// Fin Menu Principal adaptacion a WordPress
+

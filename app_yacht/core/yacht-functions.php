@@ -1,18 +1,10 @@
 <?php
-/**
- * File core\yacht-functions.php
- * Core functions for the app_yacht application.
- * Handles script/style enqueuing, AJAX actions, Outlook authentication, and role capabilities.
- */
+
 
 require_once get_template_directory() . '/app_yacht/shared/php/utils.php';
 require_once get_template_directory() . '/app_yacht/shared/php/security.php';
 
-/**
- * Enqueues JavaScript files for the app_yacht page.
- * Loads shared and module-specific scripts, and localizes AJAX data.
- * Only runs on the 'app-yacht.php' page template.
- */
+
 function app_yacht_scripts() {
 	if ( is_page_template( 'app-yacht.php' ) ) {
 		$dependencies = array( 'jquery' );
@@ -125,11 +117,7 @@ function app_yacht_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'app_yacht_scripts' );
 
-/**
- * Enqueues CSS files for the app_yacht page.
- * Loads global and module-specific styles.
- * Only runs on the 'app-yacht.php' page template.
- */
+
 function app_yacht_css() {
 	if ( is_page_template( 'app-yacht.php' ) ) {
 		wp_enqueue_style( 'app-yacht-styles', get_template_directory_uri() . '/app_yacht/shared/css/app_yacht.css', array(), '1.0.0' );
@@ -139,10 +127,7 @@ function app_yacht_css() {
 }
 add_action( 'wp_enqueue_scripts', 'app_yacht_css' );
 
-/**
- * Dynamically loads PHP files based on context.
- * Loads files for calc, template, and mail modules in app-yacht.php, AJAX, or Outlook auth contexts.
- */
+
 $load_appyacht_php = false;
 if ( is_page_template( 'app-yacht.php' ) ) {
 	$load_appyacht_php = true;
@@ -162,10 +147,7 @@ if ( $load_appyacht_php ) {
 
 require_once get_template_directory() . '/app_yacht/modules/mail/outlook/outlook-loader.php';
 
-/**
- * Registers AJAX actions for calc, template, and mail modules.
- * Handles calculations, template creation, email sending, and signature management.
- */
+
 add_action( 'wp_ajax_calculate_charter', 'handle_calculate_charter' );
 add_action( 'wp_ajax_nopriv_calculate_charter', 'handle_calculate_charter' );
 add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
@@ -181,20 +163,13 @@ add_action( 'wp_ajax_nopriv_pb_outlook_disconnect', 'pb_outlook_disconnect_ajax_
 add_action( 'wp_ajax_msp_save_signature', 'msp_save_signature_callback' );
 add_action( 'wp_ajax_msp_delete_signature', 'msp_delete_signature_callback' );
 
-/**
- * Registers the /appyacht/auth/ endpoint for Outlook authentication.
- * Adds the 'auth' rewrite rule to WordPress.
- */
+
 function pb_add_auth_rewrite_endpoint() {
 	add_rewrite_endpoint( 'auth', EP_ROOT | EP_PAGES );
 }
 add_action( 'init', 'pb_add_auth_rewrite_endpoint' );
 
-/**
- * Handles the Outlook authentication callback at /appyacht/auth/.
- * Exchanges authorization code for tokens and saves them to the user.
- * Redirects to the app_yacht page on success or failure.
- */
+
 function pb_handle_auth_endpoint() {
 	global $wp_query;
 
@@ -233,11 +208,7 @@ function pb_handle_auth_endpoint() {
 }
 add_action( 'template_redirect', 'pb_handle_auth_endpoint' );
 
-/**
- * Registers custom capabilities for WordPress roles.
- * Assigns 'edit_yacht_templates' and 'send_yacht_emails' to administrator, editor, and author roles.
- * Runs on theme activation and immediately for consistency.
- */
+
 function pb_register_yacht_roles_capabilities() {
 	$admin_caps = array(
 		'edit_yacht_templates',

@@ -1,25 +1,13 @@
 <?php
-/**
- * ProBroke functions and definitions
- *
- * @link https://developer.wordpress.org/themes/basics/theme-functions/
- *
- * @package ProBroke
- */
+
 
 if ( ! defined( '_S_VERSION' ) ) {
-		// Replace the version number of the theme on each release.
+		
 		define( '_S_VERSION', '1.0.0' );
 }
 
-/**
- * Sets up theme defaults and registers support for various WordPress features.
- *
- * Note that this function is hooked into the after_setup_theme hook, which
- * runs before the init hook. The init hook is too late for some features, such
- * as indicating support for post thumbnails.
- */
-// ==================== APP mail ==================== //
+
+
 add_action( 'wp_ajax_gmail_auth', 'handle_gmail_auth_request' );
 function handle_gmail_auth_request() {
 	check_ajax_referer( 'mail_nonce', 'security' );
@@ -59,46 +47,29 @@ function app_mail_handle_routes( $template ) {
 	return $template;
 }
 
-// ==================== END APP mail ==================== //
+
 
 function creativoypunto_setup() {
-		/*
-				* Make theme available for translation.
-				* Translations can be filed in the /languages/ directory.
-				* If you're building a theme based on ProBroke, use a find and replace
-				* to change 'creativoypunto' to the name of your theme in all the template files.
-				*/
+		
 		load_theme_textdomain( 'creativoypunto', get_template_directory() . '/languages' );
 
-		// Add default posts and comments RSS feed links to head.
+		
 		add_theme_support( 'automatic-feed-links' );
 
-		/*
-				* Let WordPress manage the document title.
-				* By adding theme support, we declare that this theme does not use a
-				* hard-coded <title> tag in the document head, and expect WordPress to
-				* provide it for us.
-				*/
+		
 		add_theme_support( 'title-tag' );
 
-		/*
-				* Enable support for Post Thumbnails on posts and pages.
-				*
-				* @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
-				*/
+		
 		add_theme_support( 'post-thumbnails' );
 
-		// This theme uses wp_nav_menu() in one location.
+		
 		register_nav_menus(
 			array(
 				'menu-1' => esc_html__( 'Primary', 'creativoypunto' ),
 			)
 		);
 
-		/*
-				* Switch default core markup for search form, comment form, and comments
-				* to output valid HTML5.
-				*/
+		
 		add_theme_support(
 			'html5',
 			array(
@@ -112,7 +83,7 @@ function creativoypunto_setup() {
 			)
 		);
 
-		// Set up the WordPress core custom background feature.
+		
 		add_theme_support(
 			'custom-background',
 			apply_filters(
@@ -124,14 +95,10 @@ function creativoypunto_setup() {
 			)
 		);
 
-		// Add theme support for selective refresh for widgets.
+		
 		add_theme_support( 'customize-selective-refresh-widgets' );
 
-		/**
-		 * Add support for core custom logo.
-		 *
-		 * @link https://codex.wordpress.org/Theme_Logo
-		 */
+		
 		add_theme_support(
 			'custom-logo',
 			array(
@@ -144,23 +111,13 @@ function creativoypunto_setup() {
 }
 add_action( 'after_setup_theme', 'creativoypunto_setup' );
 
-/**
- * Set the content width in pixels, based on the theme's design and stylesheet.
- *
- * Priority 0 to make it available to lower priority callbacks.
- *
- * @global int $content_width
- */
+
 function creativoypunto_content_width() {
 		$GLOBALS['content_width'] = apply_filters( 'creativoypunto_content_width', 640 );
 }
 add_action( 'after_setup_theme', 'creativoypunto_content_width', 0 );
 
-/**
- * Register widget area.
- *
- * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
- */
+
 function creativoypunto_widgets_init() {
 		register_sidebar(
 			array(
@@ -176,7 +133,7 @@ function creativoypunto_widgets_init() {
 }
 add_action( 'widgets_init', 'creativoypunto_widgets_init' );
 
-// ==================== AUTO HIDE MENU ====================//
+
 require_once get_template_directory() . '/inc/menu-creativoypunto.php';
 
 function enqueue_custom_scripts() {
@@ -188,11 +145,11 @@ function menu_creativoypunto() {
 	wp_enqueue_style( 'menu_creativoypunto', get_template_directory_uri() . '/css/menu-creativoypunto.css' );
 }
 add_action( 'wp_enqueue_scripts', 'menu_creativoypunto' );
-// ==================== END AUTO HIDE MENU ====================//
 
-// ==================== SCRIPTS AND STYLES ====================//
+
+
 function enqueue_bootstrap_local() {
-	// Bootstrap local
+	
 	wp_enqueue_style( 'bootstrap-css', get_template_directory_uri() . '/bootstrap/css/bootstrap.min.css' );
 	wp_enqueue_script( 'bootstrap-js', get_template_directory_uri() . '/bootstrap/js/bootstrap.bundle.min.js', array( 'jquery' ), null, true );
 }
@@ -220,9 +177,9 @@ function enqueue_construction_styles() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_construction_styles' );
-// ==================== END SCRIPTS AND STYLES ====================//
 
-// Additional includes
+
+
 require get_template_directory() . '/inc/custom-header.php';
 require get_template_directory() . '/inc/template-tags.php';
 require get_template_directory() . '/inc/template-functions.php';
@@ -234,11 +191,11 @@ if ( class_exists( 'WooCommerce' ) ) {
 	require get_template_directory() . '/inc/woocommerce.php';
 }
 
-// ==================== APP YACHT v2.0 ====================//
-// Nueva arquitectura refactorizada - carga bootstrap principal
+
+
 require_once get_template_directory() . '/app_yacht/core/bootstrap.php';
 
-// Inicializar App Yacht con nueva arquitectura
+
 add_action(
 	'init',
 	function() {
@@ -255,17 +212,15 @@ add_action(
 	}
 );
 
-// Mantener compatibilidad con funciones legacy si existen
+
 $legacy_yacht_functions = get_template_directory() . '/app_yacht/core/yacht-functions.php';
 if ( file_exists( $legacy_yacht_functions ) ) {
 	require_once $legacy_yacht_functions;
 }
-// ==================== APP YACHT v2.0 END====================//
 
 
-/**
- * Deshabilitar jQuery Migrate en frontend si no se necesita
- */
+
+
 function remove_jquery_migrate_script( &$scripts ) {
 	if ( ! is_admin() && isset( $scripts->registered['jquery'] ) ) {
 		$script = $scripts->registered['jquery'];

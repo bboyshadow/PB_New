@@ -1,11 +1,5 @@
 <?php
-/**
- * Servicio de cálculos para charter de yates
- * Maneja todos los cálculos relacionados con rates, impuestos y comisiones
- * 
- * @package AppYacht\Modules\Calc
- * @version 2.0.0
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,43 +7,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/../../shared/helpers/validator-helper.php';
 
-/**
- * Servicio para cálculos de charter
- */
+
 class CalcService implements CalcServiceInterface {
 	
-	/**
-	 * @var array Configuración del servicio
-	 */
+	
 	private $config;
 	
-	/**
-	 * Constructor
-	 * 
-	 * @param array $config Configuración de cálculos
-	 */
+	
 	public function __construct( array $config ) {
 		$this->config = $config;
 	}
 	
-	/**
-	 * Calcula el charter rate estándar
-	 * 
-	 * @param array $data Datos del formulario
-	 * @return array Resultado del cálculo
-	 */
+	
 	public function calculateCharter( array $data ) {
 		try {
-			// Validar datos
+			
 			$validation = $this->validateCalculationData( $data );
 			if ( is_wp_error( $validation ) ) {
 				return $validation;
 			}
 			
-			// Sanitizar datos
+			
 			$data = ValidatorHelper::sanitizeInputData( $data );
 			
-			// Inicializar resultado
+			
 			$result = array(
 				'base_rate'        => 0,
 				'vat_amount'       => 0,
@@ -65,10 +46,10 @@ class CalcService implements CalcServiceInterface {
 				'hide_elements'    => $this->getHideElements( $data ),
 			);
 			
-			// Calcular rate base
+			
 			$result['base_rate'] = $this->calculateBaseRate( $data );
 			
-			// Calcular VAT
+			
 			if ( isset( $data['vatCheck'] ) && ! empty( $data['vatRate'] ) ) {
 				$result['vat_amount'] = $this->applyVAT(
 					$result['base_rate'],
@@ -79,7 +60,7 @@ class CalcService implements CalcServiceInterface {
 				);
 			}
 			
-			// Calcular APA
+			
 			if ( isset( $data['apaCheck'] ) && ! empty( $data['apaAmount'] ) ) {
 				$result['apa_amount'] = floatval( $data['apaAmount'] );
 			} elseif ( isset( $data['apaPercentageCheck'] ) && ! empty( $data['apaPercentage'] ) ) {
@@ -91,18 +72,18 @@ class CalcService implements CalcServiceInterface {
 				);
 			}
 			
-			// Procesar extras
+			
 			$result['extras']       = $this->processExtras( $data );
 			$result['extras_total'] = array_sum( array_column( $result['extras'], 'amount' ) );
 			
-			// Calcular totales
+			
 			$result['subtotal'] = $result['base_rate'] + $result['vat_amount'] + $result['apa_amount'] + $result['extras_total'];
 			$result['total']    = $result['subtotal'] + $result['relocation_fee'] + $result['security_deposit'];
 			
-			// Generar breakdown detallado
+			
 			$result['breakdown'] = $this->generateBreakdown( $result );
 			
-			// Formatear para presentación
+			
 			$result['formatted'] = $this->formatResultForDisplay( $result );
 			
 			return $result;
@@ -113,21 +94,16 @@ class CalcService implements CalcServiceInterface {
 		}
 	}
 	
-	/**
-	 * Calcula charter con temporadas mixtas
-	 * 
-	 * @param array $data Datos del formulario
-	 * @return array Resultado del cálculo mix
-	 */
+	
 	public function calculateMix( array $data ) {
 		try {
-			// Validar datos
+			
 			$validation = $this->validateCalculationData( $data );
 			if ( is_wp_error( $validation ) ) {
 				return $validation;
 			}
 			
-			// Inicializar resultado
+			
 			$result = array(
 				'seasons'          => array(),
 				'total_weeks'      => 0,
@@ -138,7 +114,7 @@ class CalcService implements CalcServiceInterface {
 				'breakdown'        => array(),
 			);
 			
-			// Procesar cada temporada
+			
 			if ( isset( $data['seasons'] ) && is_array( $data['seasons'] ) ) {
 				foreach ( $data['seasons'] as $season ) {
 					$seasonResult           = $this->calculateSeasonPeriod( $season, $data );
@@ -147,18 +123,18 @@ class CalcService implements CalcServiceInterface {
 				}
 			}
 			
-			// Calcular promedio ponderado
+			
 			$result['weighted_average'] = $this->calculateWeightedAverage( $result['seasons'] );
 			
-			// Procesar VAT mix si está habilitado
+			
 			if ( isset( $data['vatRateMix'] ) && ! empty( $data['vatCountries'] ) ) {
 				$result['vat_mix'] = $this->calculateVATMix( $data['vatCountries'], $result['weighted_average'] );
 			}
 			
-			// Calcular total final
+			
 			$result['total_amount'] = $this->calculateMixTotal( $result );
 			
-			// Formatear para presentación
+			
 			$result['formatted'] = $this->formatMixResultForDisplay( $result );
 			
 			return $result;
@@ -169,12 +145,7 @@ class CalcService implements CalcServiceInterface {
 		}
 	}
 	
-	/**
-	 * Valida los datos de entrada para cálculos
-	 * 
-	 * @param array $data Datos a validar
-	 * @return bool|WP_Error True si válido, WP_Error si no
-	 */
+	
 	public function validateCalculationData( array $data ) {
 		$errors = ValidatorHelper::validateCalculationData( $data );
 		
@@ -185,13 +156,7 @@ class CalcService implements CalcServiceInterface {
 		return true;
 	}
 	
-	/**
-	 * Aplica impuestos VAT según configuración
-	 * 
-	 * @param float $amount Cantidad base
-	 * @param array $vatConfig Configuración de VAT
-	 * @return float Cantidad con VAT aplicado
-	 */
+	
 	public function applyVAT( $amount, array $vatConfig ) {
 		if ( ! isset( $vatConfig['rate'] ) || $vatConfig['rate'] <= 0 ) {
 			return 0;
@@ -201,13 +166,7 @@ class CalcService implements CalcServiceInterface {
 		return ( $amount * $rate ) / 100;
 	}
 	
-	/**
-	 * Calcula el APA (Advance Provisioning Allowance)
-	 * 
-	 * @param float $baseAmount Cantidad base
-	 * @param array $apaConfig Configuración de APA
-	 * @return float Cantidad de APA
-	 */
+	
 	public function calculateAPA( $baseAmount, array $apaConfig ) {
 		if ( ! isset( $apaConfig['percentage'] ) || $apaConfig['percentage'] <= 0 ) {
 			return 0;
@@ -217,13 +176,7 @@ class CalcService implements CalcServiceInterface {
 		return ( $baseAmount * $percentage ) / 100;
 	}
 	
-	/**
-	 * Formatea una cantidad según la moneda
-	 * 
-	 * @param float  $amount Cantidad a formatear
-	 * @param string $currency Moneda
-	 * @return string Cantidad formateada
-	 */
+	
 	public function formatCurrency( $amount, $currency ) {
 		$precision = $this->config['precision'];
 		$formatted = number_format( $amount, $precision, '.', ',' );
@@ -240,19 +193,17 @@ class CalcService implements CalcServiceInterface {
 		}
 	}
 	
-	/**
-	 * Calcula el rate base según los datos
-	 */
+	
 	private function calculateBaseRate( array $data ) {
-		// Esta lógica dependerá de cómo se definen los rates
-		// Por ahora, buscamos campos de rate por temporada
+		
+		
 		$baseRate = 0;
 		
 		if ( isset( $data['charterRate'] ) ) {
 			$baseRate = floatval( $data['charterRate'] );
 		}
 		
-		// Si hay temporadas múltiples, calcular diferente
+		
 		if ( isset( $data['seasons'] ) && is_array( $data['seasons'] ) ) {
 			$totalRate  = 0;
 			$totalWeeks = 0;
@@ -265,20 +216,18 @@ class CalcService implements CalcServiceInterface {
 			}
 			
 			if ( $totalWeeks > 0 ) {
-				$baseRate = $totalRate; // Total acumulado
+				$baseRate = $totalRate; 
 			}
 		}
 		
 		return $baseRate;
 	}
 	
-	/**
-	 * Procesa extras del formulario
-	 */
+	
 	private function processExtras( array $data ) {
 		$extras = array();
 		
-		// Procesar extras dinámicos
+		
 		if ( isset( $data['extras'] ) && is_array( $data['extras'] ) ) {
 			foreach ( $data['extras'] as $extra ) {
 				if ( ! empty( $extra['name'] ) && ! empty( $extra['amount'] ) ) {
@@ -294,9 +243,7 @@ class CalcService implements CalcServiceInterface {
 		return $extras;
 	}
 	
-	/**
-	 * Genera breakdown detallado del cálculo
-	 */
+	
 	private function generateBreakdown( array $result ) {
 		$breakdown = array();
 		
@@ -351,9 +298,7 @@ class CalcService implements CalcServiceInterface {
 		return $breakdown;
 	}
 	
-	/**
-	 * Obtiene elementos a ocultar del resultado
-	 */
+	
 	private function getHideElements( array $data ) {
 		$hide = array();
 		
@@ -368,9 +313,7 @@ class CalcService implements CalcServiceInterface {
 		return $hide;
 	}
 	
-	/**
-	 * Formatea resultado para presentación
-	 */
+	
 	private function formatResultForDisplay( array $result ) {
 		return array(
 			'base_rate'        => $this->formatCurrency( $result['base_rate'], $result['currency'] ),
@@ -384,9 +327,7 @@ class CalcService implements CalcServiceInterface {
 		);
 	}
 	
-	/**
-	 * Calcula un periodo de temporada
-	 */
+	
 	private function calculateSeasonPeriod( array $season, array $data ) {
 		return array(
 			'name'  => $season['name'] ?? 'Season',
@@ -396,9 +337,7 @@ class CalcService implements CalcServiceInterface {
 		);
 	}
 	
-	/**
-	 * Calcula promedio ponderado de temporadas
-	 */
+	
 	private function calculateWeightedAverage( array $seasons ) {
 		$totalAmount = 0;
 		$totalWeeks  = 0;
@@ -411,9 +350,7 @@ class CalcService implements CalcServiceInterface {
 		return $totalWeeks > 0 ? $totalAmount / $totalWeeks : 0;
 	}
 	
-	/**
-	 * Calcula VAT mix por países
-	 */
+	
 	private function calculateVATMix( array $vatCountries, $baseAmount ) {
 		$vatMix = array();
 		
@@ -431,9 +368,7 @@ class CalcService implements CalcServiceInterface {
 		return $vatMix;
 	}
 	
-	/**
-	 * Calcula total del cálculo mix
-	 */
+	
 	private function calculateMixTotal( array $result ) {
 		$total = 0;
 		
@@ -441,7 +376,7 @@ class CalcService implements CalcServiceInterface {
 			$total += $season['total'];
 		}
 		
-		// Agregar VAT mix
+		
 		foreach ( $result['vat_mix'] as $vat ) {
 			$total += $vat['amount'];
 		}
@@ -449,9 +384,7 @@ class CalcService implements CalcServiceInterface {
 		return $total;
 	}
 	
-	/**
-	 * Formatea resultado mix para presentación
-	 */
+	
 	private function formatMixResultForDisplay( array $result ) {
 		$formatted = array(
 			'seasons'          => array(),

@@ -1,24 +1,13 @@
 <?php
-/**
- * FILE core/api-request.php
- * Implements functions for secure HTTP requests in the app_yacht application
- */
 
-/**
- * Handles secure HTTP requests for the app_yacht application.
- */
+
+
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; 
 }
 
-/**
- * Makes secure HTTP requests with robust error handling.
- *
- * @param string $url The URL for the request.
- * @param array  $args Arguments for wp_remote_request.
- * @return array Structured response with success/error details.
- */
+
 function pb_make_api_request( $url, $args = array() ) {
 	if ( ! isset( $args['timeout'] ) ) {
 		$args['timeout'] = 15;
@@ -68,12 +57,7 @@ function pb_make_api_request( $url, $args = array() ) {
 	);
 }
 
-/**
- * Returns the appropriate timeout for different request types.
- *
- * @param string $request_type Request type (default, outlook_api, file_upload, long_process).
- * @return int Timeout in seconds.
- */
+
 function pb_get_request_timeout( $request_type = 'default' ) {
 	$timeouts = array(
 		'default'      => 15,

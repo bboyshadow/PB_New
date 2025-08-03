@@ -1,16 +1,14 @@
 <?php
-// ARCHIVO: /app_yacht/modules/template/php/load-template.php
+
 
 require_once __DIR__ . '/calculate-template.php';
 
-// Lista de templates permitidos (puedes ajustar según tus necesidades)
+
 $allowedTemplates = array( 'default-template', 'template-01', 'template-02' );
 
-/**
- * 1) Vista previa de template (GET): action=load_template_preview
- */
+
 function handle_load_template_preview() {
-	// Verificar nonce
+	
 	if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'template_nonce' ) ) {
 		wp_send_json_error( 'Invalid or missing nonce.', 400 );
 		return;
@@ -37,22 +35,20 @@ function handle_load_template_preview() {
 	wp_die( $html );
 }
 
-/**
- * 2) Crea la template (POST): action=createTemplate
- */
+
 function handle_create_template() {
 	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
 		wp_send_json_error( 'Invalid request method.', 400 );
 	}
 
-	// Verificar nonce
+	
 	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'template_nonce' ) ) {
 		wp_send_json_error( 'Invalid or missing nonce.', 400 );
 	}
 	
-	// Verificar si el usuario tiene la capacidad para crear plantillas
+	
 	if ( ! pb_verify_user_capability( 'edit_yacht_templates', 'No tienes permisos para crear plantillas.' ) ) {
-		return; // La función pb_verify_user_capability ya envía la respuesta de error
+		return; 
 	}
 
 	global $allowedTemplates;
@@ -61,15 +57,15 @@ function handle_create_template() {
 		wp_send_json_error( 'Invalid template selected.', 400 );
 	}
 
-	// Yacht URL (donde se hará el scraping)
+	
 	$yachtUrl       = isset( $_POST['yachtUrl'] ) ? esc_url_raw( $_POST['yachtUrl'] ) : '';
 	$lowSeasonText  = isset( $_POST['lowSeasonText'] ) ? sanitize_text_field( $_POST['lowSeasonText'] ) : '';
 	$highSeasonText = isset( $_POST['highSeasonText'] ) ? sanitize_text_field( $_POST['highSeasonText'] ) : '';
 
-	// Extraemos info del yate con scraping
+	
 	$yachtInfo = extraerInformacionYate( $yachtUrl );
 
-	// Mapear moneda seleccionada a código ISO (EUR, USD, AUD)
+	
 	$currency   = isset( $_POST['currency'] ) ? sanitize_text_field( $_POST['currency'] ) : '€';
 	$symbolsMap = array(
 		'€'     => 'EUR',
@@ -78,7 +74,7 @@ function handle_create_template() {
 	);
 	$symbolCode = isset( $symbolsMap[ $currency ] ) ? $symbolsMap[ $currency ] : 'EUR';
 
-	// Recoger enableVatRateMix y arrays para impuestos mixtos
+	
 	$enableVatRateMix = ! empty( $_POST['vatRateMix'] ) && $_POST['vatRateMix'] === '1';
 	$vatMix           = array();
 	if ( $enableVatRateMix ) {
@@ -94,9 +90,9 @@ function handle_create_template() {
 		}
 	}
 
-	// Preparar datos para la función calculate()
-	// Nota: Los valores numéricos se pasan como strings (ej. de $_POST)
-	// y la función calculate() se encarga de convertirlos a float/int.
+	
+	
+	
 	$data = array(
 		'currency'            => $currency,
 		'symbolCode'          => $symbolCode,
@@ -121,7 +117,7 @@ function handle_create_template() {
 		'extras'              => isset( $_POST['extras'] ) ? $_POST['extras'] : array(),
 		'enableOneDayCharter' => ( ! empty( $_POST['enableOneDayCharter'] ) && $_POST['enableOneDayCharter'] === '1' ),
 		'enableMixedSeasons'  => ( ! empty( $_POST['enableMixedSeasons'] ) && $_POST['enableMixedSeasons'] === '1' ),
-		// Si usas “lowSeasonNights/Rate” o “highSeasonNights/Rate”:
+		
 		'lowSeasonNights'     => isset( $_POST['lowSeasonNights'] ) ? intval( $_POST['lowSeasonNights'] ) : 0,
 		'lowSeasonRate'       => isset( $_POST['lowSeasonRate'] )
 								? floatval( str_replace( ',', '', $_POST['lowSeasonRate'] ) )
@@ -134,7 +130,7 @@ function handle_create_template() {
 		'enableVatRateMix'    => $enableVatRateMix,
 	);
 
-	// Llamamos la función de cálculo principal (del módulo 1)
+	
 	$resultArray = calcularResultadosTemplate( $data );
 
 	if ( empty( $resultArray ) ) {
@@ -143,13 +139,13 @@ function handle_create_template() {
 		wp_send_json_error( 'No calculation results available.', 400 );
 	}
 
-	// Incluir el template (HTML final)
+	
 	$templatePath = get_template_directory() . "/app_yacht/modules/template/templates/{$template}.php";
 	if ( ! file_exists( $templatePath ) ) {
 		wp_send_json_error( 'Template file not found.', 404 );
 	}
 
-	// Recoger preferencias de elementos a ocultar
+	
 	$hideElements = array(
 		'hideVAT'        => isset( $_POST['hideVAT'] ) && $_POST['hideVAT'] === '1',
 		'hideAPA'        => isset( $_POST['hideAPA'] ) && $_POST['hideAPA'] === '1',
@@ -176,9 +172,7 @@ function handle_create_template() {
 add_action( 'wp_ajax_createTemplate', 'handle_create_template' );
 add_action( 'wp_ajax_nopriv_createTemplate', 'handle_create_template' );
 
-/**
- * Función para extraer la información del yate mediante scraping
- */
+
 function extraerInformacionYate( $url ) {
 	if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 		return array(
@@ -220,11 +214,11 @@ function extraerInformacionYate( $url ) {
 	curl_close( $ch );
 
 	$dom = new DOMDocument();
-	// Suprime los warnings de HTML mal formado
+	
 	@$dom->loadHTML( $html );
 	$xpath = new DOMXPath( $dom );
 	
-	// Extracción según selectores previos
+	
 	$yachtNameNode = $xpath->query( "//div[contains(@class, 'logo-wrapper')]/a/h2" )->item( 0 );
 	$lengthNode    = $xpath->query( "//ul[contains(@class, 'yacht-summary-counts')]/li/span[contains(., 'Length : ')]" )->item( 0 );
 	$builderNode   = $xpath->query( "//ul[contains(@class, 'yacht-summary-counts')]/li/span[contains(., 'Builder : ')]" )->item( 0 );
@@ -235,7 +229,7 @@ function extraerInformacionYate( $url ) {
 	$cabinConfig   = $xpath->query( "//p/strong[contains(text(), 'Cabin Configuration')]/following-sibling::text()" )->item( 0 );
 	$imgNode       = $xpath->query( "//div[contains(@class, 'header')]/@data-background" )->item( 0 );
 	
-	// NUEVA extracción: buscar el tipo de yate en el contenedor con id "specifications-tab"
+	
 	$typeNode = $xpath->query( "//div[@id='specifications-tab']//div[contains(@class, 'text-start')]/h4" )->item( 0 );
 	$type     = $typeNode ? trim( $typeNode->textContent ) : '--';
 	

@@ -1,40 +1,21 @@
 <?php
-/**
- * ARCHIVO shared/php/validation.php
- * Implementa funciones centralizadas de validación para la aplicación App_Yacht
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Salir si se accede directamente
+	exit; 
 }
 
-/**
- * Valida si un valor es un correo electrónico válido
- *
- * @param string $email El correo electrónico a validar
- * @return bool True si es un correo válido, false en caso contrario
- */
+
 function pb_validate_email( $email ) {
 	return filter_var( $email, FILTER_VALIDATE_EMAIL ) !== false;
 }
 
-/**
- * Valida si un valor es una URL válida
- *
- * @param string $url La URL a validar
- * @return bool True si es una URL válida, false en caso contrario
- */
+
 function pb_validate_url( $url ) {
 	return filter_var( $url, FILTER_VALIDATE_URL ) !== false;
 }
 
-/**
- * Valida si un valor es un número entero válido
- *
- * @param mixed $value El valor a validar
- * @param array $options Opciones adicionales (min, max)
- * @return bool True si es un entero válido, false en caso contrario
- */
+
 function pb_validate_int( $value, $options = array() ) {
 	if ( ! is_numeric( $value ) || intval( $value ) != $value ) {
 		return false;
@@ -42,7 +23,7 @@ function pb_validate_int( $value, $options = array() ) {
 
 	$value = intval( $value );
 
-	// Validar rango si se especifica
+	
 	if ( isset( $options['min'] ) && $value < $options['min'] ) {
 		return false;
 	}
@@ -54,13 +35,7 @@ function pb_validate_int( $value, $options = array() ) {
 	return true;
 }
 
-/**
- * Valida si un valor es un número decimal válido
- *
- * @param mixed $value El valor a validar
- * @param array $options Opciones adicionales (min, max, decimals)
- * @return bool True si es un decimal válido, false en caso contrario
- */
+
 function pb_validate_float( $value, $options = array() ) {
 	if ( ! is_numeric( $value ) ) {
 		return false;
@@ -68,7 +43,7 @@ function pb_validate_float( $value, $options = array() ) {
 
 	$value = floatval( $value );
 
-	// Validar rango si se especifica
+	
 	if ( isset( $options['min'] ) && $value < $options['min'] ) {
 		return false;
 	}
@@ -77,7 +52,7 @@ function pb_validate_float( $value, $options = array() ) {
 		return false;
 	}
 
-	// Validar número de decimales si se especifica
+	
 	if ( isset( $options['decimals'] ) ) {
 		$parts = explode( '.', (string) $value );
 		if ( isset( $parts[1] ) && strlen( $parts[1] ) > $options['decimals'] ) {
@@ -88,24 +63,12 @@ function pb_validate_float( $value, $options = array() ) {
 	return true;
 }
 
-/**
- * Valida si un valor está dentro de un conjunto de valores permitidos
- *
- * @param mixed $value El valor a validar
- * @param array $allowed_values Array de valores permitidos
- * @return bool True si el valor está permitido, false en caso contrario
- */
+
 function pb_validate_in_array( $value, $allowed_values ) {
 	return in_array( $value, $allowed_values, true );
 }
 
-/**
- * Valida si un valor tiene una longitud dentro del rango especificado
- *
- * @param string $value El valor a validar
- * @param array  $options Opciones (min_length, max_length)
- * @return bool True si la longitud es válida, false en caso contrario
- */
+
 function pb_validate_length( $value, $options = array() ) {
 	$length = strlen( $value );
 
@@ -120,41 +83,23 @@ function pb_validate_length( $value, $options = array() ) {
 	return true;
 }
 
-/**
- * Valida si un valor coincide con un patrón de expresión regular
- *
- * @param string $value El valor a validar
- * @param string $pattern El patrón de expresión regular
- * @return bool True si coincide con el patrón, false en caso contrario
- */
+
 function pb_validate_regex( $value, $pattern ) {
 	return preg_match( $pattern, $value ) === 1;
 }
 
-/**
- * Valida si un valor es una fecha válida en el formato especificado
- *
- * @param string $date La fecha a validar
- * @param string $format El formato de fecha (por defecto Y-m-d)
- * @return bool True si es una fecha válida, false en caso contrario
- */
+
 function pb_validate_date( $date, $format = 'Y-m-d' ) {
 	$d = DateTime::createFromFormat( $format, $date );
 	return $d && $d->format( $format ) === $date;
 }
 
-/**
- * Valida un conjunto de datos contra un esquema de validación
- *
- * @param array $data Los datos a validar
- * @param array $schema El esquema de validación
- * @return array Array con errores encontrados (vacío si todo es válido)
- */
+
 function pb_validate_data( $data, $schema ) {
 	$errors = array();
 
 	foreach ( $schema as $field => $rules ) {
-		// Verificar si el campo es requerido
+		
 		if ( isset( $rules['required'] ) && $rules['required'] && ( ! isset( $data[ $field ] ) || $data[ $field ] === '' ) ) {
 			$errors[ $field ] = isset( $rules['error_messages']['required'] )
 				? $rules['error_messages']['required']
@@ -162,12 +107,12 @@ function pb_validate_data( $data, $schema ) {
 			continue;
 		}
 
-		// Si el campo no está presente y no es requerido, continuar
+		
 		if ( ! isset( $data[ $field ] ) ) {
 			continue;
 		}
 
-		// Validar según el tipo
+		
 		if ( isset( $rules['type'] ) ) {
 			$value = $data[ $field ];
 			$valid = true;
@@ -211,7 +156,7 @@ function pb_validate_data( $data, $schema ) {
 			}
 		}
 
-		// Validaciones personalizadas
+		
 		if ( isset( $rules['custom_validator'] ) && is_callable( $rules['custom_validator'] ) ) {
 			$result = call_user_func( $rules['custom_validator'], $data[ $field ], $data );
 			if ( $result !== true ) {

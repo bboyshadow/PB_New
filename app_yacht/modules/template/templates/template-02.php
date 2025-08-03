@@ -1,5 +1,5 @@
 <?php
-// Verificar datos recibidos
+
 if ( empty( $templateData['resultArray'] ) ) {
 	error_log( 'Empty resultArray in default-template.php' );
 	error_log( 'Template data: ' . print_r( $templateData, true ) );
@@ -12,7 +12,7 @@ $calcArr  = buildCalcSnippetArray(
 	$templateData['highSeasonText'] ?? ''
 );
 
-// Verificar datos procesados
+
 if ( empty( $calcArr['structuredBlock'] ) ) {
 	error_log( 'Empty structuredBlock in default-template.php' );
 	error_log( 'Calc array: ' . print_r( $calcArr, true ) );
@@ -189,7 +189,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 											</table>
 											<!-- Descuento -->
 											<?php 
-											// Mostrar la sección de descuento solo si hay un tipo de descuento, un valor de descuento calculado y una tasa descontada válida
+											
 											if ( ! empty( $resultData['discountType'] ) && 
 												isset( $resultData['discountValue'] ) && $resultData['discountValue'] !== '--' && 
 												isset( $resultData['discountedRate'] ) && $resultData['discountedRate'] !== '--' ) : 
@@ -200,7 +200,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 														<td align="left" valign="middle" style="padding: 5px; color: #4b4f54;">
 															<?php if ( $resultData['discountType'] === 'percentage' ) : ?>
 																Discount Rate (<?php echo htmlspecialchars( $resultData['discountAmount'] ); ?>%): -<?php echo htmlspecialchars( $resultData['discountValue'] ); ?> =
-															<?php else : // Monto fijo ?>
+															<?php else : ?>
 																Discount Rate - <?php echo htmlspecialchars( $resultData['discountAmount'] ); ?> =
 															<?php endif; ?>
 														</td>
@@ -338,7 +338,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 												<?php 
 												$hasExtras = false;
 												foreach ( $resultData['extras'] as $extra ) : 
-													// Skip empty extras
+													
 													if ( empty( $extra['name'] ) || empty( $extra['cost'] ) ) {
 														continue;
 													}

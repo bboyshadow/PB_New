@@ -1,8 +1,5 @@
 <?php
-/**
- * Template de firma de email
- * Variables disponibles: user_name, user_email, company_name, website
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

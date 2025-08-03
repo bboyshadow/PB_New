@@ -1,5 +1,5 @@
 <?php
-// Verificar datos recibidos
+
 if ( empty( $templateData['resultArray'] ) ) {
 	error_log( 'Empty resultArray in default-template.php' );
 	error_log( 'Template data: ' . print_r( $templateData, true ) );
@@ -12,7 +12,7 @@ $calcArr  = buildCalcSnippetArray(
 	$templateData['highSeasonText'] ?? ''
 );
 
-// Verificar datos procesados
+
 if ( empty( $calcArr['structuredBlock'] ) ) {
 	error_log( 'Empty structuredBlock in default-template.php' );
 	error_log( 'Calc array: ' . print_r( $calcArr, true ) );

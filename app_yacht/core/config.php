@@ -1,31 +1,17 @@
 <?php
-/**
- * Configuración centralizada para App_Yacht
- * Todas las configuraciones de módulos en un solo lugar
- * 
- * @package AppYacht
- * @version 2.0.0
- */
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Clase de configuración centralizada
- */
+
 class AppYachtConfig {
 	
-	/**
-	 * @var array Configuración por defecto
-	 */
+	
 	private static $config = null;
 	
-	/**
-	 * Obtiene toda la configuración
-	 * 
-	 * @return array
-	 */
+	
 	public static function get( $key = null ) {
 		if ( self::$config === null ) {
 			self::$config = self::loadConfig();
@@ -38,11 +24,7 @@ class AppYachtConfig {
 		return isset( self::$config[ $key ] ) ? self::$config[ $key ] : null;
 	}
 	
-	/**
-	 * Carga la configuración por defecto
-	 * 
-	 * @return array
-	 */
+	
 	private static function loadConfig() {
 		return array(
 			'app' => array(
@@ -66,7 +48,7 @@ class AppYachtConfig {
 				),
 				'timeout'         => 30,
 				'user_agent'      => 'Mozilla/5.0 (compatible; AppYachtBot/2.0)',
-				'cache_duration'  => 3600, // 1 hora
+				'cache_duration'  => 3600, 
 				'max_redirects'   => 3,
 			),
 			
@@ -100,7 +82,7 @@ class AppYachtConfig {
 				),
 				'templates_path'      => get_template_directory() . '/app_yacht/modules/template/templates/',
 				'cache_enabled'       => true,
-				'cache_duration'      => 1800, // 30 minutos
+				'cache_duration'      => 1800, 
 			),
 			
 			'mail' => array(
@@ -108,7 +90,7 @@ class AppYachtConfig {
 				'outlook_enabled'          => true,
 				'signature_enabled'        => true,
 				'max_recipients'           => 50,
-				'attachment_max_size'      => 5 * 1024 * 1024, // 5MB
+				'attachment_max_size'      => 5 * 1024 * 1024, 
 				'allowed_attachment_types' => array( 'pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png' ),
 			),
 			
@@ -117,7 +99,7 @@ class AppYachtConfig {
 				'rate_limit'           => array(
 					'enabled'      => true,
 					'max_requests' => 100,
-					'time_window'  => 3600, // 1 hora
+					'time_window'  => 3600, 
 				),
 				'allowed_capabilities' => array(
 					'edit_yacht_templates',
@@ -135,18 +117,13 @@ class AppYachtConfig {
 			'logging' => array(
 				'enabled'       => true,
 				'level'         => defined( 'WP_DEBUG' ) && WP_DEBUG ? 'debug' : 'error',
-				'max_file_size' => 5 * 1024 * 1024, // 5MB
+				'max_file_size' => 5 * 1024 * 1024, 
 				'max_files'     => 5,
 			),
 		);
 	}
 	
-	/**
-	 * Actualiza un valor de configuración
-	 * 
-	 * @param string $key
-	 * @param mixed  $value
-	 */
+	
 	public static function set( $key, $value ) {
 		if ( self::$config === null ) {
 			self::$config = self::loadConfig();
@@ -155,12 +132,7 @@ class AppYachtConfig {
 		self::$config[ $key ] = $value;
 	}
 	
-	/**
-	 * Obtiene configuración de un módulo específico
-	 * 
-	 * @param string $module
-	 * @return array|null
-	 */
+	
 	public static function getModuleConfig( $module ) {
 		return self::get( $module );
 	}

@@ -1,21 +1,7 @@
 <?php
-/**
- * WooCommerce Compatibility File
- *
- * @link https://woocommerce.com/
- *
- * @package ProBroke
- */
 
-/**
- * WooCommerce setup function.
- *
- * @link https://docs.woocommerce.com/document/third-party-custom-theme-compatibility/
- * @link https://github.com/woocommerce/woocommerce/wiki/Enabling-product-gallery-features-(zoom,-swipe,-lightbox)
- * @link https://github.com/woocommerce/woocommerce/wiki/Declaring-WooCommerce-support-in-themes
- *
- * @return void
- */
+
+
 function creativoypunto_woocommerce_setup() {
 	add_theme_support(
 		'woocommerce',
@@ -37,11 +23,7 @@ function creativoypunto_woocommerce_setup() {
 }
 add_action( 'after_setup_theme', 'creativoypunto_woocommerce_setup' );
 
-/**
- * WooCommerce specific scripts & stylesheets.
- *
- * @return void
- */
+
 function creativoypunto_woocommerce_scripts() {
 	wp_enqueue_style( 'creativoypunto-woocommerce-style', get_template_directory_uri() . '/woocommerce.css', array(), _S_VERSION );
 
@@ -61,22 +43,10 @@ function creativoypunto_woocommerce_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'creativoypunto_woocommerce_scripts' );
 
-/**
- * Disable the default WooCommerce stylesheet.
- *
- * Removing the default WooCommerce stylesheet and enqueing your own will
- * protect you during WooCommerce core updates.
- *
- * @link https://docs.woocommerce.com/document/disable-the-default-stylesheet/
- */
+
 add_filter( 'woocommerce_enqueue_styles', '__return_empty_array' );
 
-/**
- * Add 'woocommerce-active' class to the body tag.
- *
- * @param  array $classes CSS classes applied to the body tag.
- * @return array $classes modified to include 'woocommerce-active' class.
- */
+
 function creativoypunto_woocommerce_active_body_class( $classes ) {
 	$classes[] = 'woocommerce-active';
 
@@ -84,12 +54,7 @@ function creativoypunto_woocommerce_active_body_class( $classes ) {
 }
 add_filter( 'body_class', 'creativoypunto_woocommerce_active_body_class' );
 
-/**
- * Related Products Args.
- *
- * @param array $args related products args.
- * @return array $args related products args.
- */
+
 function creativoypunto_woocommerce_related_products_args( $args ) {
 	$defaults = array(
 		'posts_per_page' => 3,
@@ -102,20 +67,12 @@ function creativoypunto_woocommerce_related_products_args( $args ) {
 }
 add_filter( 'woocommerce_output_related_products_args', 'creativoypunto_woocommerce_related_products_args' );
 
-/**
- * Remove default WooCommerce wrapper.
- */
+
 remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
 remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
 
 if ( ! function_exists( 'creativoypunto_woocommerce_wrapper_before' ) ) {
-	/**
-	 * Before Content.
-	 *
-	 * Wraps all WooCommerce content in wrappers which match the theme markup.
-	 *
-	 * @return void
-	 */
+	
 	function creativoypunto_woocommerce_wrapper_before() {
 		?>
 			<main id="primary" class="site-main">
@@ -125,13 +82,7 @@ if ( ! function_exists( 'creativoypunto_woocommerce_wrapper_before' ) ) {
 add_action( 'woocommerce_before_main_content', 'creativoypunto_woocommerce_wrapper_before' );
 
 if ( ! function_exists( 'creativoypunto_woocommerce_wrapper_after' ) ) {
-	/**
-	 * After Content.
-	 *
-	 * Closes the wrapping divs.
-	 *
-	 * @return void
-	 */
+	
 	function creativoypunto_woocommerce_wrapper_after() {
 		?>
 			</main><!-- #main -->
@@ -140,27 +91,10 @@ if ( ! function_exists( 'creativoypunto_woocommerce_wrapper_after' ) ) {
 }
 add_action( 'woocommerce_after_main_content', 'creativoypunto_woocommerce_wrapper_after' );
 
-/**
- * Sample implementation of the WooCommerce Mini Cart.
- *
- * You can add the WooCommerce Mini Cart to header.php like so ...
- *
-	<?php
-		if ( function_exists( 'creativoypunto_woocommerce_header_cart' ) ) {
-			creativoypunto_woocommerce_header_cart();
-		}
-	?>
- */
+
 
 if ( ! function_exists( 'creativoypunto_woocommerce_cart_link_fragment' ) ) {
-	/**
-	 * Cart Fragments.
-	 *
-	 * Ensure cart contents update when products are added to the cart via AJAX.
-	 *
-	 * @param array $fragments Fragments to refresh via AJAX.
-	 * @return array Fragments to refresh via AJAX.
-	 */
+	
 	function creativoypunto_woocommerce_cart_link_fragment( $fragments ) {
 		ob_start();
 		creativoypunto_woocommerce_cart_link();
@@ -172,19 +106,13 @@ if ( ! function_exists( 'creativoypunto_woocommerce_cart_link_fragment' ) ) {
 add_filter( 'woocommerce_add_to_cart_fragments', 'creativoypunto_woocommerce_cart_link_fragment' );
 
 if ( ! function_exists( 'creativoypunto_woocommerce_cart_link' ) ) {
-	/**
-	 * Cart Link.
-	 *
-	 * Displayed a link to the cart including the number of items present and the cart total.
-	 *
-	 * @return void
-	 */
+	
 	function creativoypunto_woocommerce_cart_link() {
 		?>
 		<a class="cart-contents" href="<?php echo esc_url( wc_get_cart_url() ); ?>" title="<?php esc_attr_e( 'View your shopping cart', 'creativoypunto' ); ?>">
 			<?php
 			$item_count_text = sprintf(
-				/* translators: number of items in the mini cart. */
+				
 				_n( '%d item', '%d items', WC()->cart->get_cart_contents_count(), 'creativoypunto' ),
 				WC()->cart->get_cart_contents_count()
 			);
@@ -196,11 +124,7 @@ if ( ! function_exists( 'creativoypunto_woocommerce_cart_link' ) ) {
 }
 
 if ( ! function_exists( 'creativoypunto_woocommerce_header_cart' ) ) {
-	/**
-	 * Display Header Cart.
-	 *
-	 * @return void
-	 */
+	
 	function creativoypunto_woocommerce_header_cart() {
 		if ( is_cart() ) {
 			$class = 'current-menu-item';
