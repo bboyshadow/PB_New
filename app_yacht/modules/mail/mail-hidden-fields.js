@@ -36,6 +36,5 @@
         
         // Añadir el contenedor al DOM
         mailContainer.appendChild(hiddenContainer);
-        console.log('Campos ocultos para storage.js creados');
     });
 })();

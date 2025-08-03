@@ -71,7 +71,7 @@ function restoreFormContent() {
 
 (function($){
     $(document).ready(function() {
-        console.log("Módulo Mail cargado correctamente.");
+        
         
         // Inicializar el compositor de correo
         mailComposer = new MailComposer({
@@ -98,7 +98,6 @@ function restoreFormContent() {
         // Conectar con el sistema de eventos si está disponible
         if (typeof window.eventBus !== 'undefined') {
             window.eventBus.subscribe('template:created', (data) => {
-                console.log('Plantilla creada, actualizando editor de correo:', data);
                 // Aquí puedes añadir lógica para actualizar el editor con datos de la plantilla
             });
         }

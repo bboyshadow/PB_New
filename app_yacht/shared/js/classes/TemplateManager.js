@@ -39,10 +39,7 @@ class TemplateManager {
         // Inicializar sistema de eventos si está disponible
         if (typeof window.eventBus !== 'undefined') {
             this.eventBus = window.eventBus;
-            console.log('EventBus conectado a TemplateManager');
         }
-        
-        console.log('TemplateManager inicializado');
     }
     
     /**
