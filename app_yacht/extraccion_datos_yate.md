@@ -22,3 +22,25 @@ Este documento describe paso a paso cómo la aplicación obtiene la información
 - Tras recibir la respuesta JSON exitosa, `TemplateManager.createTemplate()` reemplaza el contenido del contenedor `#result` con el HTML generado, mostrando la plantilla con los datos del yate en pantalla【F:app_yacht/shared/js/classes/TemplateManager.js†L266-L270】.
 
 Este flujo asegura que, al ingresar una URL válida y presionar **Create Template**, la aplicación extrae la información del yate, la combina con los cálculos y la muestra mediante la plantilla por defecto en el frontend.
+
+# Guía para Generar un Contenedor de Información de Yate en el Frontend
+
+Esta guía describe paso a paso cómo agregar un contenedor minimalista al inicio del formulario en el frontend, utilizando `app_yacht\modules\yachtinfo\yacht-info-service.php` para extraer y presentar la información del yate de manera horizontal. El contenedor ocupará el ancho total del formulario, incluirá una imagen miniatura del yate a la izquierda y la información extraída a la derecha.
+
+## Paso 1: Modificar el Formulario en calculator.php
+- Abre `app_yacht\modules\calc\calculator.php`.
+- Agrega un div contenedor al inicio del formulario con ID `yacht-info-container` para mostrar la información extraída.
+- Asegúrate de que ocupe el ancho total (clase `row` o similar).
+
+## Paso 2: Actualizar la Lógica de Extracción en yacht-info-service.php
+- Verifica y ajusta `yacht-info-service.php` para que extraiga todos los datos necesarios (nombre, eslora, tipo, etc.) y los retorne en un formato JSON accesible.
+
+## Paso 3: Implementar Lógica en JavaScript para Cargar Datos
+- En `TemplateManager.js` o un script similar, agrega una función que se dispare al ingresar la URL en `#yachtUrl` (usando evento `input` o `change`).
+- Realiza una llamada AJAX a `yacht-info-service.php` pasando la URL.
+- Al recibir los datos, renderiza el contenedor con la imagen miniatura a la izquierda y la info en formato horizontal a la derecha.
+
+## Paso 4: Estilizar el Contenedor
+- Agrega CSS en un archivo compartido para que el contenedor sea minimalista: flexbox horizontal, imagen con tamaño fijo (e.g., 100x100px), y texto alineado a la derecha.
+
+Una vez implementado este frontend, confirma si está correcto antes de proceder a la recolección y almacenamiento de datos en la app.
