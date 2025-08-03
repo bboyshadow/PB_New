@@ -16,7 +16,7 @@ Este documento describe paso a paso cómo la aplicación obtiene la información
 
 ## 4. Preparación de datos y renderizado de la plantilla
 - `RenderEngine::createTemplate()` combina los datos del formulario con la información del yate y genera el contenido HTML y de texto de la plantilla seleccionada【F:app_yacht/modules/render/render-engine.php†L128-L160】.
-- `default-template.php` utiliza `buildYachtInfoArray()` para estructurar la información del yate y luego imprime campos como eslora, tipo, constructor, año, tripulación, cabinas y huéspedes【F:app_yacht/modules/template/templates/default-template.php†L29-L72】【F:app_yacht/modules/template/templates/default-template.php†L136-L138】.
+- `default-template.php` utiliza `buildYachtInfoArray()` y `buildCalcSnippetArray()` para estructurar la información del yate y los resultados de cálculo antes de imprimir campos como eslora, tipo, constructor, año, tripulación, cabinas y huéspedes【F:app_yacht/modules/template/templates/default-template.php†L29-L35】【F:app_yacht/modules/template/templates/default-template.php†L54-L138】.
 
 ## 5. Inserción del HTML en el frontend
 - Tras recibir la respuesta, `TemplateManager.createTemplate()` reemplaza el contenido del contenedor `#result` con el HTML generado, mostrando la plantilla con los datos del yate en pantalla【F:app_yacht/shared/js/classes/TemplateManager.js†L266-L270】.
