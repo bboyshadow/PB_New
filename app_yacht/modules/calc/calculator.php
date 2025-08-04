@@ -9,12 +9,21 @@
 			<form id="charterForm" method="POST">
 
                 <!-- Yacht Info Container -->
-                <div id="yacht-info-container" class="yacht-info-container d-flex align-items-center mb-3" style="width: 100%; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
-                    <img id="yacht-image" src="" alt="Yacht Miniature" class="me-3" style="width: 100px; height: auto; border-radius: 5px;">
-                    <div id="yacht-details" class="flex-grow-1">
-                        <!-- Extracted yacht information will be displayed here -->
-                    </div>
-                </div>
+                <?php
+                include_once __DIR__ . '/../yachtinfo/yacht-info-container.php';
+                $sampleData = [
+                    'yachtName' => 'Sample Yacht',
+                    'length' => '100 ft',
+                    'type' => 'Motor Yacht',
+                    'builder' => 'Builder Inc.',
+                    'yearBuilt' => '2020',
+                    'crew' => '5',
+                    'cabins' => '4',
+                    'guest' => '8',
+                    'imageUrl' => 'https://example.com/sample-yacht.jpg'
+                ];
+                renderYachtInfoContainer($sampleData);
+                ?>
 				
 				<!-- Currency Selection -->
 				<div class="row">

@@ -54,6 +54,10 @@ body {
 	outline: none;
 }
 
+input[type="url"] {
+	color: #e0e0e0 !important;
+}
+
 #charterForm select {
 	-webkit-appearance: none;
 	-moz-appearance: none;
