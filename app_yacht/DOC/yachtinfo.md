@@ -50,3 +50,27 @@ This document summarizes how the application retrieves yacht information from a 
 - The blur-based preview in `interfaz.js` calls `extract_yacht_info`, but no corresponding PHP handler exists in the repository; this endpoint may be planned or handled elsewhere.
 - `load-template.php` implements its own scraping via `extraerInformacionYate`, while the modern `YachtInfoService` provides a more modular approach; duplication suggests legacy vs. new architecture.
 
+## Plan para la Creación del Módulo app_yacht\modules\yachtinfo
+
+Este módulo reutilizará el método de extracción de datos del yate existente (de `YachtInfoService`), pero en lugar de crear un template personalizado para email, generará un contenedor HTML con los datos del yate y una miniatura. Esto offload la carga de extracción del módulo template, que solo usará el arreglo preparado globalmente.
+
+### Pasos de Implementación:
+
+1. **Implementación Frontend Estática:**
+   - Crear la interfaz estática para el contenedor HTML que muestre los datos del yate (nombre, longitud, tipo, constructor, año, etc.) y una miniatura.
+   - Asegurar que el diseño respete el estilo general de la app.
+   - Iterar hasta que el diseño cumpla con las expectativas y coherente con el de la app ya implementado.
+
+2. **Configuración del Envío de Payload:**
+   - Configurar el envío de datos desde el frontend (e.g., URL del yate) vía AJAX o fetch al backend del nuevo módulo.
+
+3. **Implementación Backend:**
+   - Usar `YachtInfoService` para extraer y procesar los datos del yate.
+   - Generar el HTML del contenedor con los datos extraídos y la miniatura.
+   - Guardar un arreglo global con los datos del yate para uso en otros módulos.
+
+4. **Integración y Pruebas:**
+   - Imprimir los datos en el contenedor HTML.
+   - Asegurar que el arreglo global esté disponible para módulos como template, que lo usarán directamente sin extraer datos nuevamente.
+   - Probar la reutilización de código y la offload de responsabilidades.
+
