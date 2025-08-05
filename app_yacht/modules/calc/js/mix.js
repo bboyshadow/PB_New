@@ -319,7 +319,7 @@ function applyMix() {
     // Crear FormData
     const formData = new FormData();
     formData.append('action', 'calculate_mix');
-    formData.append('nonce', ajaxData.nonce); // Añadir nonce para seguridad CSRF
+    formData.append('nonce', ajaxData?.nonce || ''); // Añadir nonce para seguridad CSRF
     formData.append('mixnights', mixNights);
     formData.append('lowSeasonRate', lowSeasonRate);
     formData.append('lowSeasonNights', lowSeasonNights);

@@ -126,60 +126,96 @@ class AppYachtBootstrap {
 	}
 	
 	
-	public static function handleCalculateCharter() {
-		try {
-			$calcService = self::getContainer()->get( 'calc_service' );
-			$result      = $calcService->calculateCharter( $_POST );
-			wp_send_json_success( $result );
-		} catch ( Exception $e ) {
-			error_log( 'Calculate Charter Error: ' . $e->getMessage() );
-			wp_send_json_error( 'Error en cálculo: ' . $e->getMessage() );
-		}
-	}
+        public static function handleCalculateCharter() {
+                try {
+                        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'calculate_nonce' ) ) {
+                                wp_send_json_error( array(
+                                        'message' => 'Security check failed',
+                                        'code'    => 'security_error',
+                                ) );
+                                return;
+                        }
+
+                        $calcService = self::getContainer()->get( 'calc_service' );
+                        $result      = $calcService->calculateCharter( $_POST );
+                        wp_send_json_success( $result );
+                } catch ( Exception $e ) {
+                        error_log( 'Calculate Charter Error: ' . $e->getMessage() );
+                        wp_send_json_error( 'Error en cálculo: ' . $e->getMessage() );
+                }
+        }
 	
 	
-	public static function handleCalculateMix() {
-		try {
-			$calcService = self::getContainer()->get( 'calc_service' );
-			$result      = $calcService->calculateMix( $_POST );
-			wp_send_json_success( $result );
-		} catch ( Exception $e ) {
-			error_log( 'Calculate Mix Error: ' . $e->getMessage() );
-			wp_send_json_error( 'Error en cálculo mix: ' . $e->getMessage() );
-		}
-	}
+        public static function handleCalculateMix() {
+                try {
+                        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'mix_calculate_nonce' ) ) {
+                                wp_send_json_error( array(
+                                        'message' => 'Security check failed',
+                                        'code'    => 'security_error',
+                                ) );
+                                return;
+                        }
+
+                        $calcService = self::getContainer()->get( 'calc_service' );
+                        $result      = $calcService->calculateMix( $_POST );
+                        wp_send_json_success( $result );
+                } catch ( Exception $e ) {
+                        error_log( 'Calculate Mix Error: ' . $e->getMessage() );
+                        wp_send_json_error( 'Error en cálculo mix: ' . $e->getMessage() );
+                }
+        }
 	
 	
-	public static function handleLoadTemplatePreview() {
-		try {
-			$renderEngine = self::getContainer()->get( 'render_engine' );
-			$result       = $renderEngine->loadTemplatePreview( $_POST );
-			wp_send_json_success( $result );
-		} catch ( Exception $e ) {
-			error_log( 'Load Template Preview Error: ' . $e->getMessage() );
-			wp_send_json_error( 'Error cargando template: ' . $e->getMessage() );
-		}
-	}
+        public static function handleLoadTemplatePreview() {
+                try {
+                        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
+                                wp_send_json_error( array(
+                                        'message' => 'Security check failed',
+                                        'code'    => 'security_error',
+                                ) );
+                                return;
+                        }
+
+                        $renderEngine = self::getContainer()->get( 'render_engine' );
+                        $result       = $renderEngine->loadTemplatePreview( $_POST );
+                        wp_send_json_success( $result );
+                } catch ( Exception $e ) {
+                        error_log( 'Load Template Preview Error: ' . $e->getMessage() );
+                        wp_send_json_error( 'Error cargando template: ' . $e->getMessage() );
+                }
+        }
 	
-	
-	public static function handleCreateTemplate() {
-		try {
-			$renderEngine     = self::getContainer()->get( 'render_engine' );
-			$yachtInfoService = self::getContainer()->get( 'yacht_info_service' );
-			
-			
-			$yachtData = null;
-			if ( ! empty( $_POST['yachtUrl'] ) ) {
-				$yachtData = $yachtInfoService->extractYachtInfo( $_POST['yachtUrl'] );
-			}
-			
-			$result = $renderEngine->createTemplate( $_POST, $yachtData );
-			wp_send_json_success( $result );
-		} catch ( Exception $e ) {
-			error_log( 'Create Template Error: ' . $e->getMessage() );
-			wp_send_json_error( 'Error creando template: ' . $e->getMessage() );
-		}
-	}
+
+        public static function handleCreateTemplate() {
+                try {
+                        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
+                                wp_send_json_error( array(
+                                        'message' => 'Security check failed',
+                                        'code'    => 'security_error',
+                                ) );
+                                return;
+                        }
+
+                        $renderEngine     = self::getContainer()->get( 'render_engine' );
+                        $yachtInfoService = self::getContainer()->get( 'yacht_info_service' );
+
+
+                        $yachtData = null;
+                        if ( ! empty( $_POST['yachtUrl'] ) ) {
+                                $yachtData = $yachtInfoService->extractYachtInfo( $_POST['yachtUrl'] );
+                        }
+
+                        $result = $renderEngine->createTemplate( $_POST, $yachtData );
+                        wp_send_json_success( $result );
+                } catch ( Exception $e ) {
+                        error_log( 'Create Template Error: ' . $e->getMessage() );
+                        wp_send_json_error( 'Error creando template: ' . $e->getMessage() );
+                }
+        }
 	
 	public static function handleExtractYachtInfo() {
 		try {
