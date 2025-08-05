@@ -48,7 +48,7 @@ async function handleCalculateButtonClick() {
         // Crear FormData
         const formData = new FormData();
         formData.append('action', 'calculate_charter');
-        formData.append('nonce', ajaxCalculatorData.nonce);
+        formData.append('nonce', ajaxCalculatorData?.nonce || '');
 
         // Recolectar currency
         const currency = document.getElementById('currency')?.value || '';

@@ -49,7 +49,7 @@ class TemplateManager {
     collectFormData() {
         const formData = new FormData();
         formData.append('action', 'createTemplate');
-        formData.append('nonce', this.config.nonce);
+        formData.append('nonce', this.config?.nonce || '');
         
         // Recolectar URL del yate
         const yachtUrl = document.getElementById('yacht-url')?.value.trim() || '';
@@ -326,7 +326,7 @@ class TemplateManager {
             // Crear FormData para la petición
             const formData = new FormData();
             formData.append('action', 'load_template');
-            formData.append('nonce', this.config.nonce);
+            formData.append('nonce', this.config?.nonce || '');
             formData.append('templateId', templateId);
             
             // Enviar petición usando fetch con async/await
