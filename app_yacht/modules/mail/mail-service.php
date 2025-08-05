@@ -31,7 +31,6 @@ class MailService implements MailServiceInterface {
 				return $validation;
 			}
 			
-			
 			$data = ValidatorHelper::sanitizeInputData( $data );
 			
 			
@@ -61,7 +60,10 @@ class MailService implements MailServiceInterface {
 			
 			
 			$outlookData = $this->prepareOutlookData( $data, $userId );
-			
+			if ( is_wp_error( $outlookData ) ) {
+				return $outlookData;
+			}
+
 			
 			$result = pb_outlook_send_mail( $outlookData, $userId );
 			
@@ -252,9 +254,13 @@ class MailService implements MailServiceInterface {
 		}
 		
 		
-		if ( ! empty( $data['attachments'] ) ) {
-			$outlookData['attachments'] = $this->processAttachments( $data['attachments'] );
-		}
+                if ( ! empty( $data['attachments'] ) ) {
+                        $attachments = $this->processAttachments( $data['attachments'] );
+                        if ( is_wp_error( $attachments ) ) {
+                                return $attachments;
+                        }
+                        $outlookData['attachments'] = $attachments;
+                }
 		
 		return $outlookData;
 	}
