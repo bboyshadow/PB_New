@@ -52,8 +52,13 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			}
 			
 			// Realizar scraping
+			$cachedData = $this->getCachedData( $url );
+			if ( $cachedData ) {
+				return $cachedData;
+			}
+
 			$data = $this->performScraping( $url );
-			
+
 			if ( is_wp_error( $data ) ) {
 				error_log('YachtInfo: Scraping error: ' . $data->get_error_message());
 				return $data;
@@ -67,6 +72,7 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			
 			error_log('YachtInfo: Extraction successful, data: ' . print_r($data, true));
 			pb_log_security_event( get_current_user_id(), 'yacht_info_extracted', [ 'url' => $url, 'extracted_fields' => count( $data ) ] );
+			$this->setCachedData( $url, $data );
 			return $data;
 			
 		} catch ( Exception $e ) {
