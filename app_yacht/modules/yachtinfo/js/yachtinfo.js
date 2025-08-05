@@ -33,7 +33,7 @@ jQuery(document).ready(function($) {
                 
                 showError(
                     urlInput, 
-                    '<strong>Domain not supported:</strong> "' + domain + '" is not in our list of supported websites.<br>Please use a URL from one of these supported yacht charter websites:<br><span class="supported-domains">charterworld.com, yachtcharterfleet.com, burgessyachts.com, northropandjohnson.com, fraseryachts.com, edmistoncompany.com, imperial-yachts.com, carolineyacht.com, camperandnicholsons.com, bluewatery.com, cyaeb.com</span>'
+                    '<strong>Domain not supported:</strong> "' + domain + '" is not in our list of supported websites.<br>Please use a URL from the supported yacht charter website:<br><span class="supported-domains">cyaeb.com</span>'
                 );
                 return;
             }
@@ -144,16 +144,6 @@ function isValidUrl(string) {
         
         // Lista de dominios permitidos (debe coincidir con la lista en yacht-info-service.php)
         const allowedDomains = [
-            'charterworld.com',
-            'yachtcharterfleet.com',
-            'burgessyachts.com',
-            'northropandjohnson.com',
-            'fraseryachts.com',
-            'edmistoncompany.com',
-            'imperial-yachts.com',
-            'carolineyacht.com',
-            'camperandnicholsons.com',
-            'bluewatery.com',
             'cyaeb.com'
         ];
         

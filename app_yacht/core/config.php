@@ -35,16 +35,6 @@ class AppYachtConfig {
 			
 			'scraping' => array(
 				'allowed_domains' => array(
-					'charterworld.com',
-					'yachtcharterfleet.com',
-					'burgessyachts.com',
-					'northropandjohnson.com',
-					'fraseryachts.com',
-					'edmistoncompany.com',
-					'imperial-yachts.com',
-					'carolineyacht.com',
-					'camperandnicholsons.com',
-					'bluewatery.com',
 					'cyaeb.com',
 				),
 				'timeout'         => 30,
