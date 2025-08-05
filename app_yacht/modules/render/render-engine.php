@@ -24,12 +24,8 @@ class RenderEngine implements RenderEngineInterface {
 	}
 	
 	
-        public function render( $template, array $data, $format = 'html' ) {
-                if ( ! in_array( $template, $this->getAvailableTemplates(), true ) ) {
-                        return new WP_Error( 'invalid_template', "Plantilla '{$template}' no permitida" );
-                }
-
-                try {
+	public function render( $template, array $data, $format = 'html' ) {
+		try {
 			
 			if ( ! $this->templateExists( $template ) ) {
 				throw new Exception( "Plantilla '{$template}' no encontrada" );
@@ -82,13 +78,10 @@ class RenderEngine implements RenderEngineInterface {
 				return new WP_Error( 'missing_template', 'Nombre de plantilla requerido' );
 			}
 			
-                        $templateName = sanitize_text_field( $data['template'] );
-
-                        if ( ! in_array( $templateName, $this->getAvailableTemplates(), true ) ) {
-                                return new WP_Error( 'invalid_template', "Plantilla '{$templateName}' no permitida" );
-                        }
-
-                        $previewData = $this->generatePreviewData( $data );
+			$templateName = sanitize_text_field( $data['template'] );
+			
+			
+			$previewData = $this->generatePreviewData( $data );
 			
 			
 			$htmlContent = $this->render( $templateName, $previewData, 'html' );
