@@ -7,48 +7,6 @@ if ( ! defined( '_S_VERSION' ) ) {
 }
 
 
-
-add_action( 'wp_ajax_gmail_auth', 'handle_gmail_auth_request' );
-function handle_gmail_auth_request() {
-	check_ajax_referer( 'mail_nonce', 'security' );
-	
-	if ( ! is_user_logged_in() ) {
-		wp_send_json_error( 'Usuario no autenticado', 401 );
-	}
-	
-	try {
-		include get_template_directory() . '/app_mail/gmail/oauth.php';
-		wp_die();
-	} catch ( Exception $e ) {
-		wp_send_json_error( $e->getMessage(), 500 );
-	}
-}
-
-add_action( 'init', 'app_mail_custom_routes' );
-function app_mail_custom_routes() {
-	add_rewrite_rule(
-		'^app-mail/gmail-oauth/?$',
-		'index.php?gmail_oauth=1',
-		'top'
-	);
-}
-
-add_filter( 'query_vars', 'app_mail_query_vars' );
-function app_mail_query_vars( $vars ) {
-	$vars[] = 'gmail_oauth';
-	return $vars;
-}
-
-add_action( 'template_include', 'app_mail_handle_routes' );
-function app_mail_handle_routes( $template ) {
-	if ( get_query_var( 'gmail_oauth' ) ) {
-		return get_template_directory() . '/app_mail/gmail/oauth.php';
-	}
-	return $template;
-}
-
-
-
 function creativoypunto_setup() {
 		
 		load_theme_textdomain( 'creativoypunto', get_template_directory() . '/languages' );
