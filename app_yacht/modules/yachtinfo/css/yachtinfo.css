@@ -1,0 +1,220 @@
+/**
+ * Yacht Info Module CSS
+ * Estilos específicos para el módulo de información de yates
+ */
+
+/* Contenedor principal */
+#yacht-info-container {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Estilos para mensajes de error */
+.yacht-error-message {
+    border-left: 4px solid #dc3545;
+    padding: 12px 15px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    background-color: rgba(220, 53, 69, 0.15);
+    border-radius: 0 4px 4px 0;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+.yacht-error-message i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: #ff4d4d;
+}
+
+/* Animación para mensajes de error */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos para la lista de dominios soportados */
+.supported-domains {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #8cffb2;
+    word-wrap: break-word;
+}
+
+/* Estilos para el campo de URL */
+#yacht-url {
+    background-color: #272727;
+    color: #e0e0e0;
+    border: 1px solid #444444;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+#yacht-url:focus {
+    background-color: #060c06;
+    border-color: #5cb85c;
+    box-shadow: 0 0 0 0.2rem rgba(92, 184, 92, 0.25);
+    outline: none;
+}
+
+#yacht-url.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+/* Estilos para el botón Get Info */
+#get-yacht-info {
+    background-color: #0099cc;
+    border-color: #0099cc;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#get-yacht-info:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    transform: translateY(-2px);
+}
+
+#get-yacht-info:active {
+    transform: translateY(0);
+}
+
+/* Estilos para la información del yate */
+.yacht-info-header {
+    background-color: #002c3e;
+    color: white;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 4px solid #0099cc;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.yacht-info-header div {
+    margin: 5px 10px;
+    display: flex;
+    align-items: center;
+}
+
+.yacht-info-header i {
+    margin-right: 5px;
+    color: #0099cc;
+}
+
+.yacht-info-body {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.yacht-image-container {
+    width: 30%;
+    min-width: 280px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.yacht-image {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.yacht-name {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.5rem;
+    color: #0099cc;
+}
+
+.yacht-details {
+    flex: 1;
+    min-width: 280px;
+}
+
+/* Estilos para las pestañas */
+.yacht-info-tabs {
+    border-bottom: 1px solid #495057;
+}
+
+.yacht-info-tabs .nav-link {
+    color: #0099cc;
+    background: transparent;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: color 0.3s, border-bottom 0.3s;
+}
+
+.yacht-info-tabs .nav-link:hover {
+    color: #ffffff;
+    border-bottom: 2px solid #0099cc;
+}
+
+.yacht-info-tabs .nav-link.active {
+    color: #ffffff;
+    background: transparent;
+    border-bottom: 2px solid #0099cc;
+}
+
+/* Estilos para el contenido de las pestañas */
+.tab-content {
+    padding: 15px 0;
+}
+
+.tab-pane .d-flex {
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.tab-pane span {
+    margin-bottom: 10px;
+}
+
+.tab-pane i {
+    color: #0099cc;
+    margin-right: 5px;
+}
+
+.tab-pane strong {
+    margin-right: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .yacht-info-body {
+        flex-direction: column;
+    }
+    
+    .yacht-image-container {
+        width: 100%;
+        margin-right: 0;
+    }
+}

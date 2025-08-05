@@ -8,22 +8,19 @@
 			<!-- Calculator Form -->
 			<form id="charterForm" method="POST">
 
-                <!-- Yacht Info Container -->
-                <?php
-                include_once __DIR__ . '/../yachtinfo/yacht-info-container.php';
-                $sampleData = [
-                    'yachtName' => 'Sample Yacht',
-                    'length' => '100 ft',
-                    'type' => 'Motor Yacht',
-                    'builder' => 'Builder Inc.',
-                    'yearBuilt' => '2020',
-                    'crew' => '5',
-                    'cabins' => '4',
-                    'guest' => '8',
-                    'imageUrl' => 'https://example.com/sample-yacht.jpg'
-                ];
-                renderYachtInfoContainer($sampleData);
-                ?>
+                <!-- Yacht Info Module -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <label for="yacht-url" class="form-label">Yacht URL</label>
+                        <input type="url" class="form-control" id="yacht-url" placeholder="Enter yacht listing URL...">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" id="get-yacht-info" class="btn btn-primary">Get Info</button>
+                    </div>
+                </div>
+                
+                <!-- Container for yacht information -->
+                <div id="yacht-info-container" style="display: none;"></div>
 				
 				<!-- Currency Selection -->
 				<div class="row">
@@ -186,10 +183,7 @@
 						<button type="button" class="btn btn-primary w-100 mt-4" id="copyButton" onclick="copyToClipboard()" disabled>Copy Result</button>
 					</div>
 
-                                         <!-- Campo Yacht URL -->
-                                       <div class="col-12 col-md-3 col-lg-2 p-1">
-                                               <input type="url" id="yachtUrl" name="yachtUrl" class="form-control w-100 mt-4" placeholder="Yacht URL" pattern="https?://.+" required>
-                                       </div>
+                                         <!-- Yacht URL is handled by the yachtinfo module above -->
 
 					<!-- Botón Create Template -->
 					<div class="col-6 col-md-3 col-lg-2 p-1">

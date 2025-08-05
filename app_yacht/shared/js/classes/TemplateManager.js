@@ -52,7 +52,7 @@ class TemplateManager {
         formData.append('nonce', this.config.nonce);
         
         // Recolectar URL del yate
-        const yachtUrl = document.getElementById('yachtUrl')?.value.trim() || '';
+        const yachtUrl = document.getElementById('yacht-url')?.value.trim() || '';
         formData.append('yachtUrl', yachtUrl);
         
         // Recolectar tipo de plantilla

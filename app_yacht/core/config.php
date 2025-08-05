@@ -45,6 +45,7 @@ class AppYachtConfig {
 					'carolineyacht.com',
 					'camperandnicholsons.com',
 					'bluewatery.com',
+					'cyaeb.com',
 				),
 				'timeout'         => 30,
 				'user_agent'      => 'Mozilla/5.0 (compatible; AppYachtBot/2.0)',

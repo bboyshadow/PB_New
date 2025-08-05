@@ -18,7 +18,7 @@ function validateFields(isApplyMix = false) {
     let requiredFields = isApplyMix
         ? form.querySelectorAll('#currency[required], #lowSeasonNights[required], #lowSeasonRate[required], #highSeasonNights[required], #highSeasonRate[required]')
         : isFromCalculateButton
-            ? Array.from(form.querySelectorAll('[required]')).filter(field => field.id !== 'yachtUrl')
+            ? Array.from(form.querySelectorAll('[required]')).filter(field => field.id !== 'yacht-url')
             : form.querySelectorAll('[required]');
 
     let isValid = true;

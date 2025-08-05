@@ -265,7 +265,7 @@ function handleTemplateError(error) {
 }
 
 function toggleCreateTemplateButton() {
-    const yachtUrlInput = document.getElementById('yachtUrl');
+    const yachtUrlInput = document.getElementById('yacht-url');
     const createTemplateButton = document.getElementById('createTemplateButton');
     if (!yachtUrlInput || !createTemplateButton) return;
     const urlPattern = /^https?:\/\/(?:[\w-]+\.)+[\w-]{2,}(\/\S*)?$/;
@@ -342,8 +342,8 @@ function onTemplateChange() {
         return;
     }
 
-    const yachtUrl = document.getElementById('yachtUrl')?.value.trim() || '';
-    if (!yachtUrl) {
+    const yachtUrl = document.getElementById('yacht-url')?.value.trim() || '';
+        if (!yachtUrl) {
         const params = new URLSearchParams({
             action: 'load_template_preview',
             template: selectedTemplate,
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Actualizar la propia clase TemplateManager si es necesario
             templateManager.toggleOneDayCharter(this.checked); 
             
-            const yachtUrl = document.getElementById('yachtUrl')?.value.trim();
+            const yachtUrl = document.getElementById('yacht-url')?.value.trim();
             if (yachtUrl) {
                 templateManager.createTemplate();
             }
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const yachtUrlInput = document.getElementById('yachtUrl');
+    const yachtUrlInput = document.getElementById('yacht-url');
     if (yachtUrlInput) {
         yachtUrlInput.addEventListener('input', debounce(() => {
             toggleCreateTemplateButton();

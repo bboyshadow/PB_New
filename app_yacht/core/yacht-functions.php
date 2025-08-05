@@ -89,6 +89,18 @@ function app_yacht_scripts() {
 		wp_enqueue_script( 'yacht-mail-script', get_template_directory_uri() . '/app_yacht/modules/mail/mail.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'yacht-mail-script';
 
+		wp_enqueue_script( 'yachtinfo-script', get_template_directory_uri() . '/app_yacht/modules/yachtinfo/js/yachtinfo.js', $dependencies, '1.0.0', true );
+		$dependencies[] = 'yachtinfo-script';
+
+		wp_localize_script(
+			'yachtinfo-script',
+			'yachtinfo_ajax',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'yachtinfo_nonce' ),
+			) 
+		);
+
 		wp_enqueue_script( 'yacht-outlook-ajax', get_template_directory_uri() . '/app_yacht/modules/mail/outlook/outlook-ajax.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'yacht-outlook-ajax';
 
@@ -123,6 +135,7 @@ function app_yacht_css() {
 		wp_enqueue_style( 'app-yacht-styles', get_template_directory_uri() . '/app_yacht/shared/css/app_yacht.css', array(), '1.0.0' );
 		wp_enqueue_style( 'yacht-mail-styles', get_template_directory_uri() . '/app_yacht/modules/mail/mail.css', array(), '1.0.0' );
 		wp_enqueue_style( 'msp-styles', get_template_directory_uri() . '/app_yacht/modules/mail/signature/msp-styles.css', array(), '1.0.0' );
+		wp_enqueue_style( 'yacht-info-styles', get_template_directory_uri() . '/app_yacht/modules/yachtinfo/css/yachtinfo.css', array(), '1.0.0' );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'app_yacht_css' );
@@ -154,8 +167,8 @@ add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
 add_action( 'wp_ajax_nopriv_calculate_mix', 'handle_calculate_mix' );
 add_action( 'wp_ajax_load_template_preview', 'handle_load_template_preview' );
 add_action( 'wp_ajax_nopriv_load_template_preview', 'handle_load_template_preview' );
-add_action( 'wp_ajax_createTemplate', 'handle_create_template' );
-add_action( 'wp_ajax_nopriv_createTemplate', 'handle_create_template' );
+// add_action( 'wp_ajax_createTemplate', 'handle_create_template' );
+// add_action( 'wp_ajax_nopriv_createTemplate', 'handle_create_template' );
 add_action( 'wp_ajax_pb_outlook_send_mail', 'pb_outlook_send_mail_ajax_handler' );
 add_action( 'wp_ajax_nopriv_pb_outlook_send_mail', 'pb_outlook_send_mail_ajax_handler' );
 add_action( 'wp_ajax_pb_outlook_disconnect', 'pb_outlook_disconnect_ajax_handler' );

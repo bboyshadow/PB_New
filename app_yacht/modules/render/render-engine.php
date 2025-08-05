@@ -47,7 +47,14 @@ class RenderEngine implements RenderEngineInterface {
 			}
 			
 			
-			$renderedContent = $this->processVariables( $templateContent, $data );
+			// Procesar el template según su tipo
+			if ( $this->isPhpTemplate( $template ) ) {
+				// Para templates PHP, usar include con variables disponibles
+				$renderedContent = $this->renderPhpTemplate( $template, $data );
+			} else {
+				// Para templates de texto, procesar variables con sintaxis {{}}
+				$renderedContent = $this->processVariables( $templateContent, $data );
+			}
 			
 			
 			if ( $this->config['cache_enabled'] ) {
@@ -291,19 +298,35 @@ class RenderEngine implements RenderEngineInterface {
 			'generated_at' => current_time( 'mysql' ),
 		);
 		
-		
+		// Preparar datos del yate en el formato que espera el template
 		if ( $yachtData && ! is_wp_error( $yachtData ) ) {
 			$data['yacht']        = $yachtData;
+			$data['yachtInfo']    = $yachtData; // Para compatibilidad con templates legacy
 			$data['yacht_name']   = $yachtData['name'] ?? 'Yacht';
 			$data['yacht_length'] = $yachtData['length'] ?? '';
 			$data['yacht_guests'] = $yachtData['guests'] ?? '';
 			$data['yacht_cabins'] = $yachtData['cabins'] ?? '';
 		}
 		
-		
+		// Agregar datos de cálculo si están disponibles
 		if ( isset( $formData['calculationResult'] ) ) {
 			$data['calculation'] = $formData['calculationResult'];
+			$data['resultArray'] = $formData['calculationResult']; // Para compatibilidad con templates legacy
 		}
+		
+		// Agregar textos de temporada
+		$data['lowSeasonText'] = $formData['lowSeasonText'] ?? '';
+		$data['highSeasonText'] = $formData['highSeasonText'] ?? '';
+		
+		// Agregar flags de elementos ocultos
+		$data['hideElements'] = array(
+			'hideVAT'        => isset( $formData['hideVAT'] ) && $formData['hideVAT'] === '1',
+			'hideAPA'        => isset( $formData['hideAPA'] ) && $formData['hideAPA'] === '1',
+			'hideRelocation' => isset( $formData['hideRelocation'] ) && $formData['hideRelocation'] === '1',
+			'hideSecurity'   => isset( $formData['hideSecurity'] ) && $formData['hideSecurity'] === '1',
+			'hideExtras'     => isset( $formData['hideExtras'] ) && $formData['hideExtras'] === '1',
+			'hideGratuity'   => isset( $formData['hideGratuity'] ) && $formData['hideGratuity'] === '1',
+		);
 		
 		return $data;
 	}
@@ -398,5 +421,36 @@ class RenderEngine implements RenderEngineInterface {
 				'error'   => $e->getMessage(),
 			);
 		}
+	}
+	
+	/**
+	 * Determina si un template es un archivo PHP
+	 */
+	private function isPhpTemplate( $template ) {
+		return pathinfo( $template, PATHINFO_EXTENSION ) === 'php';
+	}
+	
+	/**
+	 * Renderiza un template PHP con variables disponibles
+	 */
+	private function renderPhpTemplate( $template, array $data ) {
+		$templatePath = $this->getTemplatePath( $template );
+		
+		if ( ! file_exists( $templatePath ) ) {
+			throw new Exception( "Template PHP no encontrado: {$templatePath}" );
+		}
+		
+		// Extraer variables para que estén disponibles en el template
+		extract( $data );
+		
+		// Crear $templateData para compatibilidad con templates legacy
+		$templateData = $data;
+		
+		// Capturar la salida del template
+		ob_start();
+		include $templatePath;
+		$content = ob_get_clean();
+		
+		return $content;
 	}
 }
