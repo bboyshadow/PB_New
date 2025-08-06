@@ -104,8 +104,12 @@ class AppYachtBootstrap {
 		add_action( 'wp_ajax_calculate_charter', array( __CLASS__, 'handleCalculateCharter' ) );
 		add_action( 'wp_ajax_nopriv_calculate_charter', array( __CLASS__, 'handleCalculateCharter' ) );
 		
-		add_action( 'wp_ajax_calculate_mix', array( __CLASS__, 'handleCalculateMix' ) );
-		add_action( 'wp_ajax_nopriv_calculate_mix', array( __CLASS__, 'handleCalculateMix' ) );
+                add_action( 'wp_ajax_calculate_mix', array( __CLASS__, 'handleCalculateMix' ) );
+                add_action( 'wp_ajax_nopriv_calculate_mix', array( __CLASS__, 'handleCalculateMix' ) );
+
+                // Minicalculadora de relocation
+                add_action( 'wp_ajax_calculate_relocation', array( __CLASS__, 'handleCalculateRelocation' ) );
+                add_action( 'wp_ajax_nopriv_calculate_relocation', array( __CLASS__, 'handleCalculateRelocation' ) );
 		
 		add_action( 'wp_ajax_load_template_preview', array( __CLASS__, 'handleLoadTemplatePreview' ) );
 		add_action( 'wp_ajax_nopriv_load_template_preview', array( __CLASS__, 'handleLoadTemplatePreview' ) );
@@ -164,6 +168,21 @@ class AppYachtBootstrap {
                 } catch ( Exception $e ) {
                         error_log( 'Calculate Mix Error: ' . $e->getMessage() );
                         wp_send_json_error( 'Error en cálculo mix: ' . $e->getMessage() );
+                }
+        }
+
+        public static function handleCalculateRelocation() {
+                try {
+                        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'relocation_calculate_nonce' ) ) {
+                                wp_send_json_error( array( 'message' => 'Security check failed', 'code' => 'security_error' ) );
+                                return;
+                        }
+                        // Incluir el script de cálculo
+                        include_once __DIR__ . '/../modules/calc/php/calculateRelocation.php';
+                } catch ( Exception $e ) {
+                        error_log( 'Calculate Relocation Error: ' . $e->getMessage() );
+                        wp_send_json_error( 'Error en cálculo de relocation: ' . $e->getMessage() );
                 }
         }
 	
