@@ -261,7 +261,6 @@
         <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/relocationAuto.js"></script>
         <script>
         window.ajaxRelocationData = {
-            // Use existing calculator AJAX URL when available, otherwise fall back to admin-ajax.php
             ajaxurl: ( typeof ajaxCalculatorData !== 'undefined' ) ? ajaxCalculatorData.ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>',
             nonce: '<?php echo wp_create_nonce( 'relocation_calculate_nonce' ); ?>'
         };
