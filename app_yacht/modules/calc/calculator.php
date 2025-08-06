@@ -260,6 +260,7 @@
         <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/promotion.js"></script>
         <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/relocationAuto.js"></script>
         <script>
+        // AJAX configuration for relocation fee calculation
         window.ajaxRelocationData = {
             ajaxurl: ( typeof ajaxCalculatorData !== 'undefined' ) ? ajaxCalculatorData.ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>',
             nonce: '<?php echo wp_create_nonce( 'relocation_calculate_nonce' ); ?>'
