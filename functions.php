@@ -26,6 +26,7 @@ function creativoypunto_setup() {
 				'menu-1' => esc_html__( 'Primary', 'creativoypunto' ),
 			)
 		);
+		register_nav_menu( 'main-menu', esc_html__( 'Main menu', 'creativoypunto' ) );
 
 		
 		add_theme_support(

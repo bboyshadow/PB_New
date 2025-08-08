@@ -78,6 +78,3 @@ class bootstrap_5_menu_creativoypunto extends Walker_Nav_menu {
 }
 
 
-register_nav_menu( 'main-menu', 'Main menu' );
-
-
