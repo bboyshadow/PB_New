@@ -57,14 +57,16 @@
 					<div class="col-md-12">
 						<div class="d-flex flex-wrap checkbox-taxas">
 							<!-- Each Checkbox with Label -->
-							 <label class="me-4 form-check-label">
-								<input type="checkbox" id="vatRateMix" name="vatRateMix" value="1" onchange="toggleCalcOptionalField('vatCountriesContainer')" aria-controls="vatCountriesContainer" aria-expanded="false"> VAT Rate Mix:
-								<button type="button" class="btn btn-sm btn-outline-primary ms-1 btn-add-vat-country" id="addVatCountryBtn" style="display: none;" onclick="VatRateMix.addCountryField()">
+
+							<label class="me-4 form-check-label">
+								<input type="checkbox" id="vatCheck" onchange="toggleCalcOptionalField('vatField')" aria-controls="vatField" aria-expanded="false"> VAT Rate: 
+								<div class="form-check form-switch m-0 vat-mix-controls" style="display:none;">
+									<input class="form-check-input" type="checkbox" id="vatRateMix" name="vatRateMix" aria-controls="vatCountriesContainer" title="Prorated Mix" onchange="toggleCalcOptionalField('vatCountriesContainer')" aria-expanded="false">
+									<label class="form-check-label small ms-1" for="vatRateMix">Mix</label>
+								</div>
+								<button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-add-vat-country vat-mix-controls" id="addVatCountryBtn" style="display: none;" onclick="VatRateMix.addCountryField()">
 									<i class="fas fa-plus"></i>
 								</button>
-							</label>
-							<label class="me-4 form-check-label">
-								<input type="checkbox" id="vatCheck" onchange="toggleCalcOptionalField('vatField')" aria-controls="vatField" aria-expanded="false"> VAT Rate:
 							</label>
 							<label class="me-4 form-check-label">
 								<input type="checkbox" id="apaCheck" onchange="toggleCalcOptionalField('apaField')" aria-controls="apaField" aria-expanded="false"> APA :
@@ -74,6 +76,7 @@
 							</label>
 							<label class="me-4 form-check-label">
 								<input type="checkbox" id="relocationCheck" onchange="toggleCalcOptionalField('relocationField')" aria-controls="relocationField" aria-expanded="false"> Relocation Fee:
+								
 							</label>
 							<label class="me-4 form-check-label">
 								<input type="checkbox" id="securityCheck" onchange="toggleCalcOptionalField('securityField')" aria-controls="securityField" aria-expanded="false"> Security Deposit:
@@ -86,11 +89,58 @@
 				<!-- Container for Mixed Taxes country fields -->
 				<div id="vatCountriesContainer" class="row mt-2 gx-2 align-items-center" style="display: none;"></div>
 
+<!-- Relocation Auto Calculator (hidden by default) -->
+<div id="relocationAutoContainer" class="mt-3" style="display:none;">
+    <p class="fw-bold mb-2">Calculadora de relocation</p>
+    <div class="row flex-wrap align-items-end gx-2">
+        <div class="col-auto">
+            <input id="reloc-distance-check" type="checkbox"> Distancia (NM)
+            <input id="reloc-distance" type="number" class="form-control mt-1" placeholder="Distancia" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-speed-check" type="checkbox"> Velocidad (nudos)
+            <input id="reloc-cruising-speed" type="number" class="form-control mt-1" placeholder="Nudos" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-hours-check" type="checkbox"> Horas
+            <input id="reloc-hours" type="number" class="form-control mt-1" placeholder="Horas" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-fuel-consumption-check" type="checkbox"> Consumo (l/h o l/nm)
+            <input id="reloc-fuel-consumption" type="number" class="form-control mt-1" placeholder="Consumo" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-fuel-price-check" type="checkbox"> Precio combustible
+            <input id="reloc-fuel-price" type="number" step="0.01" class="form-control mt-1" placeholder="€/L" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-crew-count-check" type="checkbox"> Tripulación
+            <input id="reloc-crew-count" type="number" class="form-control mt-1" placeholder="N.º tripulantes" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-crew-wage-check" type="checkbox"> Salario diario
+            <input id="reloc-crew-wage" type="number" step="0.01" class="form-control mt-1" placeholder="€/día" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-port-fees-check" type="checkbox"> Tasas portuarias
+            <input id="reloc-port-fees" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
+        </div>
+        <div class="col-auto">
+            <input id="reloc-extra-check" type="checkbox"> Otros gastos
+            <input id="reloc-extra" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
+        </div>
+    </div>
+    <div class="mt-2">
+        <button id="applyRelocationButton" type="button" class="btn btn-secondary">Aplicar</button>
+        <span id="relocation-auto-result" class="ms-3 fw-bold"></span>
+    </div>
+</div>
+
 				<!-- Optional Fields Row -->
 				<div class="row optional-fields mt-2">
 					<!-- VAT Rate Field -->
 					<div id="vatField" class="form-group optional-field-container col-3" style="display: none;">
-						<label>VAT Rate:</label>
+						<label class="mb-1">VAT Rate:</label>
 						<div class="input-group" style="flex-wrap: nowrap;">
 							<input type="text" class="form-control" id="vatRate" name="vatRate" placeholder="VAT %" oninput="formatNumber(this)" required>
 							<span class="input-group-text">%</span>
@@ -114,7 +164,13 @@
 					</div>
 					<!-- Relocation Fee Field -->
 					<div id="relocationField" class="form-group optional-field-container col-3" style="display: none;">
-						<label>Relocation Fee:</label>
+						<div class="d-flex align-items-center mb-1">
+    <label class="me-2 mb-0">Relocation Fee:</label>
+    <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" id="relocationAutoCheck" aria-controls="relocationAutoContainer" title="Auto calculate">
+        <label class="form-check-label small ms-1" for="relocationAutoCheck">Auto</label>
+    </div>
+</div>
 						<div class="input-group" style="flex-wrap: nowrap;">
 							<input type="text" class="form-control" id="relocationFee" name="relocationFee" placeholder="Relocation fee" oninput="formatNumber(this)" required>
 							<span class="input-group-text" id="relocationCurrencySymbol">€</span>
@@ -130,54 +186,7 @@
                                         </div>
                                 </div>
 
-                                <!-- Activador de la minicalculadora -->
-                                <div class="form-check form-switch mt-2">
-                                        <input id="relocationAutoCheck" type="checkbox" class="form-check-input" aria-controls="relocationAutoContainer">
-                                        <label class="form-check-label" for="relocationAutoCheck">Relocation Fee auto</label>
-                                </div>
 
-                                <!-- Contenedor de la minicalculadora (oculto por defecto) -->
-                                <div id="relocationAutoContainer" class="mt-3" style="display:none;">
-                                        <p class="fw-bold mb-2">Calculadora de relocation</p>
-                                        <div class="row">
-                                                <div class="col-4">
-                                                        <input id="reloc-distance-check" type="checkbox"> Distancia (NM)
-                                                        <input id="reloc-distance" type="number" class="form-control mt-1" placeholder="Distancia" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-hours-check" type="checkbox"> Horas
-                                                        <input id="reloc-hours" type="number" class="form-control mt-1" placeholder="Horas" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-fuel-consumption-check" type="checkbox"> Consumo (l/h o l/nm)
-                                                        <input id="reloc-fuel-consumption" type="number" class="form-control mt-1" placeholder="Consumo" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-fuel-price-check" type="checkbox"> Precio combustible
-                                                        <input id="reloc-fuel-price" type="number" step="0.01" class="form-control mt-1" placeholder="€/L" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-crew-count-check" type="checkbox"> Tripulación
-                                                        <input id="reloc-crew-count" type="number" class="form-control mt-1" placeholder="N.º tripulantes" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-crew-wage-check" type="checkbox"> Salario diario
-                                                        <input id="reloc-crew-wage" type="number" step="0.01" class="form-control mt-1" placeholder="€/día" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-port-fees-check" type="checkbox"> Tasas portuarias
-                                                        <input id="reloc-port-fees" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
-                                                </div>
-                                                <div class="col-4">
-                                                        <input id="reloc-extra-check" type="checkbox"> Otros gastos
-                                                        <input id="reloc-extra" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
-                                                </div>
-                                        </div>
-                                        <div class="mt-2">
-                                                <button id="applyRelocationButton" type="button" class="btn btn-secondary">Aplicar</button>
-                                                <span id="relocation-auto-result" class="ms-3 fw-bold"></span>
-                                        </div>
-                                </div>
 
                                 <!-- Extra Fields Container -->
                                 <div id="extrasContainer" class="row optional-fields mt-2"></div>
@@ -258,6 +267,7 @@
 	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/extraPerPerson.js"></script>
 	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/calculate.js"></script>
         <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/promotion.js"></script>
+        <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/yachtinfo/js/yachtinfo.js"></script>
         <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/relocationAuto.js"></script>
         <script>
         window.ajaxRelocationData = {

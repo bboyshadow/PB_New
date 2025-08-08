@@ -370,36 +370,8 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 			}
 		}
 
-		// Fallback parsing from description for missing fields
-		if ($grossTonnage === '--') {
-			if (preg_match('/gross tonnage of (\d+(?:,\d+)?)/i', $description, $matches)) {
-				$grossTonnage = $matches[1];
-			}
-		}
-		if ($wifi === '--') {
-			if (strpos($description, 'Wi-Fi') !== false || strpos($description, 'wifi') !== false) {
-				$wifi = 'Yes';
-			} else {
-				$wifi = 'No';
-			}
-		}
-		if ($waterToys === '--') {
-			if (preg_match('/water toys: (.*?)(?:\.|$)/i', $description, $matches)) {
-				$waterToys = trim($matches[1]);
-			}
-		}
-		if ($fuelConsumption === '--') {
-			if (preg_match('/fuel consumption of (\d+(?:,\d+)?) lph/i', $description, $matches)) {
-				$fuelConsumption = $matches[1] . ' lph';
-			}
-		}
-		if ($range === '--') {
-			if (preg_match('/range of up to (\d+(?:,\d+)?) nautical miles/i', $description, $matches)) {
-				$range = $matches[1] . ' nm';
-			}
-		}
-
-		// Descripción
+		// Fallback parsing from description for missing fields - Improved version
+		// Primero obtenemos la descripción para los fallbacks
 		$descriptionNodes = $xpath->query( "//div[contains(@class, 'yacht-description')]//p | //*[contains(text(), 'is the perfect vessel')]" );
 		$description = '';
 		foreach ( $descriptionNodes as $node ) {
@@ -407,6 +379,109 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 		}
 		$description = trim( $description );
 		$description = pb_sanitize_html_content( $description );
+
+		// Ahora procesamos los fallbacks para los campos faltantes
+		if ($grossTonnage === '--') {
+			// Intentar extraer de párrafos específicos que tengan este dato
+			$grossTonnageP = $xpath->query( "//div[@id='specifications-tab']//p[contains(@class, 'text-dark')][strong[contains(text(), 'Gross Tonnage')]]" )->item( 0 );
+			if ($grossTonnageP) {
+				$strong = $xpath->query("strong", $grossTonnageP)->item(0);
+				if ($strong) {
+					$strongText = $strong->textContent;
+					$pText = $grossTonnageP->textContent;
+					$grossTonnage = trim(str_replace($strongText, '', $pText));
+				}
+			}
+			// Fallback a descripción
+			if ($grossTonnage === '--' && preg_match('/gross tonnage of (\d+(?:,\d+)?)/i', $description, $matches)) {
+				$grossTonnage = $matches[1];
+			}
+		}
+		
+		if ($wifi === '--') {
+			// Intentar extraer de párrafos específicos para WiFi
+			$wifiP = $xpath->query( "//div[@id='specifications-tab']//p[contains(@class, 'text-dark')][strong[contains(text(), 'Internet') or contains(text(), 'WiFi')]]" )->item( 0 );
+			if ($wifiP) {
+				$strong = $xpath->query("strong", $wifiP)->item(0);
+				if ($strong) {
+					$strongText = $strong->textContent;
+					$pText = $wifiP->textContent;
+					$wifi = trim(str_replace($strongText, '', $pText));
+					if (empty($wifi) || $wifi === '--') $wifi = 'Yes'; // Si existe la etiqueta pero está vacía, asumimos que tiene
+				}
+			}
+			// Fallback a descripción
+			if ($wifi === '--') {
+				if (strpos($description, 'Wi-Fi') !== false || strpos($description, 'wifi') !== false || 
+				    strpos($description, 'WiFi') !== false || strpos($description, 'internet') !== false) {
+					$wifi = 'Yes';
+				} else {
+					$wifi = 'No';
+				}
+			}
+		}
+		
+		if ($waterToys === '--') {
+			// Buscamos primero en el div específico de Other Toys
+			$otherToysP = $xpath->query( "//div[@id='specifications-tab']//*[contains(text(), 'Other Toys')]" )->item( 0 );
+			if ($otherToysP) {
+				$waterToys = 'Yes - See details';
+			} else {
+				// Intentamos en descripción
+				if (preg_match('/water toys: (.*?)(?:\.|$)/i', $description, $matches)) {
+					$waterToys = trim($matches[1]);
+				}
+			}
+		}
+		
+		if ($fuelConsumption === '--') {
+			// Buscamos en specification-tab
+			$fuelConsumptionP = $xpath->query( "//div[@id='specifications-tab']//p[contains(@class, 'text-dark')][strong[contains(text(), 'Fuel Consumption')]]" )->item( 0 );
+			if ($fuelConsumptionP) {
+				$strong = $xpath->query("strong", $fuelConsumptionP)->item(0);
+				if ($strong) {
+					$strongText = $strong->textContent;
+					$pText = $fuelConsumptionP->textContent;
+					$fuelConsumption = trim(str_replace($strongText, '', $pText));
+				}
+			}
+			// Fallback a engines/generators que puede contener info de consumo
+			if ($fuelConsumption === '--') {
+				$enginesP = $xpath->query( "//div[@id='specifications-tab']//p[contains(@class, 'text-dark')][strong[contains(text(), 'Engines/Generators')]]" )->item( 0 );
+				if ($enginesP) {
+					$strong = $xpath->query("strong", $enginesP)->item(0);
+					if ($strong) {
+						$strongText = $strong->textContent;
+						$pText = $enginesP->textContent;
+						$enginesText = trim(str_replace($strongText, '', $pText));
+						if (preg_match('/(\d+(?:,\d+)?)\s*(?:liters|lph|L\/h)/i', $enginesText, $matches)) {
+							$fuelConsumption = $matches[1] . ' lph';
+						}
+					}
+				}
+			}
+			// Fallback a descripción
+			if ($fuelConsumption === '--' && preg_match('/fuel consumption of (\d+(?:,\d+)?) lph/i', $description, $matches)) {
+				$fuelConsumption = $matches[1] . ' lph';
+			}
+		}
+		
+		if ($range === '--') {
+			// Buscamos en specification-tab
+			$rangeP = $xpath->query( "//div[@id='specifications-tab']//p[contains(@class, 'text-dark')][strong[contains(text(), 'Range')]]" )->item( 0 );
+			if ($rangeP) {
+				$strong = $xpath->query("strong", $rangeP)->item(0);
+				if ($strong) {
+					$strongText = $strong->textContent;
+					$pText = $rangeP->textContent;
+					$range = trim(str_replace($strongText, '', $pText));
+				}
+			}
+			// Fallback a descripción
+			if ($range === '--' && preg_match('/range of up to (\d+(?:,\d+)?) nautical miles/i', $description, $matches)) {
+				$range = $matches[1] . ' nm';
+			}
+		}
 
 		// Detalles de tripulación
 		$crewDetails = [];
@@ -421,11 +496,11 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 				}
 			}
 
-			foreach ($crewDetails as &$crew) {
-				$crew['name'] = pb_sanitize_html_content($crew['name']);
-				$crew['role'] = pb_sanitize_html_content($crew['role']);
-				$crew['nation'] = pb_sanitize_html_content($crew['nation']);
-				$crew['licenses'] = pb_sanitize_html_content($crew['licenses']);
+			foreach ($crewDetails as &$member) {
+				$member['name'] = pb_sanitize_html_content($member['name']);
+				$member['role'] = pb_sanitize_html_content($member['role']);
+				$member['nation'] = pb_sanitize_html_content($member['nation']);
+				$member['licenses'] = pb_sanitize_html_content($member['licenses']);
 			}
 
 		$typeNode = $xpath->query( "//div[@id='specifications-tab']//div[contains(@class, 'text-start')]/h4" )->item( 0 );

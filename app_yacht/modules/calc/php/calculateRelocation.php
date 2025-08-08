@@ -20,6 +20,11 @@ if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'relocati
 // Recoger parámetros opcionales
 $distance        = isset( $_POST['distance'] ) ? floatval( str_replace( ',', '', $_POST['distance'] ) ) : null; // NM
 $hours           = isset( $_POST['hours'] ) ? floatval( str_replace( ',', '', $_POST['hours'] ) ) : null;
+$speed           = isset( $_POST['speed'] ) ? floatval( str_replace( ',', '', $_POST['speed'] ) ) : null; // nudos
+// Calcular horas a partir de distancia y velocidad si no se proporcionan directamente
+if ( is_null( $hours ) && ! is_null( $distance ) && ! is_null( $speed ) && $speed > 0 ) {
+    $hours = $distance / $speed;
+}
 $fuelConsumption = isset( $_POST['fuelConsumption'] ) ? floatval( str_replace( ',', '', $_POST['fuelConsumption'] ) ) : null; // l/h o l/nm
 $fuelPrice       = isset( $_POST['fuelPrice'] ) ? floatval( str_replace( ',', '', $_POST['fuelPrice'] ) ) : null; // €/L
 $crewCount       = isset( $_POST['crewCount'] ) ? floatval( str_replace( ',', '', $_POST['crewCount'] ) ) : null;
@@ -36,13 +41,13 @@ if ( is_null( $distance ) && is_null( $hours ) ) {
 
 // Calcular coste de combustible
 $fuelCost = 0.0;
-if ( ! is_null( $fuelPrice ) && ! is_null( $fuelConsumption ) ) {
-    // Si se proporciona distancia y consumo por NM, usar distancia; de lo contrario usar horas
-    if ( ! is_null( $distance ) && $distance > 0 ) {
-        $fuelCost = $distance * $fuelConsumption * $fuelPrice;
-    } elseif ( ! is_null( $hours ) && $hours > 0 ) {
-        $fuelCost = $hours * $fuelConsumption * $fuelPrice;
-    }
+// Fórmula principal: (millas náuticas / velocidad) * consumo * precio combustible
+if ( ! is_null( $distance ) && ! is_null( $speed ) && $distance > 0 && $speed > 0 && ! is_null( $fuelConsumption ) && ! is_null( $fuelPrice ) ) {
+    $hours    = $distance / $speed;
+    $fuelCost = $hours * $fuelConsumption * $fuelPrice;
+// Fallback: si falta velocidad pero el usuario proporcionó horas manualmente
+} elseif ( ! is_null( $hours ) && $hours > 0 && ! is_null( $fuelConsumption ) && ! is_null( $fuelPrice ) ) {
+    $fuelCost = $hours * $fuelConsumption * $fuelPrice;
 }
 
 // Calcular coste de tripulación (salario diario * días)
@@ -53,7 +58,11 @@ if ( ! is_null( $crewCount ) && ! is_null( $crewWage ) && $crewCount > 0 ) {
     if ( ! is_null( $hours ) && $hours > 0 ) {
         $estimatedHours = $hours;
     } elseif ( ! is_null( $distance ) && $distance > 0 ) {
-        $estimatedHours = $distance / 8.0;
+        if ( ! is_null( $speed ) && $speed > 0 ) {
+            $estimatedHours = $distance / $speed;
+        } else {
+            $estimatedHours = $distance / 8.0; // fallback velocidad default
+        }
     }
     $estimatedDays = max( 1, ceil( $estimatedHours / 24.0 ) );
     $crewCost      = $crewCount * $crewWage * $estimatedDays;
@@ -63,7 +72,7 @@ if ( ! is_null( $crewCount ) && ! is_null( $crewWage ) && $crewCount > 0 ) {
 $total = $fuelCost + $crewCost + $portFees + $extraCosts;
 
 // Formatear resultado
-require_once __DIR__ . '/../../shared/php/currency-functions.php';
+require_once __DIR__ . '/../../../shared/php/currency-functions.php';
 $feeFormatted = formatCurrency( $total, $currency, false );
 
 wp_send_json_success( [ 'fee' => $feeFormatted ] );

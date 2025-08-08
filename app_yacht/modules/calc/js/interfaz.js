@@ -8,14 +8,15 @@
  * @param {string} fieldId - El ID del contenedor del campo a mostrar/ocultar.
  */
 function toggleCalcOptionalField(fieldId) {
+    // Obtener referencias de checkboxes globales para VAT y VAT Mix
+    const vatCheck = document.getElementById('vatCheck');
+    const vatMixCheck = document.getElementById('vatRateMix');
     // Callback para manejar la exclusividad entre APA y APA Percentage, y entre VAT y VAT Mix
     const handleExclusivity = (isVisible, fieldElement) => {
         if (!isVisible || !fieldElement) return; 
         
         const apaCheck = document.getElementById('apaCheck');
         const apaPercentageCheck = document.getElementById('apaPercentageCheck');
-        const vatCheck = document.getElementById('vatCheck');
-        const vatMixCheck = document.getElementById('vatRateMix');
         
         // Lógica para APA y APA%
         if (apaCheck && apaPercentageCheck) {
@@ -40,21 +41,58 @@ function toggleCalcOptionalField(fieldId) {
         
         // Lógica para VAT y VAT Mix
         if (vatCheck && vatMixCheck) {
+            const vatMixField = document.getElementById('vatCountriesContainer');
+            const vatField = document.getElementById('vatField');
+            const vatInputGroup = vatField ? vatField.querySelector('.input-group') : null;
+
             if (fieldId === 'vatField' && vatCheck.checked) {
+                // Activamos VAT fijo, desactivamos Mix
                 vatMixCheck.checked = false;
-                const vatMixField = document.getElementById('vatCountriesContainer');
+                // Mostrar únicamente el switch Mix cuando VAT está activo; el botón "+" aparecerá solo si Mix se activa
+                const mixSwitchContainer = document.querySelector('.vat-mix-controls input#vatRateMix')?.closest('.vat-mix-controls');
+                if (mixSwitchContainer) mixSwitchContainer.style.display = 'inline-block';
+                // Asegurarnos de ocultar el botón + hasta que Mix esté activo
+                const addBtnInit = document.getElementById('addVatCountryBtn');
+                if (addBtnInit) addBtnInit.style.display = 'none';
+                
                 if (vatMixField) {
                     vatMixField.style.display = 'none';
                     const vatMixCheckbox = document.querySelector('input[aria-controls="vatCountriesContainer"]');
-                    if(vatMixCheckbox) vatMixCheckbox.setAttribute('aria-expanded', 'false');
+                    if (vatMixCheckbox) vatMixCheckbox.setAttribute('aria-expanded', 'false');
                 }
+                if (vatInputGroup) {
+                    vatInputGroup.style.display = '';
+                }
+                // Restaurar etiqueta "VAT Rate:" cuando Mix se desactiva
+                const vatLabel = vatField.querySelector('label');
+                if (vatLabel) {
+                    vatLabel.style.display = '';
+                }
+            } else if (fieldId === 'vatField' && !vatCheck.checked && !vatMixCheck.checked) {
+                // Ocultar el switch Mix y el botón + cuando VAT se desactiva y Mix no está activo
+                document.querySelectorAll('.vat-mix-controls').forEach(el => el.style.display = 'none');
+
             } else if (fieldId === 'vatCountriesContainer' && vatMixCheck.checked) {
-                vatCheck.checked = false;
-                const vatField = document.getElementById('vatField');
+                // Activamos Mix: ocultamos solo el input de tasa fija pero mantenemos visible el contenedor para mostrar el switch y el botón +
+                // Mantenemos VAT Rate activo para que los controles Mix permanezcan visibles
+                vatCheck.checked = true;
+                // Mostrar botón + al activar Mix
+                const addBtn = document.getElementById('addVatCountryBtn');
+                if (addBtn) addBtn.style.display = 'inline-block';
+                // Ocultar el contenedor vatField cuando Mix está activo
                 if (vatField) {
                     vatField.style.display = 'none';
-                    const vatCheckbox = document.querySelector('input[aria-controls="vatField"]');
-                    if(vatCheckbox) vatCheckbox.setAttribute('aria-expanded', 'false');
+                }
+            } else if (fieldId === 'vatCountriesContainer' && !vatMixCheck.checked) {
+                // Se desactiva Mix: restaurar input fijo y contenedor VAT completo
+                // Ocultamos botón +
+                const addBtn = document.getElementById('addVatCountryBtn');
+                if (addBtn) addBtn.style.display = 'none';
+                if (vatField) {
+                    vatField.style.display = 'flex';
+                }
+                if (vatInputGroup) {
+                    vatInputGroup.style.display = '';                   
                 }
             }
         }
@@ -72,18 +110,41 @@ function toggleCalcOptionalField(fieldId) {
          console.warn(`Checkbox de control para ${fieldId} no encontrado.`);
     }
 
-    // Alternar visibilidad
-    const isVisible = field.style.display === 'none' || field.style.display === '';
+    // Verificar estado del checkbox y actualizar visibilidad en consecuencia
+    let isVisible = false;
+    if (controlCheckbox) {
+        isVisible = controlCheckbox.checked;
+    } else {
+        // Fallback a la lógica anterior si no hay checkbox de control
+        isVisible = field.style.display === 'none' || field.style.display === '';
+    }
+    
     const displayType = field.classList.contains('row') || field.classList.contains('d-flex') ? 'flex' : 'block'; 
     field.style.display = isVisible ? displayType : 'none'; 
 
     // Ejecutar lógica de exclusividad
     handleExclusivity(isVisible, field);
 
-    // Agregar automáticamente dos campos prellenados si se muestra vatCountriesContainer y está vacío
-    if (isVisible && fieldId === 'vatCountriesContainer' && field.children.length === 0) {
-        VatRateMix.addCountryField();
-        VatRateMix.addCountryField();
+    // Caso especial: vatCountriesContainer y relocationAutoContainer
+    if (fieldId === 'vatCountriesContainer') {
+        // Agregar automáticamente dos campos prellenados si se muestra vatCountriesContainer y está vacío
+        if (isVisible && field.children.length === 0) {
+            VatRateMix.addCountryField();
+            VatRateMix.addCountryField();
+        }
+        
+        // Manejar visibilidad del botón Add Country para VAT Mix
+        const addBtn = document.getElementById('addVatCountryBtn');
+        if (addBtn) {
+            addBtn.style.display = isVisible ? 'inline-block' : 'none';
+        }
+    } else if (fieldId === 'relocationAutoContainer') {
+        // Verificar si el relocationAutoCheck está marcado
+        const relocationAutoCheck = document.getElementById('relocationAutoCheck');
+        if (relocationAutoCheck) {
+            isVisible = relocationAutoCheck.checked;
+            field.style.display = isVisible ? displayType : 'none';
+        }
     }
 
     // Actualizar aria-expanded en el checkbox de control
@@ -99,14 +160,19 @@ function toggleCalcOptionalField(fieldId) {
         }
     }
     
-    // Manejar visibilidad del botón Add Country para VAT Mix basado en el estado de vatCountriesContainer
-    const vatMixField = document.getElementById('vatCountriesContainer');
-    const addBtn = document.getElementById('addVatCountryBtn');
-    if (vatMixField && addBtn) {
-        const isContainerVisible = vatMixField.style.display !== 'none';
-        addBtn.style.display = isContainerVisible ? 'inline-block' : 'none';
+    // Sincronizar visibilidad de los controles Mix según el estado actual de VAT
+    if (vatCheck && vatMixCheck) {
+        document.querySelectorAll('.vat-mix-controls').forEach(el => {
+            if (el.id === 'addVatCountryBtn') {
+                // Botón + solo visible si Mix está activo
+                el.style.display = vatMixCheck.checked ? 'inline-block' : 'none';
+            } else {
+                // Switch Mix visible cuando VAT está activo
+                el.style.display = vatCheck.checked ? 'inline-block' : 'none';
+            }
+        });
     }
-    
+
     return isVisible;
 }
 
@@ -422,6 +488,48 @@ function initCalcInterface() {
     // Check si funciones compartidas existen
     if (!window.toggleContainer || !window.addDynamicField || !window.removeDynamicField) {
         console.warn('Las funciones UI compartidas (toggleContainer, addDynamicField, removeDynamicField) no están disponibles.');
+    }
+    
+    // Ocultar los controles de vat-mix-controls al inicio
+    document.querySelectorAll('.vat-mix-controls').forEach(el => el.style.display = 'none');
+
+    // Listener dedicado para mantener sincronizados los controles Mix
+    const vatCheckEl = document.getElementById('vatCheck');
+    const vatMixEl  = document.getElementById('vatRateMix');
+    const addVatBtn = document.getElementById('addVatCountryBtn');
+    if (vatCheckEl && vatMixEl) {
+        vatCheckEl.addEventListener('change', () => {
+            // Mostrar/ocultar controles según tipo
+            document.querySelectorAll('.vat-mix-controls').forEach(el => {
+                // El botón + solo se muestra si Mix está activo
+                if (el.id === 'addVatCountryBtn') {
+                    el.style.display = (vatCheckEl.checked && vatMixEl.checked) ? 'inline-block' : 'none';
+                } else {
+                    // El switch Mix se muestra cuando VAT está activo
+                    el.style.display = vatCheckEl.checked ? 'inline-block' : 'none';
+                }
+            });
+            // Si se desactiva VAT, desactivar Mix automáticamente
+            if (!vatCheckEl.checked) {
+                vatMixEl.checked = false;
+                // Forzar ocultar contenedor de países
+                const container = document.getElementById('vatCountriesContainer');
+                if (container) container.style.display = 'none';
+            }
+        });
+        // Garantizar sincronización cuando se cambie el estado de Mix
+        vatMixEl.addEventListener('change', () => {
+            document.querySelectorAll('.vat-mix-controls').forEach(el => {
+                if (el.id === 'addVatCountryBtn') {
+                    // Botón + solo visible si VAT y Mix están activos
+                    el.style.display = (vatCheckEl.checked && vatMixEl.checked) ? 'inline-block' : 'none';
+                }
+            });
+            // Si VAT está desactivado, ocultar todos los controles
+            if (!vatCheckEl.checked) {
+                document.querySelectorAll('.vat-mix-controls').forEach(el => el.style.display = 'none');
+            }
+        });
     }
     
     // Listeners para checkboxes que controlan restricciones

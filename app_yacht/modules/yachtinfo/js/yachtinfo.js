@@ -5,11 +5,20 @@
 
 // Función principal que se ejecuta cuando el DOM está listo
 jQuery(document).ready(function($) {
+    let isFetching = false;
     // Manejar el clic del botón "Get Info"
-    $('#get-yacht-info').on('click', function(e) {
-        e.preventDefault();
-        
-        // Limpiar mensajes de error anteriores
+
+    // Para evitar múltiples bindings cuando el script se carga más de una vez,
+    // se elimina cualquier handler previo con el namespace ".yachtinfo" y se vuelve a registrar.
+    $('#get-yacht-info')
+        .off('click')
+        .on('click.yachtinfo', function(e) {
+            e.preventDefault();
+            if (isFetching) {
+                return;
+            }
+            isFetching = true;
+            // Limpiar mensajes de error anteriores
         $('.yacht-error-message').remove();
         
         var button = $(this);
@@ -63,6 +72,12 @@ jQuery(document).ready(function($) {
                 if (response.success && response.data.html) {
                     // Mostrar el contenedor con la información del yate
                     container.html(response.data.html).show();
+                    // Guardar datos del yate en una variable global para otros módulos (p. ej., calculadora de relocation)
+                    window.yachtInfoData = response.data.data || {};
+                    // Si la función de precarga de relocation está disponible, ejecutarla para actualizar campos automáticamente
+                    if (typeof prefillRelocationFields === 'function') {
+                        prefillRelocationFields();
+                    }
                     
                     // Scroll suave hacia el contenedor
                     $('html, body').animate({
@@ -97,6 +112,7 @@ jQuery(document).ready(function($) {
             complete: function() {
                 // Restaurar el botón a su estado original
                 button.prop('disabled', false).html(originalText);
+                isFetching = false;
             }
         });
     });
