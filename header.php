@@ -1,5 +1,13 @@
 <?php
-
+/**
+ * The header for our theme
+ *
+ * This is the template that displays all of the <head> section and everything up until <div id="content">
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
+ *
+ * @package creativoypunto
+ */
 
 ?>
 <!doctype html>
@@ -21,9 +29,9 @@
 		<div class="container-fluid p-0">
 			<nav class="navbar navbar-expand-xl navbar-dark bg-dark">
 				<div class="container-fluid justify-content-between">
-                                        <a class="brand header_logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-                                                <img src="<?php echo esc_url( get_template_directory_uri() ); ?>/images/logo_blanco_creativoypunto.svg" alt="Logo yacht">
-                                        </a>
+					<a class="brand header_logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+						<img src="<?php echo get_template_directory_uri(); ?>/images/logo_blanco_creativoypunto.svg" alt="Logo yacht">
+					</a>
 					<button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#main-menu">
 						<span class="navbar-toggler-icon"></span>
 					</button>
@@ -43,19 +51,19 @@
 							?>
 						<ul class="navbar-nav ms-auto d-flex flex-row">
 							<li class="nav-item me-3 me-lg-0">
-                                                                <a class="nav-link p-0 m-0" href="#">
-                                                                        <img class="social_nav_icon" src="<?php echo esc_url( get_template_directory_uri() ); ?>/images/ws.svg" alt="WhatsApp">
-                                                                </a>
+								<a class="nav-link p-0 m-0" href="#">
+									<img class="social_nav_icon" src="<?php echo get_template_directory_uri(); ?>/images/ws.svg" alt="WhatsApp">
+								</a>
 							</li>
 							<li class="nav-item me-3 me-lg-0">
-                                                                <a class="nav-link p-0 m-0" href="#">
-                                                                        <img class="social_nav_icon" src="<?php echo esc_url( get_template_directory_uri() ); ?>/images/ig.svg" alt="Instagram">
-                                                                </a>
+								<a class="nav-link p-0 m-0" href="#">
+									<img class="social_nav_icon" src="<?php echo get_template_directory_uri(); ?>/images/ig.svg" alt="Instagram">
+								</a>
 							</li>
 							<li class="nav-item me-3 me-lg-0">
-                                                                <a class="nav-link p-0 m-0" href="#">
-                                                                        <img class="social_nav_icon" src="<?php echo esc_url( get_template_directory_uri() ); ?>/images/yt.svg" alt="YouTube">
-                                                                </a>
+								<a class="nav-link p-0 m-0" href="#">
+									<img class="social_nav_icon" src="<?php echo get_template_directory_uri(); ?>/images/yt.svg" alt="YouTube">
+								</a>
 							</li>
 						</ul>
 					</div>
@@ -63,4 +71,4 @@
 			</nav>
 		</div>
 	</header>
-	<?php ?>
+	<?php // get_footer(); ?>

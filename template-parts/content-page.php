@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Template part for displaying page content in page.php
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package ProBroke
+ */
 
 ?>
 
@@ -29,7 +35,7 @@
 			edit_post_link(
 				sprintf(
 					wp_kses(
-						
+						/* translators: %s: Name of current post. Only visible to screen readers */
 						__( 'Edit <span class="screen-reader-text">%s</span>', 'creativoypunto' ),
 						array(
 							'span' => array(
