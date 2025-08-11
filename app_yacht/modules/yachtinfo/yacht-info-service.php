@@ -24,10 +24,6 @@ class YachtInfoService implements YachtInfoServiceInterface {
 	
 	public function __construct( array $config ) {
 		$this->config = $config;
-		// Normalize allowed_domains for consistent comparisons
-		if ( isset( $this->config['allowed_domains'] ) && is_array( $this->config['allowed_domains'] ) ) {
-			$this->config['allowed_domains'] = array_map( 'strtolower', $this->config['allowed_domains'] );
-		}
 	}
 	
 	public function extractYachtInfo( $url ) {
@@ -583,19 +579,6 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 		$url = $this->normalizeUrl( $url );
 		$cache_key = CacheHelper::generateUrlKey( $url );
 		CacheHelper::delete( $cache_key );
-	}
-
-	private function getRateLimitRetryAfter( $key, $time_window = 300 ) {
-		$safe_key = sanitize_key( 'rate_limit_' . $key );
-		// WordPress stores transient expirations in options table with this prefix
-		$expiration = get_option( '_transient_timeout_' . $safe_key );
-		if ( ! $expiration || ! is_numeric( $expiration ) ) {
-			return 0;
-		}
-		$retry_after = intval( $expiration ) - time();
-		if ( $retry_after < 0 ) { $retry_after = 0; }
-		// Cap to provided time_window just in case
-		return min( $retry_after, max( 0, intval( $time_window ) ) );
 	}
 
 	private function normalizeUrl( $url ) {

@@ -114,7 +114,7 @@
                                 window.location.reload();
                             } else {
                                 (window.AppYacht?.error || console.error)('Error en la respuesta:', response);
-                                alert('Error: ' + (response.data || 'Error desconocido al desconectar'));
+                                alert('Error: ' + (response.data || 'Unknown error when disconnecting'));
                                 // Restaurar el botón
                                 $button.text(originalText).prop('disabled', false);
                             }
@@ -122,7 +122,7 @@
                         error: function(xhr, status, error) {
                             (window.AppYacht?.error || console.error)('Error AJAX:', error);
                             // Extraer solo el mensaje de error, no todo el HTML
-                            let errorMessage = 'Error en la conexión con el servidor';
+                            let errorMessage = 'Server connection error';
                             try {
                                 (window.AppYacht?.log || console.log)('Error AJAX completo:', xhr);
                                 
@@ -139,7 +139,7 @@
                                     // Verificar si es un error 400 (Bad Request) - Probablemente error de nonce
                                     if (xhr.status === 400) {
                                         (window.AppYacht?.log || console.log)('Error 400 detectado, respuesta completa:', responseText);
-                                        errorMessage = 'Error de seguridad. Por favor, recarga la página e intenta de nuevo';
+                                        errorMessage = 'Security error. Please reload the page and try again';
                                         
                                         // Intentar regenerar el nonce automáticamente
                                         if (typeof ajaxurl !== 'undefined') {
@@ -150,7 +150,7 @@
                                     // Verificar si es un error 403 (Forbidden) - Error de nonce
                                     else if (xhr.status === 403) {
                                         (window.AppYacht?.log || console.log)('Error 403 detectado, respuesta completa:', responseText);
-                                        errorMessage = 'Error de seguridad. Por favor, recarga la página para actualizar tu sesión';
+                                        errorMessage = 'Security error. Please reload the page to refresh your session';
                                     }
                                     // Verificar si es un error 500 con mensaje específico
                                     else if (xhr.status === 500) {
@@ -218,8 +218,8 @@
                 if (response.success){
                     alert('Correo enviado: ' + response.data);
                 } else {
-                    (window.AppYacht?.error || console.error)('Error en la respuesta del servidor:', response.data);
-                    alert('Error al enviar el correo: ' + response.data);
+                    (window.AppYacht?.error || console.error)('Server response error:', response.data);
+                    alert('Server connection error while sending email.');
                 }
             })
             .fail(function(jqXHR, textStatus, errorThrown){

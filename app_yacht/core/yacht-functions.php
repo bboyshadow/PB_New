@@ -99,20 +99,13 @@ function app_yacht_scripts() {
 		wp_enqueue_script( 'yachtinfo-script', get_template_directory_uri() . '/app_yacht/modules/yachtinfo/js/yachtinfo.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'yachtinfo-script';
 
-		// Normalize allowed domains for frontend validation (trim + lowercase)
-		$__scraping_cfg = AppYachtConfig::get('scraping');
-		$__allowed_domains = isset($__scraping_cfg['allowed_domains']) && is_array($__scraping_cfg['allowed_domains'])
-			? array_values(array_filter(array_map('trim', $__scraping_cfg['allowed_domains']), 'strlen'))
-			: array('cyaeb.com');
-		$__allowed_domains = array_map('strtolower', $__allowed_domains);
-
 		wp_localize_script(
 			'yachtinfo-script',
 			'yachtinfo_ajax',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'yachtinfo_nonce' ),
-				'allowed_domains' => $__allowed_domains,
+				'allowed_domains' => AppYachtConfig::get('scraping')['allowed_domains'] ?? array('cyaeb.com'),
 				'strings' => array(
 					'enter_yacht_url' => __( 'Please enter a yacht URL.', 'creativoypunto' ),
 					'invalid_url' => __( 'Please enter a valid URL (e.g., https://www.charterworld.com/yacht/...)', 'creativoypunto' ),

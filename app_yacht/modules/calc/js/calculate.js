@@ -221,7 +221,7 @@ if (vatRateMixEnabled) {
         });
         
         if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor (calculate.php).');
+            throw new Error('Server response error (calculate.php).');
         }
         
         const result = await response.json();
@@ -236,20 +236,20 @@ if (vatRateMixEnabled) {
                 window.eventBus.publish('calculator:success', result.data);
             }
         } else {
-            (window.AppYacht?.error || console.error)('Error de cálculo:', result.data);
+            (window.AppYacht?.error || console.error)('Calculation error:', result.data);
             const errorMessage = document.getElementById('errorMessage');
             if (errorMessage) {
-                errorMessage.textContent = 'Error de cálculo.';
+                errorMessage.textContent = 'Calculation error.';
                 errorMessage.style.display = 'block';
             }
             
             // Publicar evento si hay eventBus disponible
             if (window.eventBus) {
-                window.eventBus.publish('calculator:error', { message: 'Error de cálculo' });
+                window.eventBus.publish('calculator:error', { message: 'Calculation error' });
             }
         }
     } catch (err) {
-        (window.AppYacht?.error || console.error)('Error en la solicitud:', err);
+        (window.AppYacht?.error || console.error)('Request error:', err);
         const errorMessage = document.getElementById('errorMessage');
         if (errorMessage) {
             errorMessage.textContent = 'Error general.';

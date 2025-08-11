@@ -152,7 +152,7 @@ function pb_validate_data( $data, $schema ) {
 				$error_key        = 'invalid_' . $rules['type'];
 				$errors[ $field ] = isset( $rules['error_messages'][ $error_key ] )
 					? $rules['error_messages'][ $error_key ]
-					: "El campo {$field} no es válido.";
+					: "The field {$field} is not valid.";
 			}
 		}
 

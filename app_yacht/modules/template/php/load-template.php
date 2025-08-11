@@ -47,7 +47,7 @@ function handle_create_template() {
 	}
 	
 	
-	if ( ! pb_verify_user_capability( 'edit_yacht_templates', 'No tienes permisos para crear plantillas.' ) ) {
+	if ( ! pb_verify_user_capability( 'edit_yacht_templates', 'You do not have permission to create templates.' ) ) {
 		return; 
 	}
 

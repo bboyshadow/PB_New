@@ -26,13 +26,13 @@ class RenderEngine implements RenderEngineInterface {
 	
         public function render( $template, array $data, $format = 'html' ) {
                 if ( ! in_array( $template, $this->getAvailableTemplates(), true ) ) {
-                        return new WP_Error( 'invalid_template', "Plantilla '{$template}' no permitida" );
+                        return new WP_Error( 'invalid_template', "Template '{$template}' not allowed" );
                 }
 
                 try {
 			
 			if ( ! $this->templateExists( $template ) ) {
-				throw new Exception( "Plantilla '{$template}' no encontrada" );
+				throw new Exception( "Could not load template content '{$template}'" );
 			}
 			
 			
@@ -79,13 +79,13 @@ class RenderEngine implements RenderEngineInterface {
 		try {
 			
 			if ( empty( $data['template'] ) ) {
-				return new WP_Error( 'missing_template', 'Nombre de plantilla requerido' );
+				return new WP_Error( 'missing_template', 'Template name required' );
 			}
 			
                         $templateName = sanitize_text_field( $data['template'] );
 
                         if ( ! in_array( $templateName, $this->getAvailableTemplates(), true ) ) {
-                                return new WP_Error( 'invalid_template', "Plantilla '{$templateName}' no permitida" );
+                                return new WP_Error( 'invalid_template', "Template '{$templateName}' not allowed" );
                         }
 
                         $previewData = $this->generatePreviewData( $data );
@@ -104,7 +104,7 @@ class RenderEngine implements RenderEngineInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'RenderEngine Preview Error: ' . $e->getMessage() );
-			return new WP_Error( 'preview_error', 'Error generando vista previa: ' . $e->getMessage() );
+			return new WP_Error( 'preview_error', 'Error generating preview: ' . $e->getMessage() );
 		}
 	}
 	
@@ -115,7 +115,7 @@ class RenderEngine implements RenderEngineInterface {
 			$requiredFields = array( 'currency' );
 			foreach ( $requiredFields as $field ) {
 				if ( empty( $formData[ $field ] ) ) {
-					return new WP_Error( 'missing_field', "Campo requerido faltante: {$field}" );
+					return new WP_Error( 'missing_field', "Missing required field: {$field}" );
 				}
 			}
 			
@@ -150,7 +150,7 @@ class RenderEngine implements RenderEngineInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'RenderEngine Create Error: ' . $e->getMessage() );
-			return new WP_Error( 'create_error', 'Error creando template: ' . $e->getMessage() );
+			return new WP_Error( 'create_error', 'Error creating template: ' . $e->getMessage() );
 		}
 	}
 	

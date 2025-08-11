@@ -29,7 +29,7 @@ function pb_verify_user_capability( $capability, $error_message = '' ) {
 			
 			error_log(
 				sprintf(
-					'Intento de acceso no autorizado: Usuario %d, Capacidad %s, Función %s',
+					'Unauthorized access attempt: User %d, Capability %s, Function %s',
 					$user_id,
 					$capability,
 					$calling_function
@@ -41,15 +41,15 @@ function pb_verify_user_capability( $capability, $error_message = '' ) {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_error(
 				array(
-					'error' => $error_message ?: 'No tienes permisos para realizar esta acción.',
+					'error' => $error_message ?: 'You do not have permission to perform this action.',
 				),
 				403
 			);
 			exit;
 		} else {
 			wp_die(
-				$error_message ?: 'No tienes permisos para realizar esta acción.',
-				'Acceso Denegado',
+				$error_message ?: 'You do not have permission to perform this action.',
+				'Access Denied',
 				array(
 					'response'  => 403,
 					'back_link' => true,

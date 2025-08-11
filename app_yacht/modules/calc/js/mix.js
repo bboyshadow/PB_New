@@ -333,7 +333,7 @@ function applyMix() {
         body: new URLSearchParams(formData)
     })
     .then(response => {
-        if (!response.ok) throw new Error('Error en calculatemix.php');
+        if (!response.ok) throw new Error('Server error in calculatemix.php');
         return response.json();
     })
     .then(result => {
@@ -376,16 +376,16 @@ function applyMix() {
             if (calculateBtn) calculateBtn.textContent = 'Recalculate';
 
         } else {
-            (window.AppYacht?.error || console.error)('Error en los cálculos:', result.data);
+            (window.AppYacht?.error || console.error)('Calculation error:', result.data);
             const mixedResultError = document.getElementById('mixedResult');
             if (mixedResultError) {
-                mixedResultError.textContent = 'Error en los cálculos.';
+                mixedResultError.textContent = 'Calculation error.';
                 mixedResultError.classList.add('text-danger');
             }
         }
     })
     .catch(err => {
-        (window.AppYacht?.error || console.error)("Error en applyMix:", err);
+        (window.AppYacht?.error || console.error)("Error in applyMix:", err);
         const mixedResultError = document.getElementById('mixedResult');
         if (mixedResultError) {
             mixedResultError.textContent = 'Error durante el procesamiento.';

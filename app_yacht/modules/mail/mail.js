@@ -91,7 +91,7 @@ function restoreFormContent() {
         }
         
         function handleMailError(error) {
-            (window.AppYacht?.error || console.error)('Error en el módulo de correo:', error);
+            (window.AppYacht?.error || console.error)('Mail module error:', error);
             // Aquí puedes añadir lógica para manejar errores
         }
         

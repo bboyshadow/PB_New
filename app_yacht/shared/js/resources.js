@@ -28,12 +28,12 @@ function loadScript(url, config = {}) {
 	// Validar URL
 	if ( ! url || url.trim() === '') {
 		if (window.AppYacht && window.AppYacht.error) {
-			window.AppYacht.error('No se especificó URL para el script');
+			window.AppYacht.error('No URL specified for the script');
 		} else {
-			(window.AppYacht?.error || console.error)('No se especificó URL para el script');
+			(window.AppYacht?.error || console.error)('No URL specified for the script');
 		}
 		if (options.onError) {
-			options.onError( new Error( 'URL no válida' ) );
+			options.onError( new Error( 'Invalid URL' ) );
 		}
 		return null;
 	}
@@ -43,7 +43,7 @@ function loadScript(url, config = {}) {
 		const existingScript = document.querySelector( `script[src = "${url}"]` );
 		if (existingScript) {
 			if (window.AppYacht && window.AppYacht.log) {
-				window.AppYacht.log('El script ya está cargado:', url);
+				window.AppYacht.log('Script already loaded:', url);
 			}
 			if (options.onLoad) {
 				options.onLoad( existingScript );
@@ -60,7 +60,7 @@ function loadScript(url, config = {}) {
 		if (options.onLoad) {
 			script.onload = function() {
 				if (window.AppYacht && window.AppYacht.log) {
-					window.AppYacht.log('Script cargado correctamente:', url);
+					window.AppYacht.log('Script loaded successfully:', url);
 				}
 				options.onLoad( script );
 			};
@@ -69,17 +69,17 @@ function loadScript(url, config = {}) {
 		if (options.onError) {
 			script.onerror = function() {
 				if (window.AppYacht && window.AppYacht.error) {
-					window.AppYacht.error('Error al cargar script:', url);
+					window.AppYacht.error('Error loading script:', url);
 				} else {
-					(window.AppYacht?.error || console.error)('Error al cargar script:', url);
+					(window.AppYacht?.error || console.error)('Error loading script:', url);
 				}
-				options.onError( new Error( `Error al cargar script: ${url}` ) );
+				options.onError( new Error( `Error loading script: ${url}` ) );
 			};
 		}
 
 		document.head.appendChild( script );
 		if (window.AppYacht && window.AppYacht.log) {
-			window.AppYacht.log('Script añadido al documento:', url);
+			window.AppYacht.log('Script added to document:', url);
 		}
 
 		return script;
@@ -118,12 +118,12 @@ function loadStylesheet(url, config = {}) {
 	// Validar URL
 	if ( ! url || url.trim() === '') {
 		if (window.AppYacht && window.AppYacht.error) {
-			window.AppYacht.error('No se especificó URL para la hoja de estilos');
+			window.AppYacht.error('No URL specified for the stylesheet');
 		} else {
-			(window.AppYacht?.error || console.error)('No se especificó URL para la hoja de estilos');
+			(window.AppYacht?.error || console.error)('No URL specified for the stylesheet');
 		}
 		if (options.onError) {
-			options.onError( new Error( 'URL no válida' ) );
+			options.onError( new Error( 'Invalid URL' ) );
 		}
 		return null;
 	}
@@ -133,7 +133,7 @@ function loadStylesheet(url, config = {}) {
 		const existingLink = document.querySelector( `link[href = "${url}"]` );
 		if (existingLink) {
 			if (window.AppYacht && window.AppYacht.log) {
-				window.AppYacht.log('La hoja de estilos ya está cargada:', url);
+				window.AppYacht.log('Stylesheet already loaded:', url);
 			}
 			if (options.onLoad) {
 				options.onLoad( existingLink );
@@ -168,7 +168,7 @@ function loadStylesheet(url, config = {}) {
 
 		document.head.appendChild( link );
 		if (window.AppYacht && window.AppYacht.log) {
-			window.AppYacht.log('Hoja de estilos añadida al documento:', url);
+			window.AppYacht.log('Stylesheet added to document:', url);
 		}
 
 		return link;

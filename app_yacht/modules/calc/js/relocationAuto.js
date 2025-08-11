@@ -1,13 +1,13 @@
 /*
  * relocationAuto.js
  *
- * Este módulo implementa una minicalculadora para la "Relocation Fee".
- * Al activar la casilla "Relocation Fee auto", se muestran campos de entrada
- * configurables (distancia, consumo, precio combustible, tripulación, etc.).
- * El módulo toma valores predeterminados del objeto global `yachtInfoData` si existe,
- * permitiendo al usuario modificarlos. Al pulsar "Aplicar", se envía una petición
- * AJAX al endpoint `calculate_relocation` que devuelve la tarifa calculada y
- * la inyecta en el campo `relocationFee` de la calculadora principal.
+ * This module implements a mini-calculator for the "Relocation Fee".
+ * When the "Relocation Fee auto" checkbox is enabled, configurable input
+ * fields (distance, consumption, fuel price, crew, etc.) are shown.
+ * The module uses default values from the global object `yachtInfoData` if present,
+ * allowing the user to modify them. When clicking "Apply", it sends an AJAX
+ * request to the `calculate_relocation` endpoint which returns the calculated fee
+ * and injects it into the `relocationFee` field of the main calculator.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,18 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoContainer = document.getElementById('relocationAutoContainer');
 
     if (autoCheckbox && autoContainer) {
-        // Mostrar u ocultar la calculadora según el estado del checkbox
+        // Show or hide the calculator based on the checkbox state
         autoCheckbox.addEventListener('change', () => {
             autoContainer.style.display = autoCheckbox.checked ? 'block' : 'none';
             if (autoCheckbox.checked) {
                 prefillRelocationFields();
-                // Configurar campos requeridos que no necesitan checkbox
+                // Configure required fields that do not need a checkbox
                 setupRequiredFields();
             }
         });
     }
 
-    // Manejar clic en el botón de aplicar
+    // Handle click on the apply button
     const applyButton = document.getElementById('applyRelocationButton');
     if (applyButton) {
         applyButton.addEventListener('click', () => {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Calcular horas automáticamente cuando cambian distancia o velocidad
+    // Auto-calculate hours when distance or speed changes
     const distanceInput = document.getElementById('reloc-distance');
     const speedInput    = document.getElementById('reloc-cruising-speed');
     const hoursInput    = document.getElementById('reloc-hours');
@@ -51,21 +51,21 @@ document.addEventListener('DOMContentLoaded', () => {
         speedInput.addEventListener('input', updateHours);
     }
     
-    // Configurar campos obligatorios y opcionales al cargar la página
+    // Configure required and optional fields on page load
     if (document.getElementById('relocationAutoContainer')) {
         setupRequiredFields();
     }
 
-    // Precargar valores de velocidad y consumo si existen datos del yate
+    // Prefill speed and consumption values if yacht data exists
     prefillRelocationFields();
  });
 
 /**
- * Configura los campos obligatorios (sin checkbox) y opcionales (con checkbox)
- * según los requisitos del cliente.
+ * Configures required (no checkbox) and optional (with checkbox)
+ * fields according to client requirements.
  */
 function setupRequiredFields() {
-    // Campos requeridos (siempre visibles, sin checkbox)
+    // Required fields (always visible, no checkbox)
     const requiredFields = [
         { fieldId: 'reloc-distance',           checkboxId: 'reloc-distance-check' },
         { fieldId: 'reloc-cruising-speed',    checkboxId: 'reloc-speed-check' },
@@ -74,7 +74,7 @@ function setupRequiredFields() {
         { fieldId: 'reloc-fuel-price',        checkboxId: 'reloc-fuel-price-check' }
     ];
     
-    // Campos opcionales (con checkbox)
+    // Optional fields (with checkbox)
     const optionalFields = [
         'reloc-crew-count',
         'reloc-crew-wage',
@@ -82,31 +82,31 @@ function setupRequiredFields() {
         'reloc-extra'
     ];
     
-    // Configurar campos requeridos (siempre visibles)
+    // Setup required fields (always visible)
     requiredFields.forEach(({ fieldId, checkboxId }) => {
         const field = document.getElementById(fieldId);
         const checkbox = document.getElementById(checkboxId);
         
         if (field && checkbox) {
-            // Hacer checkbox invisible (se oculta solo el control, se mantiene la etiqueta de texto)
+            // Make checkbox invisible (hide only the control, keep the text label)
             checkbox.style.display = 'none';
-            // Marcar checkbox como seleccionado para incluir en cálculos
+            // Mark checkbox as selected to include in calculations
             checkbox.checked = true;
-            // Mostrar campo de entrada
+            // Show input field
             field.style.display = 'block';
         }
     });
     
-    // Configurar campos opcionales (necesitan checkbox)
+    // Setup optional fields (require checkbox)
     optionalFields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         const checkbox = document.getElementById(fieldId + '-check');
         
         if (field && checkbox) {
-            // Asegurar que el campo esté oculto inicialmente
+            // Ensure the field is hidden initially
             field.style.display = 'none';
             
-            // Mostrar u ocultar campo según estado del checkbox
+            // Show or hide field based on checkbox state
             checkbox.addEventListener('change', () => {
                 field.style.display = checkbox.checked ? 'block' : 'none';
             });
@@ -115,11 +115,11 @@ function setupRequiredFields() {
 }
 
 /**
- * Precarga valores en los campos de la calculadora usando la información
- * disponible en `window.yachtInfoData`. Si no existe, se dejan vacíos.
+ * Prefills values in the calculator fields using information available
+ * in `window.yachtInfoData`. If not present, they are left blank.
  */
 function prefillRelocationFields() {
-    // Añadir un log para depuración
+    // Add a log for debugging
     (window.AppYacht?.log || console.log)('Executing prefillRelocationFields. yachtInfoData:', window.yachtInfoData);
 
     const data = window.yachtInfoData || {};
@@ -138,7 +138,7 @@ function prefillRelocationFields() {
     const cruisingSpeed   = document.getElementById('reloc-cruising-speed');
     const crewCount       = document.getElementById('reloc-crew-count');
     
-    // Log valores para depuración
+    // Log values for debugging
     (window.AppYacht?.log || console.log)('Field values before filling:',
         'fuelConsumption:', fuelConsumption?.value,
         'cruisingSpeed:', cruisingSpeed?.value,
@@ -158,7 +158,7 @@ function prefillRelocationFields() {
         crewCount.value = extractNumber(data.crew);
     }
     
-    // Log valores después de llenar
+    // Log values after filling
     (window.AppYacht?.log || console.log)('Field values after filling:',
         'fuelConsumption:', fuelConsumption?.value,
         'cruisingSpeed:', cruisingSpeed?.value,
@@ -166,14 +166,14 @@ function prefillRelocationFields() {
 }
 
 /**
- * Recolecta los valores de los campos seleccionados y realiza una solicitud
- * AJAX al servidor para calcular la Relocation Fee. El resultado se inserta
- * en el campo `relocationFee` de la calculadora principal.
+ * Collects the values of the selected fields and performs an AJAX request
+ * to the server to calculate the Relocation Fee. The result is inserted
+ * into the `relocationFee` field of the main calculator.
  */
 function calculateRelocation() {
-    // Crear objeto con los datos seleccionados
+    // Create object with selected data
     const params = {};
-    // Solo incluir campos marcados por el usuario
+    // Include only fields checked by the user
     const fields = [
         { checkboxId: 'reloc-distance-check', inputId: 'reloc-distance', name: 'distance' },
         { checkboxId: 'reloc-hours-check',    inputId: 'reloc-hours',    name: 'hours' },
@@ -192,10 +192,10 @@ function calculateRelocation() {
             params[field.name] = input.value;
         }
     });
-    // Moneda (para formatear la respuesta)
+    // Currency (to format the response)
     const currency = document.getElementById('currency')?.value || '€';
     params.currency = currency;
-    // Añadir nonce de seguridad si existe
+    // Add security nonce if available
     params.nonce = ajaxRelocationData?.nonce || '';
 
     fetch(ajaxRelocationData.ajaxurl, {
@@ -215,9 +215,9 @@ function calculateRelocation() {
             const output = document.getElementById('relocation-auto-result');
             if (output) output.textContent = fee;
         } else {
-            alert(result.data.error || 'Error calculando la relocation fee');
+            alert(result.data.error || 'Error calculating relocation fee');
         }
     })
-    .catch(() => alert('Error de conexión al calcular la relocation fee'));
+    .catch(() => alert('Connection error while calculating relocation fee'));
 }
 

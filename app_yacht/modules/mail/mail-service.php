@@ -46,7 +46,7 @@ class MailService implements MailServiceInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'MailService Error: ' . $e->getMessage() );
-			return new WP_Error( 'mail_error', 'Error enviando email: ' . $e->getMessage() );
+			return new WP_Error( 'mail_error', 'Error sending email: ' . $e->getMessage() );
 		}
 	}
 	
@@ -55,7 +55,7 @@ class MailService implements MailServiceInterface {
 		try {
 			
 			if ( ! function_exists( 'pb_outlook_send_mail' ) ) {
-				return new WP_Error( 'outlook_not_available', 'Funciones de Outlook no disponibles' );
+				return new WP_Error( 'outlook_not_available', 'Outlook functions not available' );
 			}
 			
 			
@@ -83,7 +83,7 @@ class MailService implements MailServiceInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'MailService Outlook Error: ' . $e->getMessage() );
-			return new WP_Error( 'outlook_error', 'Error enviando via Outlook: ' . $e->getMessage() );
+			return new WP_Error( 'outlook_error', 'Error sending via Outlook: ' . $e->getMessage() );
 		}
 	}
 	
@@ -151,7 +151,7 @@ class MailService implements MailServiceInterface {
 		}
 		
 		if ( ! empty( $errors ) ) {
-			return new WP_Error( 'validation_failed', 'Errores de validación', $errors );
+			return new WP_Error( 'validation_failed', 'Validation errors', $errors );
 		}
 		
 		return true;
@@ -164,13 +164,13 @@ class MailService implements MailServiceInterface {
 		foreach ( $attachments as $attachment ) {
 			
 			if ( $attachment['size'] > $this->config['attachment_max_size'] ) {
-				return new WP_Error( 'attachment_too_large', 'Archivo muy grande: ' . $attachment['name'] );
+				return new WP_Error( 'attachment_too_large', 'File too large: ' . $attachment['name'] );
 			}
 			
 			
 			$extension = pathinfo( $attachment['name'], PATHINFO_EXTENSION );
 			if ( ! in_array( strtolower( $extension ), $this->config['allowed_attachment_types'] ) ) {
-				return new WP_Error( 'attachment_type_not_allowed', 'Tipo de archivo no permitido: ' . $extension );
+				return new WP_Error( 'attachment_type_not_allowed', 'File type not allowed: ' . $extension );
 			}
 			
 			$processed[] = $attachment;
@@ -223,14 +223,14 @@ class MailService implements MailServiceInterface {
 			$sent = wp_mail( $to, $subject, $message, $headers, $attachments );
 			
 			if ( ! $sent ) {
-				return new WP_Error( 'wp_mail_failed', 'Error enviando email con wp_mail' );
+				return new WP_Error( 'wp_mail_failed', 'Error sending email with wp_mail' );
 			}
 			
 			return true;
 			
 		} catch ( Exception $e ) {
 			error_log( 'wp_mail Error: ' . $e->getMessage() );
-			return new WP_Error( 'wp_mail_error', 'Error en wp_mail: ' . $e->getMessage() );
+			return new WP_Error( 'wp_mail_error', 'wp_mail error: ' . $e->getMessage() );
 		}
 	}
 	
@@ -345,18 +345,18 @@ class MailService implements MailServiceInterface {
 		foreach ( $attachments as $attachment ) {
 			
 			if ( ! isset( $attachment['name'] ) || ! isset( $attachment['size'] ) ) {
-				return new WP_Error( 'invalid_attachment', 'Estructura de archivo adjunto inválida' );
+				return new WP_Error( 'invalid_attachment', 'Invalid attachment structure' );
 			}
 			
 			
 			if ( $attachment['size'] > $this->config['attachment_max_size'] ) {
-				return new WP_Error( 'attachment_too_large', 'Archivo muy grande: ' . $attachment['name'] );
+				return new WP_Error( 'attachment_too_large', 'File too large: ' . $attachment['name'] );
 			}
 			
 			
 			$extension = pathinfo( $attachment['name'], PATHINFO_EXTENSION );
 			if ( ! in_array( strtolower( $extension ), $this->config['allowed_attachment_types'] ) ) {
-				return new WP_Error( 'attachment_type_not_allowed', 'Tipo no permitido: ' . $extension );
+				return new WP_Error( 'attachment_type_not_allowed', 'Type not allowed: ' . $extension );
 			}
 		}
 		

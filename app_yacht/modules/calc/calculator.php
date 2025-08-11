@@ -3,7 +3,7 @@
 	<!---------- CALCULATOR START ---------->
 	<div class="row">
 		<div class="col-md-12 d-flex flex-column">
-			<h1 class="text-center"><?php esc_html_e('Charter Rate Calculator', 'creativoypunto'); ?></h1>
+			<h1 class="text-center">Charter Rate Calculator</h1>
 
 			<!-- Calculator Form -->
 			<form id="charterForm" method="POST">
@@ -11,11 +11,11 @@
                 <!-- Yacht Info Module -->
                 <div class="row mb-3">
                     <div class="col-md-8">
-                        <label for="yacht-url" class="form-label"><?php esc_html_e('Yacht URL', 'creativoypunto'); ?></label>
-                        <input type="url" class="form-control" id="yacht-url" placeholder="<?php echo esc_attr__( 'Enter yacht listing URL...', 'creativoypunto' ); ?>">
+                        <label for="yacht-url" class="form-label">Yacht URL</label>
+                        <input type="url" class="form-control" id="yacht-url" placeholder="Enter yacht listing URL...">
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
-                        <button type="button" id="get-yacht-info" class="btn btn-primary"><?php esc_html_e('Get Info', 'creativoypunto'); ?></button>
+                        <button type="button" id="get-yacht-info" class="btn btn-primary">Get Info</button>
                         <div class="form-check mt-2 ms-3">
                             <input type="checkbox" class="form-check-input" id="force-refresh">
                             <label class="form-check-label" for="force-refresh"><?php esc_html_e('Force Refresh', 'creativoypunto'); ?></label>
@@ -95,47 +95,47 @@
 
 <!-- Relocation Auto Calculator (hidden by default) -->
 <div id="relocationAutoContainer" class="mt-3" style="display:none;">
-    <p class="fw-bold mb-2">Calculadora de relocation</p>
+    <p class="fw-bold mb-2">Relocation calculator</p>
     <div class="row flex-wrap align-items-end gx-2">
         <div class="col-auto">
-            <input id="reloc-distance-check" type="checkbox"> Distancia (NM)
-            <input id="reloc-distance" type="number" class="form-control mt-1" placeholder="Distancia" />
+            <input id="reloc-distance-check" type="checkbox"> Distance (NM)
+            <input id="reloc-distance" type="number" class="form-control mt-1" placeholder="Distance" />
         </div>
         <div class="col-auto">
-            <input id="reloc-speed-check" type="checkbox"> Velocidad (nudos)
-            <input id="reloc-cruising-speed" type="number" class="form-control mt-1" placeholder="Nudos" />
+            <input id="reloc-speed-check" type="checkbox"> Speed (knots)
+            <input id="reloc-cruising-speed" type="number" class="form-control mt-1" placeholder="Knots" />
         </div>
         <div class="col-auto">
-            <input id="reloc-hours-check" type="checkbox"> Horas
-            <input id="reloc-hours" type="number" class="form-control mt-1" placeholder="Horas" />
+            <input id="reloc-hours-check" type="checkbox"> Hours
+            <input id="reloc-hours" type="number" class="form-control mt-1" placeholder="Hours" />
         </div>
         <div class="col-auto">
-            <input id="reloc-fuel-consumption-check" type="checkbox"> Consumo (l/h o l/nm)
-            <input id="reloc-fuel-consumption" type="number" class="form-control mt-1" placeholder="Consumo" />
+            <input id="reloc-fuel-consumption-check" type="checkbox"> Consumption (l/h or l/nm)
+            <input id="reloc-fuel-consumption" type="number" class="form-control mt-1" placeholder="Consumption" />
         </div>
         <div class="col-auto">
-            <input id="reloc-fuel-price-check" type="checkbox"> Precio combustible
+            <input id="reloc-fuel-price-check" type="checkbox"> Fuel price
             <input id="reloc-fuel-price" type="number" step="0.01" class="form-control mt-1" placeholder="€/L" />
         </div>
         <div class="col-auto">
-            <input id="reloc-crew-count-check" type="checkbox"> Tripulación
-            <input id="reloc-crew-count" type="number" class="form-control mt-1" placeholder="N.º tripulantes" />
+            <input id="reloc-crew-count-check" type="checkbox"> Crew
+            <input id="reloc-crew-count" type="number" class="form-control mt-1" placeholder="Crew count" />
         </div>
         <div class="col-auto">
-            <input id="reloc-crew-wage-check" type="checkbox"> Salario diario
-            <input id="reloc-crew-wage" type="number" step="0.01" class="form-control mt-1" placeholder="€/día" />
+            <input id="reloc-crew-wage-check" type="checkbox"> Daily wage
+            <input id="reloc-crew-wage" type="number" step="0.01" class="form-control mt-1" placeholder="€/day" />
         </div>
         <div class="col-auto">
-            <input id="reloc-port-fees-check" type="checkbox"> Tasas portuarias
+            <input id="reloc-port-fees-check" type="checkbox"> Port fees
             <input id="reloc-port-fees" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
         </div>
         <div class="col-auto">
-            <input id="reloc-extra-check" type="checkbox"> Otros gastos
+            <input id="reloc-extra-check" type="checkbox"> Other costs
             <input id="reloc-extra" type="number" step="0.01" class="form-control mt-1" placeholder="€" />
         </div>
     </div>
     <div class="mt-2">
-        <button id="applyRelocationButton" type="button" class="btn btn-secondary">Aplicar</button>
+        <button id="applyRelocationButton" type="button" class="btn btn-secondary">Apply</button>
         <span id="relocation-auto-result" class="ms-3 fw-bold"></span>
     </div>
 </div>
@@ -172,7 +172,7 @@
     <label class="me-2 mb-0">Relocation Fee:</label>
     <div class="form-check form-switch m-0">
         <input class="form-check-input" type="checkbox" id="relocationAutoCheck" aria-controls="relocationAutoContainer" title="Auto calculate">
-        <label class="form-check-label small ms-1" for="relocationAutoCheck">Auto</label>
+        <label class="form-check-label small ms-1" for="relocationAutoCheck">Auto calculate</label>
     </div>
 </div>
 						<div class="input-group" style="flex-wrap: nowrap;">

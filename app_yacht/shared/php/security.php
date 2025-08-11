@@ -93,7 +93,7 @@ function pb_check_rate_limit( $key, $max_attempts = 5, $time_window = 300 ) {
 	try {
 		
 		if ( empty( $key ) ) {
-			error_log( 'Error en pb_check_rate_limit: Clave vacía' );
+			error_log( 'Error in pb_check_rate_limit: Empty key' );
 			return true; 
 		}
 
@@ -104,7 +104,7 @@ function pb_check_rate_limit( $key, $max_attempts = 5, $time_window = 300 ) {
 		try {
 			$attempts = get_transient( $safe_key );
 		} catch ( Exception $e ) {
-			error_log( 'Error al obtener transient para rate limit: ' . $e->getMessage() );
+			error_log( 'Error getting transient for rate limit: ' . $e->getMessage() );
 			return true; 
 		}
 
@@ -116,7 +116,7 @@ function pb_check_rate_limit( $key, $max_attempts = 5, $time_window = 300 ) {
 					error_log( 'Error al establecer transient para rate limit: ' . $safe_key );
 				}
 			} catch ( Exception $e ) {
-				error_log( 'Excepción al establecer transient: ' . $e->getMessage() );
+				error_log( 'Exception when updating transient: ' . $e->getMessage() );
 			}
 			return true;
 		}
@@ -132,19 +132,19 @@ function pb_check_rate_limit( $key, $max_attempts = 5, $time_window = 300 ) {
 			$attempts = is_numeric( $attempts ) ? intval( $attempts ) : 0;
 			$result   = set_transient( $safe_key, $attempts + 1, $time_window );
 			if ( $result === false ) {
-				error_log( 'Error al actualizar transient para rate limit: ' . $safe_key );
+				error_log( 'Error updating transient for rate limit: ' . $safe_key );
 			}
 		} catch ( Exception $e ) {
-			error_log( 'Excepción al actualizar transient: ' . $e->getMessage() );
+			error_log( 'Exception when updating transient: ' . $e->getMessage() );
 		}
 
 		return true;
 	} catch ( Exception $e ) {
-		error_log( 'Error general en pb_check_rate_limit: ' . $e->getMessage() );
+		error_log( 'General error in pb_check_rate_limit: ' . $e->getMessage() );
 		return true; 
 	} catch ( Throwable $t ) {
 		
-		error_log( 'Error fatal en pb_check_rate_limit: ' . $t->getMessage() );
+		error_log( 'Fatal error in pb_check_rate_limit: ' . $t->getMessage() );
 		return true; 
 	}
 }

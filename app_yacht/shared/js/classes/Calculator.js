@@ -204,15 +204,15 @@ class Calculator {
         if (typeof validateFields === 'function') {
             const isValid = validateFields();
             if (!isValid) {
-                (window.AppYacht?.error || console.error)('Validación fallida');
-                return Promise.reject(new Error('Validación fallida'));
+                (window.AppYacht?.error || console.error)('Validation failed');
+                return Promise.reject(new Error('Validation failed'));
             }
         }
         
         // Evitar cálculos simultáneos
         if (this.isCalculating) {
-            (window.AppYacht?.warn || console.warn)('Ya hay un cálculo en progreso');
-            return Promise.reject(new Error('Ya hay un cálculo en progreso'));
+            (window.AppYacht?.warn || console.warn)('A calculation is already in progress');
+            return Promise.reject(new Error('A calculation is already in progress'));
         }
         
         this.isCalculating = true;
@@ -238,13 +238,13 @@ class Calculator {
             });
             
             if (!response.ok) {
-                throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`);
+                throw new Error(`Server response error: ${response.status} ${response.statusText}`);
             }
             
             const result = await response.json();
             
             if (!result.success) {
-                throw new Error(result.data || 'Error de cálculo desconocido');
+                throw new Error(result.data || 'Unknown calculation error');
             }
             
             // Guardar resultado
@@ -262,7 +262,7 @@ class Calculator {
             
             return result.data;
         } catch (error) {
-            (window.AppYacht?.error || console.error)('Error en el cálculo:', error);
+            (window.AppYacht?.error || console.error)('Calculation error:', error);
             
             // Notificar error
             if (this.config.onCalculationError) {

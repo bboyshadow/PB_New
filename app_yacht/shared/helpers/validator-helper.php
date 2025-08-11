@@ -40,7 +40,7 @@ class ValidatorHelper {
 
 		foreach ( $required as $field ) {
 			if ( ! isset( $data[ $field ] ) || empty( $data[ $field ] ) ) {
-				$errors[] = "Campo requerido faltante: {$field}";
+				$errors[] = "Missing required field: {$field}";
 			}
 		}
 
@@ -76,14 +76,14 @@ class ValidatorHelper {
 
 		
 		if ( isset( $data['currency'] ) && ! self::isValidCurrency( $data['currency'] ) ) {
-			$errors[] = 'Moneda no soportada: ' . $data['currency'];
+			$errors[] = 'Unsupported currency: ' . $data['currency'];
 		}
 
 		
 		$numericFields = array( 'vatRate', 'apaAmount', 'apaPercentage', 'relocationFee', 'securityFee' );
 		foreach ( $numericFields as $field ) {
 			if ( isset( $data[ $field ] ) && ! empty( $data[ $field ] ) && ! self::isValidDecimal( $data[ $field ] ) ) {
-				$errors[] = "Valor numérico inválido para {$field}: " . $data[ $field ];
+				$errors[] = "Invalid numeric value for {$field}: " . $data[ $field ];
 			}
 		}
 
@@ -104,7 +104,7 @@ class ValidatorHelper {
 			foreach ( $emails as $email ) {
 				$email = trim( $email );
 				if ( ! empty( $email ) && ! self::isValidEmail( $email ) ) {
-					$errors[] = "Email inválido: {$email}";
+					$errors[] = "Invalid email: {$email}";
 				}
 			}
 		}

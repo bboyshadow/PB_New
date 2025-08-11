@@ -212,7 +212,7 @@ class TemplateManager {
             if (typeof validateFields === 'function') {
                 const isValid = validateFields();
                 if (!isValid) {
-                    throw new Error('Validación fallida');
+                    throw new Error('Validation failed');
                 }
             }
             
@@ -241,7 +241,7 @@ class TemplateManager {
             // Verificar que tenemos un nonce válido
             const nonce = formData.get('nonce');
             if (!nonce) {
-                throw new Error('Error de seguridad: nonce no disponible');
+                throw new Error('Security error: nonce not available');
             }
             
             // Enviar petición usando fetch con async/await
@@ -251,7 +251,7 @@ class TemplateManager {
             });
             
             if (!response.ok) {
-                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+                throw new Error(`Server response error: ${response.status}`);
             }
             
             const result = await response.json();
@@ -289,8 +289,8 @@ class TemplateManager {
             return result.data;
         } catch (error) {
             // Evitar ruido en consola para errores de validación previsibles
-            if (!error.message || !error.message.includes('Validación fallida')) {
-                (window.AppYacht?.error || console.error)('Error al crear plantilla:', error);
+            if (!error.message || !error.message.includes('Validation failed')) {
+                (window.AppYacht?.error || console.error)('Error creating template:', error);
             }
             
             // Notificar error si hay callback
@@ -339,7 +339,7 @@ class TemplateManager {
             });
             
             if (!response.ok) {
-                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+                throw new Error(`Server response error: ${response.status}`);
             }
             
             const result = await response.json();

@@ -114,6 +114,7 @@ function calculate( array $data ): array {
 	$relocFeeStr  = $data['relocationFee'] ?? '0';
 	$secFeeStr    = $data['securityFee'] ?? '0';
 
+	$enableVatRateMix = ! empty( $data['enableVatRateMix'] );
 	$vatRate = floatval( str_replace( ',', '', $vatRateStr ) ) / 100;
 	if ( $enableVatRateMix ) {
 		$vatRate = 0;
@@ -129,8 +130,7 @@ function calculate( array $data ): array {
 	$oneDayActive     = ! empty( $data['enableOneDayCharter'] );
 	$enableExpenses   = ! empty( $data['enableExpenses'] );
 	$vatMix           = $data['vatMix'] ?? array();
-	$enableVatRateMix = ! empty( $data['enableVatRateMix'] );
-
+	
 	$structuredResults = array();
 
 	
@@ -338,14 +338,14 @@ function calculate( array $data ): array {
 			'discountAmount'        => $discountAmountForDisplay, 
 			'discountValue'         => $discountValueDisplay, 
 			'discountedRate'        => ( $discountedRate !== $calculatedBaseRate && $discountedRate >= 0 )
-								   ? formatCurrency( $discountedRate, $symbolCode, true )
-								   : '--', 
+							   ? formatCurrency( $discountedRate, $symbolCode, true )
+							   : '--', 
 
 			'promotionActive'       => $promotionActive ? '1' : '0',
 			'promotionNights'       => (string) $promotionNights,
 			'promotedRate'          => ( $promotionActive && $promotedRate >= 0 )
-							   ? formatCurrency( $promotedRate, $symbolCode, true )
-							   : '--',
+						   ? formatCurrency( $promotedRate, $symbolCode, true )
+						   : '--',
 			'promotionValueDisplay' => $promotionValueDisplay,
 
 			'vatRateForDisplay'     => (string) $vatRateDisp,

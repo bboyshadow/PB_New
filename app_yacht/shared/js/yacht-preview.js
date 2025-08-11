@@ -33,15 +33,15 @@ document.addEventListener(
 						yachtThumbnail.innerHTML = info.imageUrl ? ` < img src = "${info.imageUrl}" alt = "Yacht Thumbnail" class = "img-thumbnail rounded" style = "max-width: 100px; height: auto;" > ` : 'No imagen';
 						yachtInfo.innerHTML      = '';
 						const fields             = {
-							'Nombre': info.yachtName,
-							'Longitud': info.length,
-							'Tipo': info.type,
-							'Constructor': info.builder,
-							'Año de Construcción': info.yearBuilt,
-							'Tripulación': info.crew,
-							'Cabañas': info.cabins,
-							'Invitados': info.guest,
-							'Configuración de Cabañas': info.cabinConfiguration
+							'Name': info.yachtName,
+							'Length': info.length,
+							'Type': info.type,
+							'Builder': info.builder,
+							'Year Built': info.yearBuilt,
+							'Crew': info.crew,
+							'Cabins': info.cabins,
+							'Guests': info.guest,
+							'Cabin Configuration': info.cabinConfiguration
 						};
 						for (const [field, value] of Object.entries( fields )) {
 							if (value && value !== '--') {
@@ -50,7 +50,7 @@ document.addEventListener(
 						}
 						yachtPreview.style.display = 'block';
 					} else {
-						yachtInfo.innerHTML        = 'Error al obtener info: ' + (response.data.message || 'Desconocido');
+						yachtInfo.innerHTML        = 'Error fetching info: ' + (response.data.message || 'Unknown');
 						yachtPreview.style.display = 'block';
 					}
 				}

@@ -257,12 +257,12 @@ function handleTemplateLoaded(data) {
 }
 function handleTemplateError(error) {
     // Solo mostrar en consola si es un error inesperado (no validación)
-    if (!error.message || !error.message.includes('Validación fallida')) {
-        (window.AppYacht?.error || console.error)('Error en la plantilla:', error);
+    if (!error.message || !error.message.includes('Validation failed')) {
+        (window.AppYacht?.error || console.error)('Template error:', error);
     }
     const errorMessage = document.getElementById('errorMessage');
     if (errorMessage) {
-        errorMessage.textContent = error.message || 'Error en la plantilla';
+        errorMessage.textContent = error.message || 'Template error';
         errorMessage.style.display = 'block';
     }
 }
@@ -365,7 +365,24 @@ function onTemplateChange() {
             resultContainer.innerHTML = '<p>Error loading template preview.</p>';
         });
     } else {
-        templateManager.createTemplate().catch(() => {}); 
+        // No hay URL de yate, solo cargar plantilla vacía sin llamar createTemplate
+        const params = new URLSearchParams({
+            action: 'load_template_preview',
+            template: selectedTemplate,
+            nonce: ajaxTemplateData?.nonce || '' 
+        });
+        fetch(`${ajaxTemplateData.ajaxurl}?${params.toString()}`)
+        .then(r => {
+            if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+            return r.text();
+        })
+        .then(previewHtml => {
+            resultContainer.innerHTML = previewHtml;
+        })
+        .catch(err => {
+            (window.AppYacht?.error || console.error)('Error loading template preview:', err);
+            resultContainer.innerHTML = '<p>Error loading template preview.</p>';
+        });
     }
      saveTemplateFormData(); 
 }
@@ -404,10 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Actualizar la propia clase TemplateManager si es necesario
             templateManager.toggleOneDayCharter(this.checked); 
             
-            const yachtUrl = document.getElementById('yacht-url')?.value.trim();
-            if (yachtUrl) {
-                templateManager.createTemplate().catch(() => {});
-            }
+            // Remover la llamada automática a createTemplate para evitar "Validation failed"
+            // El usuario puede usar el botón manualmente si lo desea
             saveTemplateFormData(); 
         });
     }
@@ -418,6 +433,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleCreateTemplateButton();
             saveTemplateFormData(); 
         }, 300));
+        // Remover la llamada automática a createTemplate al cambiar URL
+        // para evitar validaciones no deseadas
+        yachtUrlInput.addEventListener('change', () => {
+            saveTemplateFormData();
+        });
+
         toggleCreateTemplateButton(); 
         
         restoreTemplateFormData(); // Restaurar datos al cargar

@@ -90,7 +90,7 @@ class CalcService implements CalcServiceInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'CalcService Error: ' . $e->getMessage() );
-			return new WP_Error( 'calculation_error', 'Error en cálculo: ' . $e->getMessage() );
+			return new WP_Error( 'calculation_error', 'Calculation error: ' . $e->getMessage() );
 		}
 	}
 	
@@ -141,7 +141,7 @@ class CalcService implements CalcServiceInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'CalcService Mix Error: ' . $e->getMessage() );
-			return new WP_Error( 'mix_calculation_error', 'Error en cálculo mix: ' . $e->getMessage() );
+			return new WP_Error( 'mix_calculation_error', 'Mix calculation error: ' . $e->getMessage() );
 		}
 	}
 	
@@ -150,7 +150,7 @@ class CalcService implements CalcServiceInterface {
 		$errors = ValidatorHelper::validateCalculationData( $data );
 		
 		if ( ! empty( $errors ) ) {
-			return new WP_Error( 'validation_failed', 'Errores de validación', $errors );
+			return new WP_Error( 'validation_failed', 'Validation errors', $errors );
 		}
 		
 		return true;

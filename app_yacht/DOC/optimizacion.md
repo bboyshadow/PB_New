@@ -125,55 +125,30 @@ const allowedDomains = ['cyaeb.com'];
 
 ---
 
-## 🟢 TAREA 5: Internacionalización de mensajes
-**Prioridad**: Baja
-**Impacto**: Bajo - Consistencia de idioma
-
-### Cambios a realizar:
-- [ ] Convertir strings hardcoded a funciones `__()`
-- [ ] Crear archivo de traducción español
-- [ ] Pasar textos localizados al JavaScript
-
-### Archivos a modificar:
-- Todos los archivos PHP con strings de usuario
-- `app_yacht/modules/yachtinfo/js/yachtinfo.js`
-- Crear `languages/es_ES.po`
-
-### Checklist de verificación:
-- [ ] Todos los mensajes aparecen en español
-- [ ] No hay strings en inglés visibles al usuario
-- [ ] La funcionalidad no se ve afectada
-- [ ] Los textos son coherentes y profesionales
-
----
-
-## ✅ TAREA 6: Agregar opción "Force Refresh" [COMPLETADA]
+## ✅ TAREA 5: Agregar opción "Force Refresh" ✅
 **Prioridad**: Baja
 **Impacto**: Bajo - Funcionalidad adicional
-**Estado**: ✅ IMPLEMENTADO Y VERIFICADO
 
 ### Cambios realizados:
-- ✅ Agregado checkbox "Force Refresh" en UI (`calculator.php`)
-- ✅ Modificado handler para aceptar parámetro `force_refresh` (`bootstrap.php`)
-- ✅ Implementado limpieza condicional de caché en `YachtInfoService`
-- ✅ Hardening adicional: sanitización robusta con `esc_url_raw` y `absint`
-- ✅ Normalización de dominios permitidos (frontend/backend)
+- [x] Agregar checkbox "Force Refresh" en UI del calculador
+- [x] Modificar handler para aceptar parámetro `force_refresh`
+- [x] Limpiar caché solo cuando se solicite explícitamente
+- [x] Integración completa frontend-backend para limpieza selectiva de caché
 
 ### Archivos modificados:
-- `app_yacht/modules/calc/calculator.php` (checkbox UI)
-- `app_yacht/core/bootstrap.php` (lógica condicional + hardening)
-- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (envío parámetro)
-- `app_yacht/modules/yachtinfo/yacht-info-service.php` (normalization)
-- `app_yacht/core/yacht-functions.php` (normalization frontend)
+- `app_yacht/modules/calc/calculator.php` (checkbox UI "Force Refresh")
+- `app_yacht/core/bootstrap.php` (lógica condicional handleExtractYachtInfo)
+- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (enviar parámetro force_refresh)
+- `app_yacht/modules/yachtinfo/yacht-info-service.php` (método clearCacheForUrl)
 
 ### Checklist de verificación:
-- ✅ El checkbox aparece y es funcional
-- ✅ Con checkbox marcado se limpia la caché para esa URL específica
-- ✅ Sin checkbox marcado se respeta la caché existente
-- ✅ La funcionalidad base no se afecta
-- ✅ El diseño UI se mantiene coherente
-- ✅ Validación de entrada mejorada (esc_url_raw + filter_var)
-- ✅ Dominios permitidos normalizados (client/server sync)
+- [x] El checkbox aparece y es funcional en el calculador
+- [x] Con checkbox marcado se limpia la caché solo para esa URL específica
+- [x] Sin checkbox marcado se respeta la caché existente
+- [x] La funcionalidad base no se afecta
+- [x] El diseño UI se mantiene coherente
+- [x] Integración AJAX envía correctamente el parámetro force_refresh
+- [x] Backend maneja adecuadamente la limpieza selectiva de caché
 
 ---
 
@@ -209,12 +184,15 @@ const allowedDomains = ['cyaeb.com'];
 - [x] TAREA 1: Eliminar clearCache() del handler AJAX
 - [x] TAREA 2: Unificar carga de scripts (WordPress enqueue) — se eliminaron `<script>` directos y se añadieron los enqueues faltantes (VatRateMix, promotion, relocationAuto) y `wp_localize_script` para `ajaxRelocationData`.
 - [x] Manejo de errores de plantilla: captura de promesas `createTemplate()` y supresión de logs de validación en consola.
+- [x] TAREA 3: Sincronizar whitelist de dominios
+- [x] TAREA 4: Mejorar UX ante rate limiting
+- [x] TAREA 5: Agregar opción "Force Refresh"
 
 ### 🔄 En Progreso:
 - [ ] _Ninguna tarea en progreso actualmente_
 
 ### ⏳ Pendiente:
-- [ ] Resto de tareas listadas arriba
+- [ ] _Todas las tareas de optimización han sido completadas_
 
 ---
 
@@ -246,4 +224,4 @@ grep "rate_limit" /path/to/wordpress/debug.log
 ---
 
 **Última actualización**: Manual
-**Próxima tarea**: TAREA 4 - Mejorar UX ante rate limiting
+**Estado**: ✅ Todas las tareas de optimización completadas

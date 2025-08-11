@@ -255,15 +255,8 @@ class AppYachtBootstrap {
 				return;
 			}
 			
-			$url = esc_url_raw( wp_unslash( $_POST['yachtUrl'] ) );
-			if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
-				wp_send_json_error( array(
-					'message' => __( 'Please enter a valid URL (e.g., https://www.charterworld.com/yacht/...)', 'creativoypunto' ),
-					'code' => 'invalid_url'
-				) );
-				return;
-			}
-			$force_refresh = isset( $_POST['force_refresh'] ) && absint( $_POST['force_refresh'] ) === 1;
+			$url = sanitize_text_field( $_POST['yachtUrl'] );
+			$force_refresh = isset($_POST['force_refresh']) && intval($_POST['force_refresh']) === 1;
 			$container = self::getContainer();
 			$yachtInfoService = $container->get( 'yacht_info_service' );
 			

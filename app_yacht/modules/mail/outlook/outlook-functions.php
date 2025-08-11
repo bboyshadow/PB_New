@@ -61,7 +61,7 @@ function pb_outlook_exchange_code_for_tokens( $code ) {
 	}
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 	if ( isset( $data['error'] ) ) {
-		return new WP_Error( 'token_error', $data['error_description'] ?? 'Error al obtener tokens' );
+		return new WP_Error( 'token_error', $data['error_description'] ?? 'Error obtaining tokens' );
 	}
 
 	
@@ -114,7 +114,7 @@ function pb_outlook_get_user_access_token( $user_id ) {
 	$expires_at              = (int) get_user_meta( $user_id, 'outlook_expires_at', true );
 
 	if ( ! $encrypted_access_token || ! $encrypted_refresh_token ) {
-		return new WP_Error( 'missing_tokens', 'El usuario no tiene tokens de Outlook.' );
+		return new WP_Error( 'missing_tokens', 'The user does not have Outlook tokens.' );
 	}
 
 	
@@ -123,7 +123,7 @@ function pb_outlook_get_user_access_token( $user_id ) {
 
 	
 	if ( ! $access_token || ! $refresh_token ) {
-		return new WP_Error( 'missing_tokens', 'El usuario no tiene tokens de Outlook.' );
+		return new WP_Error( 'missing_tokens', 'The user does not have Outlook tokens.' );
 	}
 	
 	if ( time() >= $expires_at ) {
@@ -158,7 +158,7 @@ function pb_outlook_refresh_token( $refresh_token ) {
 	}
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 	if ( isset( $data['error'] ) ) {
-		return new WP_Error( 'refresh_error', $data['error_description'] ?? 'Error al refrescar tokens' );
+		return new WP_Error( 'refresh_error', $data['error_description'] ?? 'Error refreshing tokens' );
 	}
 	return $data;
 }
@@ -167,7 +167,7 @@ function pb_outlook_refresh_token( $refresh_token ) {
 function pb_outlook_send_mail_on_behalf( $user_id, $to, $subject, $body_content, $cc = '', $bcc = '' ) {
 	
 	if ( ! is_ssl() && ! WP_DEBUG ) {
-		 return new WP_Error( 'insecure_connection', 'Esta operación requiere una conexión segura (HTTPS).' );
+		 return new WP_Error( 'insecure_connection', 'This operation requires a secure connection (HTTPS).' );
 	}
 
 	 
@@ -179,7 +179,7 @@ function pb_outlook_send_mail_on_behalf( $user_id, $to, $subject, $body_content,
 	}
 	if ( empty( $access_token ) ) { 
 		 
-		 return new WP_Error( 'token_error', 'No se pudo obtener un token de acceso válido.' );
+		 return new WP_Error( 'token_error', 'Could not obtain a valid access token.' );
 	}
 
 	
@@ -286,7 +286,7 @@ function pb_outlook_send_mail_on_behalf( $user_id, $to, $subject, $body_content,
 
 	if ( is_wp_error( $response ) ) {
 		
-		error_log( 'pb_outlook_send_mail_on_behalf: Error en wp_remote_post: ' . $response->get_error_message() ); 
+		error_log( 'pb_outlook_send_mail_on_behalf: wp_remote_post error: ' . $response->get_error_message() );
 		return new WP_Error( 'send_mail_failed', $response->get_error_message() );
 	}
 	$status_code = wp_remote_retrieve_response_code( $response );
@@ -303,10 +303,10 @@ function pb_outlook_send_mail_on_behalf( $user_id, $to, $subject, $body_content,
 		return true;
 	}
 	
-	error_log( 'Error al enviar correo. Respuesta HTTP: ' . $status_code . ' => ' . wp_remote_retrieve_body( $response ) );
+	error_log( 'Error sending email. HTTP response: ' . $status_code . ' => ' . wp_remote_retrieve_body( $response ) );
 	return new WP_Error(
 		'send_mail_error',
-		'Error al enviar correo. Respuesta HTTP: ' . $status_code . ' => ' . wp_remote_retrieve_body( $response )
+		'Error sending email. HTTP response: ' . $status_code . ' => ' . wp_remote_retrieve_body( $response )
 	);
 }
 
@@ -340,7 +340,7 @@ function pb_outlook_send_mail_ajax_handler() {
 	$user_id = get_current_user_id();
 	
 	
-	if ( ! pb_verify_user_capability( 'send_yacht_emails', 'No tienes permisos para enviar correos.' ) ) {
+	if ( ! pb_verify_user_capability( 'send_yacht_emails', 'You do not have permission to send emails.' ) ) {
 		return; 
 	}
 
@@ -463,7 +463,7 @@ function pb_outlook_disconnect_ajax_handler() {
 		
 		if ( ! isset( $_POST['nonce'] ) ) {
 			pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'missing_nonce' ) );
-			wp_send_json_error( 'Error de seguridad: Token no proporcionado. Por favor, recarga la página e intenta de nuevo.', 403 );
+			wp_send_json_error( 'Security error: Token not provided. Please reload the page and try again.', 403 );
 			return;
 		}
 		
@@ -471,7 +471,7 @@ function pb_outlook_disconnect_ajax_handler() {
 		$nonce_verification = wp_verify_nonce( $_POST['nonce'], 'pb_outlook_nonce' );
 		if ( ! $nonce_verification ) {
 			pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'invalid_nonce' ) );
-			wp_send_json_error( 'Error de seguridad: Token inválido o expirado. Por favor, recarga la página e intenta de nuevo.', 403 );
+			wp_send_json_error( 'Security error: Token invalid or expired. Please reload the page and try again.', 403 );
 			return;
 		}
 		
@@ -495,7 +495,7 @@ function pb_outlook_disconnect_ajax_handler() {
 			wp_send_json_success( 'Tu cuenta de Outlook ha sido desconectada correctamente.' );
 		} else {
 			pb_log_security_event( $user_id, 'outlook_disconnect_ajax_failed', array( 'reason' => 'disconnect_failed' ) );
-			wp_send_json_error( 'No se pudo desconectar tu cuenta de Outlook. Por favor, intenta de nuevo más tarde.' );
+			wp_send_json_error( 'Could not disconnect your Outlook account. Please try again later.' );
 		}
 	} catch ( Exception $e ) {
 		pb_log_security_event(
