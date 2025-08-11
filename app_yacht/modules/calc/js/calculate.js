@@ -236,7 +236,7 @@ if (vatRateMixEnabled) {
                 window.eventBus.publish('calculator:success', result.data);
             }
         } else {
-            console.error('Error de cálculo:', result.data);
+            (window.AppYacht?.error || console.error)('Error de cálculo:', result.data);
             const errorMessage = document.getElementById('errorMessage');
             if (errorMessage) {
                 errorMessage.textContent = 'Error de cálculo.';
@@ -249,7 +249,7 @@ if (vatRateMixEnabled) {
             }
         }
     } catch (err) {
-        console.error('Error en la solicitud:', err);
+        (window.AppYacht?.error || console.error)('Error en la solicitud:', err);
         const errorMessage = document.getElementById('errorMessage');
         if (errorMessage) {
             errorMessage.textContent = 'Error general.';
@@ -337,7 +337,7 @@ function copyToClipboard() {
             copyButton.classList.remove('btn-success');
         }, 2000);
     }).catch(err => {
-        console.error('Error al copiar:', err);
+        (window.AppYacht?.error || console.error)('Error al copiar:', err);
     });
 }
   

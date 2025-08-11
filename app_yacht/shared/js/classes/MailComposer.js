@@ -45,7 +45,7 @@ class MailComposer {
      */
     initializeEditor() {
         if (!this.editor) {
-            console.error(`Editor con ID ${this.config.editorId} no encontrado`);
+            (window.AppYacht?.error || console.error)(`Editor con ID ${this.config.editorId} no encontrado`);
             return;
         }
         
@@ -244,7 +244,7 @@ class MailComposer {
                 fontSelect.value = savedFont;
                 fontSelect.style.fontFamily = savedFont;
             } else {
-                 console.warn('Fuente guardada "' + savedFont + '" no encontrada en el selector.');
+                 (window.AppYacht?.warn || console.warn)('Fuente guardada "' + savedFont + '" no encontrada en el selector.');
             }
         }
     }

@@ -3,7 +3,7 @@
 	<!---------- CALCULATOR START ---------->
 	<div class="row">
 		<div class="col-md-12 d-flex flex-column">
-			<h1 class="text-center">Charter Rate Calculator</h1>
+			<h1 class="text-center"><?php esc_html_e('Charter Rate Calculator', 'creativoypunto'); ?></h1>
 
 			<!-- Calculator Form -->
 			<form id="charterForm" method="POST">
@@ -11,11 +11,15 @@
                 <!-- Yacht Info Module -->
                 <div class="row mb-3">
                     <div class="col-md-8">
-                        <label for="yacht-url" class="form-label">Yacht URL</label>
-                        <input type="url" class="form-control" id="yacht-url" placeholder="Enter yacht listing URL...">
+                        <label for="yacht-url" class="form-label"><?php esc_html_e('Yacht URL', 'creativoypunto'); ?></label>
+                        <input type="url" class="form-control" id="yacht-url" placeholder="<?php echo esc_attr__( 'Enter yacht listing URL...', 'creativoypunto' ); ?>">
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
-                        <button type="button" id="get-yacht-info" class="btn btn-primary">Get Info</button>
+                        <button type="button" id="get-yacht-info" class="btn btn-primary"><?php esc_html_e('Get Info', 'creativoypunto'); ?></button>
+                        <div class="form-check mt-2 ms-3">
+                            <input type="checkbox" class="form-check-input" id="force-refresh">
+                            <label class="form-check-label" for="force-refresh"><?php esc_html_e('Force Refresh', 'creativoypunto'); ?></label>
+                        </div>
                     </div>
                 </div>
                 
@@ -260,18 +264,4 @@
 	</div>
 	<!---------- CALCULATOR END ---------->
 	
-	<!-- Scripts for Calculator functionality -->
-	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/VatRateMix.js"></script>
-	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/interfaz.js"></script>
-	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/mix.js"></script>
-	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/extraPerPerson.js"></script>
-	<script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/calculate.js"></script>
-        <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/promotion.js"></script>
-        <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/yachtinfo/js/yachtinfo.js"></script>
-        <script src="<?php echo get_template_directory_uri(); ?>/app_yacht/modules/calc/js/relocationAuto.js"></script>
-        <script>
-        window.ajaxRelocationData = {
-            ajaxurl: ( typeof ajaxCalculatorData !== 'undefined' ) ? ajaxCalculatorData.ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>',
-            nonce: '<?php echo wp_create_nonce( 'relocation_calculate_nonce' ); ?>'
-        };
-        </script>
+	<!-- Scripts load via wp_enqueue_scripts in app_yacht/core/yacht-functions.php to avoid duplicates -->

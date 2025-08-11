@@ -100,14 +100,14 @@ function toggleCalcOptionalField(fieldId) {
     
     const field = document.getElementById(fieldId);
     if (!field) {
-        console.error(`Elemento con ID ${fieldId} no encontrado.`);
+        (window.AppYacht?.error || console.error)(`Elemento con ID ${fieldId} no encontrado.`);
         return false;
     }
     
     // Determinar el checkbox que controla este fieldId
     const controlCheckbox = document.querySelector(`input[aria-controls="${fieldId}"]`);
     if (!controlCheckbox) {
-         console.warn(`Checkbox de control para ${fieldId} no encontrado.`);
+         (window.AppYacht?.warn || console.warn)(`Checkbox de control para ${fieldId} no encontrado.`);
     }
 
     // Verificar estado del checkbox y actualizar visibilidad en consecuencia
@@ -241,7 +241,7 @@ function toggleVATField(button) {
 
 // Function to toggle APA field (asociada a un botón) - NO USADA, se usa checkbox
 function toggleAPAField(button) {
-     console.warn('toggleAPAField llamada desde botón no implementada, usar checkbox con toggleCalcOptionalField');
+     (window.AppYacht?.warn || console.warn)('toggleAPAField llamada desde botón no implementada, usar checkbox con toggleCalcOptionalField');
 }
 
 // Function to toggle Relocation field (asociada a un botón)
@@ -487,7 +487,7 @@ function updateUIConstraints() {
 function initCalcInterface() {
     // Check si funciones compartidas existen
     if (!window.toggleContainer || !window.addDynamicField || !window.removeDynamicField) {
-        console.warn('Las funciones UI compartidas (toggleContainer, addDynamicField, removeDynamicField) no están disponibles.');
+        (window.AppYacht?.warn || console.warn)('Las funciones UI compartidas (toggleContainer, addDynamicField, removeDynamicField) no están disponibles.');
     }
     
     // Ocultar los controles de vat-mix-controls al inicio
@@ -593,5 +593,5 @@ window.removeCharterRate = removeCharterRate;
 window.addExtraField = addExtraField;
 window.removeExtraField = removeExtraField;
 window.toggleOneDayCharter = toggleOneDayCharter; 
-window.formatNumber = typeof formatNumber !== 'undefined' ? formatNumber : (el) => console.warn('formatNumber not defined', el); 
+window.formatNumber = typeof formatNumber !== 'undefined' ? formatNumber : (el) => (window.AppYacht?.warn || console.warn)('formatNumber not defined', el); 
 // Las funciones de ui.js (toggleContainer, addDynamicField, removeDynamicField) ya deberían ser globales.

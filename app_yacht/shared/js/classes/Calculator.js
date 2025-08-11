@@ -38,10 +38,10 @@ class Calculator {
         // Inicializar sistema de eventos si está disponible
         if (typeof window.eventBus !== 'undefined') {
             this.eventBus = window.eventBus;
-            console.log('EventBus conectado a Calculator');
+            (window.AppYacht?.log || console.log)('EventBus conectado a Calculator');
         }
         
-        console.log('Calculator inicializado');
+        (window.AppYacht?.log || console.log)('Calculator inicializado');
     }
     
     /**
@@ -50,7 +50,7 @@ class Calculator {
      * @returns {FormData} - Objeto FormData con los datos recolectados
      */
     collectFormData(formId = 'charterForm') {
-        console.log('Recolectando datos del formulario:', formId);
+        (window.AppYacht?.log || console.log)('Recolectando datos del formulario:', formId);
         
         const form = document.getElementById(formId);
         if (!form) {
@@ -204,14 +204,14 @@ class Calculator {
         if (typeof validateFields === 'function') {
             const isValid = validateFields();
             if (!isValid) {
-                console.error('Validación fallida');
+                (window.AppYacht?.error || console.error)('Validación fallida');
                 return Promise.reject(new Error('Validación fallida'));
             }
         }
         
         // Evitar cálculos simultáneos
         if (this.isCalculating) {
-            console.warn('Ya hay un cálculo en progreso');
+            (window.AppYacht?.warn || console.warn)('Ya hay un cálculo en progreso');
             return Promise.reject(new Error('Ya hay un cálculo en progreso'));
         }
         
@@ -262,7 +262,7 @@ class Calculator {
             
             return result.data;
         } catch (error) {
-            console.error('Error en el cálculo:', error);
+            (window.AppYacht?.error || console.error)('Error en el cálculo:', error);
             
             // Notificar error
             if (this.config.onCalculationError) {
@@ -288,7 +288,7 @@ class Calculator {
     displayResult(result, resultContainerId = 'result') {
         const resultContainer = document.getElementById(resultContainerId);
         if (!resultContainer) {
-            console.error(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`);
+            (window.AppYacht?.error || console.error)(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`);
             return;
         }
         
@@ -335,7 +335,7 @@ class Calculator {
             // Usar la API moderna de portapapeles si está disponible
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(tempElement.innerText);
-                console.log('Resultado copiado al portapapeles usando Clipboard API');
+                (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando Clipboard API');
                 return true;
             }
             
@@ -350,13 +350,13 @@ class Calculator {
             document.body.removeChild(tempElement);
             
             if (success) {
-                console.log('Resultado copiado al portapapeles usando execCommand');
+                (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando execCommand');
                 return true;
             } else {
                 throw new Error('No se pudo copiar el texto');
             }
         } catch (error) {
-            console.error('Error al copiar al portapapeles:', error);
+            (window.AppYacht?.error || console.error)('Error al copiar al portapapeles:', error);
             return Promise.reject(error);
         }
     }

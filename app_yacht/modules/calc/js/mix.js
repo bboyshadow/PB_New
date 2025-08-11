@@ -125,7 +125,7 @@ function addMix() {
              if(applyMixButtonEl) {
                  applyMixButtonEl.addEventListener('click', applyMix);
              } else {
-                 console.error("El botón 'applymixButton' no se encontró después de agregarlo al DOM.");
+                 (window.AppYacht?.error || console.error)("El botón 'applymixButton' no se encontró después de agregarlo al DOM.");
              }
         }
     }, 0);
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     } else {
-        console.error("El elemento con ID 'enableMixedSeasons' no se encontró en el DOM.");
+        (window.AppYacht?.error || console.error)("El elemento con ID 'enableMixedSeasons' no se encontró en el DOM.");
     }
 
     // Delegación de eventos en #mixedSeasonsContainer
@@ -376,7 +376,7 @@ function applyMix() {
             if (calculateBtn) calculateBtn.textContent = 'Recalculate';
 
         } else {
-            console.error('Error en los cálculos:', result.data);
+            (window.AppYacht?.error || console.error)('Error en los cálculos:', result.data);
             const mixedResultError = document.getElementById('mixedResult');
             if (mixedResultError) {
                 mixedResultError.textContent = 'Error en los cálculos.';
@@ -385,7 +385,7 @@ function applyMix() {
         }
     })
     .catch(err => {
-        console.error("Error en applyMix:", err);
+        (window.AppYacht?.error || console.error)("Error en applyMix:", err);
         const mixedResultError = document.getElementById('mixedResult');
         if (mixedResultError) {
             mixedResultError.textContent = 'Error durante el procesamiento.';

@@ -24,6 +24,10 @@ class YachtInfoService implements YachtInfoServiceInterface {
 	
 	public function __construct( array $config ) {
 		$this->config = $config;
+		// Normalize allowed_domains for consistent comparisons
+		if ( isset( $this->config['allowed_domains'] ) && is_array( $this->config['allowed_domains'] ) ) {
+			$this->config['allowed_domains'] = array_map( 'strtolower', $this->config['allowed_domains'] );
+		}
 	}
 	
 	public function extractYachtInfo( $url ) {
@@ -33,14 +37,14 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			// Validar formato de URL
 			if ( ! ValidatorHelper::isValidUrl( $url ) ) {
 				error_log('YachtInfo: Invalid URL format');
-				return new WP_Error( 'invalid_url', 'Invalid URL provided. Please enter a valid yacht URL.' );
+				return new WP_Error( 'invalid_url', __( 'Invalid URL provided. Please enter a valid yacht URL.', 'creativoypunto' ) );
 			}
 			
 			// Verificar dominio permitido
 			if ( ! $this->isValidDomain( $url ) ) {
 				$host = parse_url( $url, PHP_URL_HOST );
 				error_log('YachtInfo: Domain not allowed: ' . $host);
-				return new WP_Error( 'domain_not_allowed', "Domain {$host} is not allowed for scraping. Please use a supported yacht website." );
+				return new WP_Error( 'domain_not_allowed', sprintf( __( 'Domain %s is not allowed for scraping. Please use a supported yacht website.', 'creativoypunto' ), $host ) );
 			}
 
 			// Limitación de tasa
@@ -48,7 +52,8 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			if ( ! pb_check_rate_limit( $rateLimitKey, 5, 300 ) ) {
 				error_log('YachtInfo: Rate limit exceeded for IP: ' . $_SERVER['REMOTE_ADDR']);
 				pb_log_security_event( get_current_user_id(), 'rate_limit_exceeded', [ 'ip' => $_SERVER['REMOTE_ADDR'], 'url' => $url ] );
-				return new WP_Error( 'rate_limit_exceeded', 'Límite de solicitudes excedido. Intente de nuevo más tarde.' );
+				$retry_after = $this->getRateLimitRetryAfter( $rateLimitKey, 300 );
+				return new WP_Error( 'rate_limit_exceeded', __( 'Request limit exceeded. Please try again later.', 'creativoypunto' ), array( 'retry_after' => $retry_after ) );
 			}
 			
 			// Realizar scraping
@@ -67,7 +72,7 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			// Verificar si se obtuvo algún dato útil
 			if (empty($data['name']) && empty($data['length']) && empty($data['guest'])) {
 				error_log('YachtInfo: Insufficient data extracted');
-				return new WP_Error( 'insufficient_data', 'Could not extract yacht information from this page. Please try a different URL.' );
+				return new WP_Error( 'insufficient_data', __( 'Could not extract yacht information from this page. Please try a different URL.', 'creativoypunto' ) );
 			}
 			
 			error_log('YachtInfo: Extraction successful, data: ' . print_r($data, true));
@@ -77,14 +82,14 @@ class YachtInfoService implements YachtInfoServiceInterface {
 			
 		} catch ( Exception $e ) {
 			error_log( 'YachtInfoService Error: ' . $e->getMessage() );
-			return new WP_Error( 'scraping_error', 'Error obtaining yacht information: ' . $e->getMessage() );
+			return new WP_Error( 'scraping_error', __( 'Error obtaining yacht information: ', 'creativoypunto' ) . $e->getMessage() );
 		}
 	}
 	
 	private function performScraping( $url ) {
 		$data = $this->extraerInformacionYate( $url );
 		$mapped = [
-			'name' => $data['yachtName'] ?? 'Yacht Name',
+			'name' => $data['yachtName'] ?? __( 'Yacht Name', 'creativoypunto' ),
 			'length' => $data['length'] ?? '--',
 			'draft' => $data['draft'] ?? '--',
 			'beam' => $data['beam'] ?? '--',
@@ -116,7 +121,7 @@ class YachtInfoService implements YachtInfoServiceInterface {
 	private function extraerInformacionYate( $url ) {
 		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 			return array(
-				'yachtName'          => 'Invalid URL',
+				'yachtName'          => __( 'Invalid URL', 'creativoypunto' ),
 				'length'             => '--',
 				'type'               => '--',
 				'builder'            => '--',
@@ -158,7 +163,7 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 		if ( stripos( $html, 'captcha' ) !== false || stripos( $html, 'recaptcha' ) !== false || stripos( $html, 'blocked' ) !== false ) {
 			curl_close( $ch );
 			return array(
-				'yachtName' => 'Access Blocked',
+				'yachtName' => __( 'Access Blocked', 'creativoypunto' ),
 				'length' => '--',
 				// ... resto de campos con '--'
 				'yachtUrl' => $url,
@@ -547,7 +552,17 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 		if ( strpos( $host, 'www.' ) === 0 ) {
 			$host = substr( $host, 4 );
 		}
-		return in_array( $host, $this->config['allowed_domains'] );
+		$allowed = isset( $this->config['allowed_domains'] ) && is_array( $this->config['allowed_domains'] ) ? $this->config['allowed_domains'] : array();
+		foreach ( $allowed as $domain ) {
+			$domain = strtolower( $domain );
+			if (
+				$host === $domain ||
+				( strlen( $host ) > strlen( $domain ) && substr( $host, - ( strlen( $domain ) + 1 ) ) === '.' . $domain )
+			) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public function getCachedData( $url ) {
@@ -562,6 +577,25 @@ curl_setopt( $ch, CURLOPT_USERAGENT, $userAgents[array_rand($userAgents)] );
 
 	public function clearCache() {
 		CacheHelper::flush();
+	}
+
+	public function clearCacheForUrl( $url ) {
+		$url = $this->normalizeUrl( $url );
+		$cache_key = CacheHelper::generateUrlKey( $url );
+		CacheHelper::delete( $cache_key );
+	}
+
+	private function getRateLimitRetryAfter( $key, $time_window = 300 ) {
+		$safe_key = sanitize_key( 'rate_limit_' . $key );
+		// WordPress stores transient expirations in options table with this prefix
+		$expiration = get_option( '_transient_timeout_' . $safe_key );
+		if ( ! $expiration || ! is_numeric( $expiration ) ) {
+			return 0;
+		}
+		$retry_after = intval( $expiration ) - time();
+		if ( $retry_after < 0 ) { $retry_after = 0; }
+		// Cap to provided time_window just in case
+		return min( $retry_after, max( 0, intval( $time_window ) ) );
 	}
 
 	private function normalizeUrl( $url ) {

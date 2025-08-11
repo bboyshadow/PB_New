@@ -9,7 +9,7 @@
 
         // Verificar si pbOutlookData está definido
         if (typeof pbOutlookData === 'undefined') {
-            console.error('Error: La variable pbOutlookData no está definida. Asegúrate de que yacht-functions.php está cargando correctamente.');
+            (window.AppYacht?.error || console.error)('Error: La variable pbOutlookData no está definida. Asegúrate de que yacht-functions.php está cargando correctamente.');
         } else {
             
         }
@@ -74,7 +74,7 @@
             if (typeof saveFormContent === 'function') {
                  saveFormContent();
             } else {
-                 console.error('saveFormContent function not found. Ensure mail.js is loaded first.');
+                 (window.AppYacht?.error || console.error)('saveFormContent function not found. Ensure mail.js is loaded first.');
             }
 
             // Verificar si es acción de desconexión
@@ -94,10 +94,10 @@
                     }
                     
                     // Registrar datos para depuración
-                    console.log('Enviando solicitud de desconexión con nonce:', pbOutlookData.nonce);
-                    console.log('Timestamp del nonce:', pbOutlookData.timestamp);
-                    console.log('Tiempo actual:', Math.floor(Date.now() / 1000));
-                    console.log('Diferencia de tiempo:', Math.floor(Date.now() / 1000) - pbOutlookData.timestamp);
+                (window.AppYacht?.log || console.log)('Enviando solicitud de desconexión con nonce:', pbOutlookData.nonce);
+                (window.AppYacht?.log || console.log)('Timestamp del nonce:', pbOutlookData.timestamp);
+                (window.AppYacht?.log || console.log)('Tiempo actual:', Math.floor(Date.now() / 1000));
+                (window.AppYacht?.log || console.log)('Diferencia de tiempo:', Math.floor(Date.now() / 1000) - pbOutlookData.timestamp);
                     
                     // Enviar solicitud AJAX para desconectar
                     $.ajax({
@@ -113,48 +113,48 @@
                                 // Recargar la página para actualizar el estado del botón
                                 window.location.reload();
                             } else {
-                                console.error('Error en la respuesta:', response);
+                                (window.AppYacht?.error || console.error)('Error en la respuesta:', response);
                                 alert('Error: ' + (response.data || 'Error desconocido al desconectar'));
                                 // Restaurar el botón
                                 $button.text(originalText).prop('disabled', false);
                             }
                         },
                         error: function(xhr, status, error) {
-                            console.error('Error AJAX:', error);
+                            (window.AppYacht?.error || console.error)('Error AJAX:', error);
                             // Extraer solo el mensaje de error, no todo el HTML
                             let errorMessage = 'Error en la conexión con el servidor';
                             try {
-                                console.log('Error AJAX completo:', xhr);
+                                (window.AppYacht?.log || console.log)('Error AJAX completo:', xhr);
                                 
                                 // Intentar extraer mensaje de error de la respuesta JSON si existe
                                 if (xhr.responseJSON && xhr.responseJSON.data) {
                                     errorMessage = xhr.responseJSON.data;
-                                    console.log('Error extraído de JSON:', errorMessage);
+                                    (window.AppYacht?.log || console.log)('Error extraído de JSON:', errorMessage);
                                 }
                                 // Si no hay JSON, intentar extraer del HTML
                                 else if (xhr.responseText) {
                                     const responseText = xhr.responseText;
-                                    console.log('Respuesta de texto completa:', responseText);
+                                    (window.AppYacht?.log || console.log)('Respuesta de texto completa:', responseText);
                                     
                                     // Verificar si es un error 400 (Bad Request) - Probablemente error de nonce
                                     if (xhr.status === 400) {
-                                        console.log('Error 400 detectado, respuesta completa:', responseText);
+                                        (window.AppYacht?.log || console.log)('Error 400 detectado, respuesta completa:', responseText);
                                         errorMessage = 'Error de seguridad. Por favor, recarga la página e intenta de nuevo';
                                         
                                         // Intentar regenerar el nonce automáticamente
                                         if (typeof ajaxurl !== 'undefined') {
-                                            console.log('Intentando regenerar nonce...');
+                                            (window.AppYacht?.log || console.log)('Intentando regenerar nonce...');
                                             // Esta parte requeriría un endpoint adicional en el servidor
                                         }
                                     }
                                     // Verificar si es un error 403 (Forbidden) - Error de nonce
                                     else if (xhr.status === 403) {
-                                        console.log('Error 403 detectado, respuesta completa:', responseText);
+                                        (window.AppYacht?.log || console.log)('Error 403 detectado, respuesta completa:', responseText);
                                         errorMessage = 'Error de seguridad. Por favor, recarga la página para actualizar tu sesión';
                                     }
                                     // Verificar si es un error 500 con mensaje específico
                                     else if (xhr.status === 500) {
-                                        console.log('Error 500 detectado, respuesta completa:', responseText);
+                                        (window.AppYacht?.log || console.log)('Error 500 detectado, respuesta completa:', responseText);
                                         errorMessage = 'Error interno del servidor al desconectar la cuenta';
                                     }
                                     // Intentar extraer mensaje de error del HTML
@@ -167,7 +167,7 @@
                                     }
                                 }
                             } catch (e) {
-                                console.error('Error al procesar respuesta:', e);
+                                (window.AppYacht?.error || console.error)('Error al procesar respuesta:', e);
                             }
                             
                             // Mostrar mensaje de error más descriptivo
@@ -194,12 +194,12 @@
             $('#outlook-send-mail').on('click', function(e) {
                 e.preventDefault();
 
-                // console.log('Send button clicked. pbOutlookData:', pbOutlookData); // DEBUG REMOVED
+                // (window.AppYacht?.log || console.log)('Send button clicked. pbOutlookData:', pbOutlookData); // DEBUG REMOVED
 
                 // Basic check if pbOutlookData exists
                 if (typeof pbOutlookData === 'undefined' || !pbOutlookData.nonce || !pbOutlookData.ajaxurl) {
                     alert('Error: Missing critical data for sending email. Please reload.');
-                    console.error('pbOutlookData is missing or incomplete:', pbOutlookData);
+                    (window.AppYacht?.error || console.error)('pbOutlookData is missing or incomplete:', pbOutlookData);
                     return; 
                 }
 
@@ -218,13 +218,13 @@
                 if (response.success){
                     alert('Correo enviado: ' + response.data);
                 } else {
-                    console.error('Error en la respuesta del servidor:', response.data);
+                    (window.AppYacht?.error || console.error)('Error en la respuesta del servidor:', response.data);
                     alert('Error al enviar el correo: ' + response.data);
                 }
             })
             .fail(function(jqXHR, textStatus, errorThrown){
                 // Log genérico
-                console.error('Error AJAX al enviar correo:', textStatus, errorThrown, jqXHR.responseText); 
+                (window.AppYacht?.error || console.error)('Error AJAX al enviar correo:', textStatus, errorThrown, jqXHR.responseText); 
                 // Alerta simple
                 alert('Error en la conexión con el servidor al enviar el correo.'); 
             });

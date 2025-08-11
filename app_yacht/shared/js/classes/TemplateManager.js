@@ -288,7 +288,10 @@ class TemplateManager {
             
             return result.data;
         } catch (error) {
-            console.error('Error al crear plantilla:', error);
+            // Evitar ruido en consola para errores de validación previsibles
+            if (!error.message || !error.message.includes('Validación fallida')) {
+                (window.AppYacht?.error || console.error)('Error al crear plantilla:', error);
+            }
             
             // Notificar error si hay callback
             if (typeof this.config.onError === 'function') {
@@ -360,18 +363,14 @@ class TemplateManager {
             
             return result.data;
         } catch (error) {
-            console.error('Error al cargar plantilla:', error);
-            
+            (window.AppYacht?.error || console.error)('Error al cargar plantilla:', error);
             // Notificar error si hay callback
             if (typeof this.config.onError === 'function') {
                 this.config.onError(error);
             }
-            
-            // Publicar evento si hay eventBus
             if (this.eventBus) {
                 this.eventBus.publish('template:error', { error: error.message });
             }
-            
             throw error;
         }
     }

@@ -120,7 +120,7 @@ function setupRequiredFields() {
  */
 function prefillRelocationFields() {
     // Añadir un log para depuración
-    console.log('Executing prefillRelocationFields. yachtInfoData:', window.yachtInfoData);
+    (window.AppYacht?.log || console.log)('Executing prefillRelocationFields. yachtInfoData:', window.yachtInfoData);
 
     const data = window.yachtInfoData || {};
 
@@ -139,11 +139,11 @@ function prefillRelocationFields() {
     const crewCount       = document.getElementById('reloc-crew-count');
     
     // Log valores para depuración
-    console.log('Field values before filling:',
+    (window.AppYacht?.log || console.log)('Field values before filling:',
         'fuelConsumption:', fuelConsumption?.value,
         'cruisingSpeed:', cruisingSpeed?.value,
         'crewCount:', crewCount?.value);
-    console.log('Data to use:',
+    (window.AppYacht?.log || console.log)('Data to use:',
         'fuelConsumption:', data.fuelConsumption,
         'cruisingSpeed:', data.cruisingSpeed,
         'crew:', data.crew);
@@ -159,7 +159,7 @@ function prefillRelocationFields() {
     }
     
     // Log valores después de llenar
-    console.log('Field values after filling:',
+    (window.AppYacht?.log || console.log)('Field values after filling:',
         'fuelConsumption:', fuelConsumption?.value,
         'cruisingSpeed:', cruisingSpeed?.value,
         'crewCount:', crewCount?.value);

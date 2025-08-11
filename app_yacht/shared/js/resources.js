@@ -27,7 +27,11 @@ function loadScript(url, config = {}) {
 
 	// Validar URL
 	if ( ! url || url.trim() === '') {
-		console.error( 'No se especificó URL para el script' );
+		if (window.AppYacht && window.AppYacht.error) {
+			window.AppYacht.error('No se especificó URL para el script');
+		} else {
+			(window.AppYacht?.error || console.error)('No se especificó URL para el script');
+		}
 		if (options.onError) {
 			options.onError( new Error( 'URL no válida' ) );
 		}
@@ -38,7 +42,9 @@ function loadScript(url, config = {}) {
 		// Verificar si el script ya está cargado
 		const existingScript = document.querySelector( `script[src = "${url}"]` );
 		if (existingScript) {
-			console.log( 'El script ya está cargado:', url );
+			if (window.AppYacht && window.AppYacht.log) {
+				window.AppYacht.log('El script ya está cargado:', url);
+			}
 			if (options.onLoad) {
 				options.onLoad( existingScript );
 			}
@@ -53,24 +59,36 @@ function loadScript(url, config = {}) {
 		// Manejar eventos de carga y error
 		if (options.onLoad) {
 			script.onload = function() {
-				console.log( 'Script cargado correctamente:', url );
+				if (window.AppYacht && window.AppYacht.log) {
+					window.AppYacht.log('Script cargado correctamente:', url);
+				}
 				options.onLoad( script );
 			};
 		}
 
 		if (options.onError) {
 			script.onerror = function() {
-				console.error( 'Error al cargar script:', url );
+				if (window.AppYacht && window.AppYacht.error) {
+					window.AppYacht.error('Error al cargar script:', url);
+				} else {
+					(window.AppYacht?.error || console.error)('Error al cargar script:', url);
+				}
 				options.onError( new Error( `Error al cargar script: ${url}` ) );
 			};
 		}
 
 		document.head.appendChild( script );
-		console.log( 'Script añadido al documento:', url );
+		if (window.AppYacht && window.AppYacht.log) {
+			window.AppYacht.log('Script añadido al documento:', url);
+		}
 
 		return script;
 	} catch (error) {
-		console.error( 'Error al crear el elemento script:', error );
+		if (window.AppYacht && window.AppYacht.error) {
+			window.AppYacht.error('Error al crear el elemento script:', error);
+		} else {
+			(window.AppYacht?.error || console.error)( 'Error al crear el elemento script:', error );
+		}
 		if (options.onError) {
 			options.onError( error );
 		}
@@ -99,7 +117,11 @@ function loadStylesheet(url, config = {}) {
 
 	// Validar URL
 	if ( ! url || url.trim() === '') {
-		console.error( 'No se especificó URL para la hoja de estilos' );
+		if (window.AppYacht && window.AppYacht.error) {
+			window.AppYacht.error('No se especificó URL para la hoja de estilos');
+		} else {
+			(window.AppYacht?.error || console.error)('No se especificó URL para la hoja de estilos');
+		}
 		if (options.onError) {
 			options.onError( new Error( 'URL no válida' ) );
 		}
@@ -110,7 +132,9 @@ function loadStylesheet(url, config = {}) {
 		// Verificar si la hoja de estilos ya está cargada
 		const existingLink = document.querySelector( `link[href = "${url}"]` );
 		if (existingLink) {
-			console.log( 'La hoja de estilos ya está cargada:', url );
+			if (window.AppYacht && window.AppYacht.log) {
+				window.AppYacht.log('La hoja de estilos ya está cargada:', url);
+			}
 			if (options.onLoad) {
 				options.onLoad( existingLink );
 			}
@@ -124,24 +148,36 @@ function loadStylesheet(url, config = {}) {
 		// Manejar eventos de carga y error
 		if (options.onLoad) {
 			link.onload = function() {
-				console.log( 'Hoja de estilos cargada correctamente:', url );
+				if (window.AppYacht && window.AppYacht.log) {
+					window.AppYacht.log('Hoja de estilos cargada correctamente:', url);
+				}
 				options.onLoad( link );
 			};
 		}
 
 		if (options.onError) {
 			link.onerror = function() {
-				console.error( 'Error al cargar hoja de estilos:', url );
+				if (window.AppYacht && window.AppYacht.error) {
+					window.AppYacht.error('Error al cargar hoja de estilos:', url);
+				} else {
+					(window.AppYacht?.error || console.error)('Error al cargar hoja de estilos:', url);
+				}
 				options.onError( new Error( `Error al cargar hoja de estilos: ${url}` ) );
 			};
 		}
 
 		document.head.appendChild( link );
-		console.log( 'Hoja de estilos añadida al documento:', url );
+		if (window.AppYacht && window.AppYacht.log) {
+			window.AppYacht.log('Hoja de estilos añadida al documento:', url);
+		}
 
 		return link;
 	} catch (error) {
-		console.error( 'Error al crear el elemento link:', error );
+		if (window.AppYacht && window.AppYacht.error) {
+			window.AppYacht.error('Error al crear el elemento link:', error);
+		} else {
+			(window.AppYacht?.error || console.error)('Error al crear el elemento link:', error);
+		}
 		if (options.onError) {
 			options.onError( error );
 		}

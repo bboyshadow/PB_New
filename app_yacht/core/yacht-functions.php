@@ -42,6 +42,10 @@ function app_yacht_scripts() {
 		wp_enqueue_script( 'calculator-class', get_template_directory_uri() . '/app_yacht/shared/js/classes/Calculator.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'calculator-class';
 
+		// Ensure VatRateMix loads before calculator module scripts
+		wp_enqueue_script( 'vat-rate-mix-script', get_template_directory_uri() . '/app_yacht/modules/calc/js/VatRateMix.js', $dependencies, '1.0.0', true );
+		$dependencies[] = 'vat-rate-mix-script';
+
 		wp_enqueue_script( 'interfaz-script', get_template_directory_uri() . '/app_yacht/modules/calc/js/interfaz.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'interfaz-script';
 
@@ -53,6 +57,9 @@ function app_yacht_scripts() {
 
 		wp_enqueue_script( 'extra-per-person-script', get_template_directory_uri() . '/app_yacht/modules/calc/js/extraPerPerson.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'extra-per-person-script';
+
+		wp_enqueue_script( 'promotion-script', get_template_directory_uri() . '/app_yacht/modules/calc/js/promotion.js', $dependencies, '1.0.0', true );
+		$dependencies[] = 'promotion-script';
 
 		wp_localize_script(
 			'mix-script',
@@ -92,13 +99,45 @@ function app_yacht_scripts() {
 		wp_enqueue_script( 'yachtinfo-script', get_template_directory_uri() . '/app_yacht/modules/yachtinfo/js/yachtinfo.js', $dependencies, '1.0.0', true );
 		$dependencies[] = 'yachtinfo-script';
 
+		// Normalize allowed domains for frontend validation (trim + lowercase)
+		$__scraping_cfg = AppYachtConfig::get('scraping');
+		$__allowed_domains = isset($__scraping_cfg['allowed_domains']) && is_array($__scraping_cfg['allowed_domains'])
+			? array_values(array_filter(array_map('trim', $__scraping_cfg['allowed_domains']), 'strlen'))
+			: array('cyaeb.com');
+		$__allowed_domains = array_map('strtolower', $__allowed_domains);
+
 		wp_localize_script(
 			'yachtinfo-script',
 			'yachtinfo_ajax',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'yachtinfo_nonce' ),
-			) 
+				'allowed_domains' => $__allowed_domains,
+				'strings' => array(
+					'enter_yacht_url' => __( 'Please enter a yacht URL.', 'creativoypunto' ),
+					'invalid_url' => __( 'Please enter a valid URL (e.g., https://www.charterworld.com/yacht/...)', 'creativoypunto' ),
+					'domain_not_supported' => __( 'Domain not supported', 'creativoypunto' ),
+					'domain_error_msg' => __( '"%s" is not in our list of supported websites.', 'creativoypunto' ),
+					'use_supported_domain' => __( 'Please use a URL from the supported yacht charter website(s):', 'creativoypunto' ),
+					'loading' => __( 'Loading...', 'creativoypunto' ),
+					'try_again_in' => __( 'Try again in', 'creativoypunto' ),
+					'rate_limit_msg' => __( 'You have reached the request limit. Please wait before trying again.', 'creativoypunto' ),
+					'connection_error' => __( 'Connection error. Please try again.', 'creativoypunto' ),
+					'unknown_error' => __( 'Unknown error extracting information.', 'creativoypunto' ),
+				),
+			)
+		);
+
+		// Relocation auto-fill depends on yachtinfo-script to read window.yachtInfoData
+		wp_enqueue_script( 'relocation-auto-script', get_template_directory_uri() . '/app_yacht/modules/calc/js/relocationAuto.js', $dependencies, '1.0.0', true );
+		$dependencies[] = 'relocation-auto-script';
+		wp_localize_script(
+			'relocation-auto-script',
+			'ajaxRelocationData',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'relocation_calculate_nonce' ),
+			)
 		);
 
 		wp_enqueue_script( 'yacht-outlook-ajax', get_template_directory_uri() . '/app_yacht/modules/mail/outlook/outlook-ajax.js', $dependencies, '1.0.0', true );

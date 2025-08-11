@@ -7,7 +7,7 @@
 class EventBus {
     constructor() {
         this.events = {};
-        console.log('EventBus inicializado');
+        (window.AppYacht?.log || console.log)('EventBus inicializado');
     }
     
     /**
@@ -19,7 +19,7 @@ class EventBus {
     subscribe(event, callback) {
         if (!this.events[event]) this.events[event] = [];
         this.events[event].push(callback);
-        console.log(`Suscripción a evento '${event}' registrada`);
+        (window.AppYacht?.log || console.log)(`Suscripción a evento '${event}' registrada`);
         
         // Retornar función para cancelar la suscripción
         return () => this.unsubscribe(event, callback);
@@ -33,7 +33,7 @@ class EventBus {
     unsubscribe(event, callback) {
         if (this.events[event]) {
             this.events[event] = this.events[event].filter(cb => cb !== callback);
-            console.log(`Suscripción a evento '${event}' cancelada`);
+            (window.AppYacht?.log || console.log)(`Suscripción a evento '${event}' cancelada`);
         }
     }
     
@@ -44,16 +44,16 @@ class EventBus {
      */
     publish(event, data) {
         if (this.events[event]) {
-            console.log(`Publicando evento '${event}' con datos:`, data);
+            (window.AppYacht?.log || console.log)(`Publicando evento '${event}' con datos:`, data);
             this.events[event].forEach(callback => {
                 try {
                     callback(data);
                 } catch (error) {
-                    console.error(`Error en callback de evento '${event}':`, error);
+                    (window.AppYacht?.error || console.error)(`Error en callback de evento '${event}':`, error);
                 }
             });
         } else {
-            console.warn(`Evento '${event}' publicado sin suscriptores`);
+            (window.AppYacht?.warn || console.warn)(`Evento '${event}' publicado sin suscriptores`);
         }
     }
     
@@ -64,10 +64,10 @@ class EventBus {
     clear(event) {
         if (event) {
             delete this.events[event];
-            console.log(`Todos los suscriptores del evento '${event}' eliminados`);
+            (window.AppYacht?.log || console.log)(`Todos los suscriptores del evento '${event}' eliminados`);
         } else {
             this.events = {};
-            console.log('Todos los eventos y suscriptores eliminados');
+            (window.AppYacht?.log || console.log)('Todos los eventos y suscriptores eliminados');
         }
     }
 }

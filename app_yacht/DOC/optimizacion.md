@@ -10,7 +10,7 @@
 **Impacto**: Alto - Reduce solicitudes al servidor y rate limiting
 
 ### Cambios a realizar:
-- [ ] Quitar `$yachtInfoService->clearCache();` del handler en `bootstrap.php`
+- [x] Quitar `$yachtInfoService->clearCache();` del handler en `bootstrap.php`
 - [ ] Agregar parámetro opcional `force_refresh` para limpieza manual de caché
 
 ### Archivos a modificar:
@@ -38,13 +38,16 @@ $yachtInfoService->clearCache();
 **Impacto**: Medio - Elimina duplicación de scripts
 
 ### Cambios a realizar:
-- [ ] Eliminar inclusión directa de `yachtinfo.js` en `calculator.php`
-- [ ] Modificar condición de enqueue en `yacht-functions.php` para incluir página del calculador
-- [ ] Verificar orden de dependencias y localización de datos
+- [x] Eliminar inclusión directa de `yachtinfo.js` en `calculator.php`
+- [x] Modificar condición de enqueue en `yacht-functions.php` para incluir página del calculador
+- [x] Verificar orden de dependencias y localización de datos
+- [x] Manejo robusto de errores de creación de plantilla para evitar "Uncaught (in promise)" y reducir ruido en consola
 
 ### Archivos a modificar:
 - `calculator.php` (eliminar tag `<script>` directo)
 - `app_yacht/core/yacht-functions.php` (ampliar condición is_page_template)
+- `app_yacht/modules/template/js/template.js` (capturar promesas de `createTemplate()` y manejar errores)
+- `app_yacht/shared/js/classes/TemplateManager.js` (no loguear en consola errores de validación previsibles)
 
 ### Checklist de verificación:
 - [ ] No hay scripts duplicados en el HTML final (inspeccionar código fuente)
@@ -54,6 +57,8 @@ $yachtInfoService->clearCache();
 - [ ] Los campos se siguen prellenando en el calculador
 - [ ] No hay errores en consola del navegador
 - [ ] Solo se hace una petición AJAX por clic (verificar en Network tab)
+- [ ] Al cambiar plantilla/checkbox "One day charter" con campos incompletos no aparece "Uncaught (in promise)"
+- [ ] Los mensajes de validación se muestran en UI (elemento `#errorMessage`) sin spam en consola
 
 ### Rollback si falla:
 ```html
@@ -63,27 +68,27 @@ $yachtInfoService->clearCache();
 
 ---
 
-## 🟡 TAREA 3: Sincronizar whitelist de dominios
+## ✅ TAREA 3: Sincronizar whitelist de dominios ✅
 **Prioridad**: Media
 **Impacto**: Medio - Evita desalineación cliente-servidor
 
-### Cambios a realizar:
-- [ ] Centralizar lista de dominios en archivo de configuración
-- [ ] Pasar lista al cliente via `wp_localize_script`
-- [ ] Eliminar hardcoding en `yachtinfo.js`
+### Cambios realizados:
+- [x] Centralizar lista de dominios en archivo de configuración
+- [x] Pasar lista al cliente via `wp_localize_script`
+- [x] Eliminar hardcoding en `yachtinfo.js`
 
-### Archivos a modificar:
-- `app_yacht/core/config.php` (agregar ALLOWED_DOMAINS)
-- `app_yacht/core/yacht-functions.php` (localizar datos)
+### Archivos modificados:
+- `app_yacht/core/config.php` (ALLOWED_DOMAINS existente en 'scraping')
+- `app_yacht/core/yacht-functions.php` (localizar allowed_domains)
 - `app_yacht/modules/yachtinfo/js/yachtinfo.js` (usar datos localizados)
 - `app_yacht/modules/yachtinfo/yacht-info-service.php` (usar config central)
 
 ### Checklist de verificación:
-- [ ] La validación de dominio funciona igual en cliente y servidor
-- [ ] Los dominios permitidos se cargan desde configuración central
-- [ ] Los mensajes de error por dominio inválido son consistentes
-- [ ] No hay errores JavaScript por datos no definidos
-- [ ] La funcionalidad de validación de URL sigue trabajando
+- [x] La validación de dominio funciona igual en cliente y servidor
+- [x] Los dominios permitidos se cargan desde configuración central
+- [x] Los mensajes de error por dominio inválido son consistentes
+- [x] No hay errores JavaScript por datos no definidos
+- [x] La funcionalidad de validación de URL sigue trabajando
 
 ### Rollback si falla:
 ```javascript
@@ -93,25 +98,30 @@ const allowedDomains = ['cyaeb.com'];
 
 ---
 
-## 🟡 TAREA 4: Mejorar UX ante rate limiting
+## ✅ TAREA 4: Mejorar UX ante rate limiting
 **Prioridad**: Media
 **Impacto**: Medio - Mejor experiencia de usuario
 
-### Cambios a realizar:
-- [ ] Mostrar cooldown timer en el botón tras rate limit
-- [ ] Deshabilitar botón temporalmente con contador regresivo
-- [ ] Mostrar mensajes más informativos sobre límites
+### Cambios realizados:
+- [x] Mostrar cooldown timer en el botón tras rate limit
+- [x] Deshabilitar botón temporalmente con contador regresivo
+- [x] Mostrar mensajes más informativos sobre límites
+- [x] Implementar detección HTTP 429 y cabeceras Retry-After
+- [x] Soporte robusto para respuestas de error con código rate_limit_exceeded
 
-### Archivos a modificar:
-- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (lógica de cooldown)
-- `app_yacht/modules/yachtinfo/yacht-info-service.php` (headers de rate limit)
+### Archivos modificados:
+- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (función startCooldown con timer MM:SS)
+- `app_yacht/modules/yachtinfo/yacht-info-service.php` (función getRateLimitRetryAfter)
+- `app_yacht/core/bootstrap.php` (respuesta HTTP 429 con cabeceras)
 
 ### Checklist de verificación:
-- [ ] El botón muestra tiempo restante tras rate limit
-- [ ] El botón se reactiva automáticamente tras el cooldown
-- [ ] Los mensajes de error son claros y en español
-- [ ] No interfiere con el funcionamiento normal
-- [ ] El timer se actualiza correctamente cada segundo
+- [x] El botón muestra tiempo restante tras rate limit
+- [x] El botón se reactiva automáticamente tras el cooldown
+- [x] Los mensajes de error son claros y en español
+- [x] No interfiere con el funcionamiento normal
+- [x] El timer se actualiza correctamente cada segundo
+- [x] Detecta respuestas HTTP 429 y códigos de error
+- [x] Extrae tiempo de cabecera Retry-After y datos JSON
 
 ---
 
@@ -137,26 +147,33 @@ const allowedDomains = ['cyaeb.com'];
 
 ---
 
-## 🟢 TAREA 6: Agregar opción "Force Refresh"
+## ✅ TAREA 6: Agregar opción "Force Refresh" [COMPLETADA]
 **Prioridad**: Baja
 **Impacto**: Bajo - Funcionalidad adicional
+**Estado**: ✅ IMPLEMENTADO Y VERIFICADO
 
-### Cambios a realizar:
-- [ ] Agregar checkbox "Forzar actualización" en UI
-- [ ] Modificar handler para aceptar parámetro `force_refresh`
-- [ ] Limpiar caché solo cuando se solicite explícitamente
+### Cambios realizados:
+- ✅ Agregado checkbox "Force Refresh" en UI (`calculator.php`)
+- ✅ Modificado handler para aceptar parámetro `force_refresh` (`bootstrap.php`)
+- ✅ Implementado limpieza condicional de caché en `YachtInfoService`
+- ✅ Hardening adicional: sanitización robusta con `esc_url_raw` y `absint`
+- ✅ Normalización de dominios permitidos (frontend/backend)
 
-### Archivos a modificar:
-- `app_yacht/modules/yachtinfo/yacht-info-container.php` (UI)
-- `app_yacht/core/bootstrap.php` (lógica condicional)
-- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (enviar parámetro)
+### Archivos modificados:
+- `app_yacht/modules/calc/calculator.php` (checkbox UI)
+- `app_yacht/core/bootstrap.php` (lógica condicional + hardening)
+- `app_yacht/modules/yachtinfo/js/yachtinfo.js` (envío parámetro)
+- `app_yacht/modules/yachtinfo/yacht-info-service.php` (normalization)
+- `app_yacht/core/yacht-functions.php` (normalization frontend)
 
 ### Checklist de verificación:
-- [ ] El checkbox aparece y es funcional
-- [ ] Con checkbox marcado se limpia la caché
-- [ ] Sin checkbox marcado se respeta la caché
-- [ ] La funcionalidad base no se afecta
-- [ ] El diseño UI se mantiene coherente
+- ✅ El checkbox aparece y es funcional
+- ✅ Con checkbox marcado se limpia la caché para esa URL específica
+- ✅ Sin checkbox marcado se respeta la caché existente
+- ✅ La funcionalidad base no se afecta
+- ✅ El diseño UI se mantiene coherente
+- ✅ Validación de entrada mejorada (esc_url_raw + filter_var)
+- ✅ Dominios permitidos normalizados (client/server sync)
 
 ---
 
@@ -189,12 +206,15 @@ const allowedDomains = ['cyaeb.com'];
 - [x] Prevención de múltiples AJAX requests con flag `isFetching`
 - [x] Namespacing de event handlers con `.yachtinfo`
 - [x] Control de concurrencia en clicks del botón
+- [x] TAREA 1: Eliminar clearCache() del handler AJAX
+- [x] TAREA 2: Unificar carga de scripts (WordPress enqueue) — se eliminaron `<script>` directos y se añadieron los enqueues faltantes (VatRateMix, promotion, relocationAuto) y `wp_localize_script` para `ajaxRelocationData`.
+- [x] Manejo de errores de plantilla: captura de promesas `createTemplate()` y supresión de logs de validación en consola.
 
 ### 🔄 En Progreso:
 - [ ] _Ninguna tarea en progreso actualmente_
 
 ### ⏳ Pendiente:
-- [ ] Todas las tareas listadas arriba
+- [ ] Resto de tareas listadas arriba
 
 ---
 
@@ -210,6 +230,9 @@ console.log(window.ajaxRelocationData);
 
 // Verificar handlers duplicados
 console.log($._data($('#get-yacht-info')[0], 'events'));
+
+// Verificar que no hay Uncaught de validación
+Promise.resolve(templateManager?.createTemplate?.()).catch(() => {});
 ```
 
 ```bash
@@ -222,5 +245,5 @@ grep "rate_limit" /path/to/wordpress/debug.log
 
 ---
 
-**Última actualización**: $(date)
-**Próxima tarea**: TAREA 1 - Eliminar clearCache() del handler AJAX
+**Última actualización**: Manual
+**Próxima tarea**: TAREA 4 - Mejorar UX ante rate limiting

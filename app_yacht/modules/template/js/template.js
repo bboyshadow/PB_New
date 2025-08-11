@@ -78,14 +78,14 @@ function addCharterRateGroup(isFirst = false, initialData = null) {
         if (toggleDiscountBtn && typeof window.toggleDiscountField === 'function') {
             toggleDiscountBtn.addEventListener('click', () => window.toggleDiscountField(toggleDiscountBtn));
         } else if (toggleDiscountBtn) {
-             console.warn('Función global toggleDiscountField no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Función global toggleDiscountField no encontrada.');
         }
 
         const removeBtn = newGroup.querySelector('.remove-rate-btn');
         if (removeBtn && typeof window.removeCharterRate === 'function') {
             removeBtn.addEventListener('click', () => window.removeCharterRate(removeBtn));
         } else if (removeBtn) {
-             console.warn('Función global removeCharterRate no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Función global removeCharterRate no encontrada.');
         }
         
         const addBtn = newGroup.querySelector('.add-rate-btn');
@@ -158,7 +158,7 @@ function addExtraGroup(initialData = null) {
         if (removeBtn && typeof window.removeExtraField === 'function') {
             removeBtn.addEventListener('click', () => window.removeExtraField(removeBtn));
         } else if (removeBtn) {
-             console.warn('Función global removeExtraField no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Función global removeExtraField no encontrada.');
         }
 
         // Añadir listener formatNumber
@@ -256,7 +256,10 @@ function handleTemplateCreated(data) {
 function handleTemplateLoaded(data) {
 }
 function handleTemplateError(error) {
-    console.error('Error en la plantilla:', error);
+    // Solo mostrar en consola si es un error inesperado (no validación)
+    if (!error.message || !error.message.includes('Validación fallida')) {
+        (window.AppYacht?.error || console.error)('Error en la plantilla:', error);
+    }
     const errorMessage = document.getElementById('errorMessage');
     if (errorMessage) {
         errorMessage.textContent = error.message || 'Error en la plantilla';
@@ -322,9 +325,9 @@ function copyTemplate() {
     navigator.clipboard.writeText(htmlContent).then(() => {
         alert('Template content copied to clipboard.');
     }).catch(err => {
-        console.error('Error copying template:', err);
-        alert('Unable to copy template.');
-    });
+            (window.AppYacht?.error || console.error)('Error copying template:', err);
+            alert('Unable to copy template.');
+        });
 }
 
 /**
@@ -358,11 +361,11 @@ function onTemplateChange() {
             resultContainer.innerHTML = previewHtml;
         })
         .catch(err => {
-            console.error('Error loading template preview:', err);
+            (window.AppYacht?.error || console.error)('Error loading template preview:', err);
             resultContainer.innerHTML = '<p>Error loading template preview.</p>';
         });
     } else {
-        templateManager.createTemplate(); 
+        templateManager.createTemplate().catch(() => {}); 
     }
      saveTemplateFormData(); 
 }
@@ -381,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configurar event listeners para elementos estáticos
     const createTemplateButton = document.getElementById('createTemplateButton');
     if (createTemplateButton) {
-        createTemplateButton.addEventListener('click', () => templateManager.createTemplate());
+        createTemplateButton.addEventListener('click', () => { templateManager.createTemplate().catch(() => {}); });
     }
 
     const templateSelector = document.getElementById('templateSelector');
@@ -396,14 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.toggleOneDayCharter === 'function') {
                  window.toggleOneDayCharter(this.checked); 
             } else {
-                 console.warn('toggleOneDayCharter no está definida globalmente');
+                 (window.AppYacht?.warn || console.warn)('toggleOneDayCharter no está definida globalmente');
             }
             // Actualizar la propia clase TemplateManager si es necesario
             templateManager.toggleOneDayCharter(this.checked); 
             
             const yachtUrl = document.getElementById('yacht-url')?.value.trim();
             if (yachtUrl) {
-                templateManager.createTemplate();
+                templateManager.createTemplate().catch(() => {});
             }
             saveTemplateFormData(); 
         });
@@ -447,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  window.addExtraField(); // Llama a la función global de interfaz.js
                  setTimeout(saveTemplateFormData, 50);
              } else {
-                 console.error('addExtraField no está definida globalmente');
+                 (window.AppYacht?.error || console.error)('addExtraField no está definida globalmente');
              }
          });
      }

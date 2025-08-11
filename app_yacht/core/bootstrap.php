@@ -53,7 +53,7 @@ class AppYachtBootstrap {
 			
 		} catch ( Exception $e ) {
 			error_log( 'AppYacht Bootstrap Error: ' . $e->getMessage() );
-			wp_die( 'Error inicializando App Yacht: ' . esc_html( $e->getMessage() ) );
+			wp_die( __( 'Error initializing App Yacht: ', 'creativoypunto' ) . esc_html( $e->getMessage() ) );
 		}
 	}
 	
@@ -135,7 +135,7 @@ class AppYachtBootstrap {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
                         if ( ! $nonce || ! wp_verify_nonce( $nonce, 'calculate_nonce' ) ) {
                                 wp_send_json_error( array(
-                                        'message' => 'Security check failed',
+                                        'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
@@ -146,7 +146,7 @@ class AppYachtBootstrap {
                         wp_send_json_success( $result );
                 } catch ( Exception $e ) {
                         error_log( 'Calculate Charter Error: ' . $e->getMessage() );
-                        wp_send_json_error( 'Error en cálculo: ' . $e->getMessage() );
+                        wp_send_json_error( __( 'Calculation error: ', 'creativoypunto' ) . $e->getMessage() );
                 }
         }
 	
@@ -156,7 +156,7 @@ class AppYachtBootstrap {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
                         if ( ! $nonce || ! wp_verify_nonce( $nonce, 'mix_calculate_nonce' ) ) {
                                 wp_send_json_error( array(
-                                        'message' => 'Security check failed',
+                                        'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
@@ -167,7 +167,7 @@ class AppYachtBootstrap {
                         wp_send_json_success( $result );
                 } catch ( Exception $e ) {
                         error_log( 'Calculate Mix Error: ' . $e->getMessage() );
-                        wp_send_json_error( 'Error en cálculo mix: ' . $e->getMessage() );
+                        wp_send_json_error( __( 'Mix calculation error: ', 'creativoypunto' ) . $e->getMessage() );
                 }
         }
 
@@ -175,14 +175,14 @@ class AppYachtBootstrap {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
                         if ( ! $nonce || ! wp_verify_nonce( $nonce, 'relocation_calculate_nonce' ) ) {
-                                wp_send_json_error( array( 'message' => 'Security check failed', 'code' => 'security_error' ) );
+                                wp_send_json_error( array( 'message' => __( 'Security check failed', 'creativoypunto' ), 'code' => 'security_error' ) );
                                 return;
                         }
                         // Incluir el script de cálculo
                         include_once __DIR__ . '/../modules/calc/php/calculateRelocation.php';
                 } catch ( Exception $e ) {
                         error_log( 'Calculate Relocation Error: ' . $e->getMessage() );
-                        wp_send_json_error( 'Error en cálculo de relocation: ' . $e->getMessage() );
+                        wp_send_json_error( __( 'Relocation calculation error: ', 'creativoypunto' ) . $e->getMessage() );
                 }
         }
 	
@@ -192,7 +192,7 @@ class AppYachtBootstrap {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
                         if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
                                 wp_send_json_error( array(
-                                        'message' => 'Security check failed',
+                                        'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
@@ -203,7 +203,7 @@ class AppYachtBootstrap {
                         wp_send_json_success( $result );
                 } catch ( Exception $e ) {
                         error_log( 'Load Template Preview Error: ' . $e->getMessage() );
-                        wp_send_json_error( 'Error cargando template: ' . $e->getMessage() );
+                        wp_send_json_error( __( 'Error loading template: ', 'creativoypunto' ) . $e->getMessage() );
                 }
         }
 	
@@ -213,7 +213,7 @@ class AppYachtBootstrap {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
                         if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
                                 wp_send_json_error( array(
-                                        'message' => 'Security check failed',
+                                        'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
@@ -232,7 +232,7 @@ class AppYachtBootstrap {
                         wp_send_json_success( $result );
                 } catch ( Exception $e ) {
                         error_log( 'Create Template Error: ' . $e->getMessage() );
-                        wp_send_json_error( 'Error creando template: ' . $e->getMessage() );
+                        wp_send_json_error( __( 'Error creating template: ', 'creativoypunto' ) . $e->getMessage() );
                 }
         }
 	
@@ -241,7 +241,7 @@ class AppYachtBootstrap {
 			// Verificar nonce de seguridad
 			if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'yachtinfo_nonce' ) ) {
 				wp_send_json_error( array(
-					'message' => 'Security check failed',
+					'message' => __( 'Security check failed', 'creativoypunto' ),
 					'code' => 'security_error'
 				) );
 				return;
@@ -249,24 +249,57 @@ class AppYachtBootstrap {
 			
 			if ( empty( $_POST['yachtUrl'] ) ) {
 				wp_send_json_error( array(
-					'message' => 'Yacht URL is required. Please enter a yacht URL.',
+					'message' => __( 'Yacht URL is required. Please enter a yacht URL.', 'creativoypunto' ),
 					'code' => 'missing_url'
 				) );
 				return;
 			}
 			
-			$url = sanitize_text_field( $_POST['yachtUrl'] );
+			$url = esc_url_raw( wp_unslash( $_POST['yachtUrl'] ) );
+			if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+				wp_send_json_error( array(
+					'message' => __( 'Please enter a valid URL (e.g., https://www.charterworld.com/yacht/...)', 'creativoypunto' ),
+					'code' => 'invalid_url'
+				) );
+				return;
+			}
+			$force_refresh = isset( $_POST['force_refresh'] ) && absint( $_POST['force_refresh'] ) === 1;
 			$container = self::getContainer();
 			$yachtInfoService = $container->get( 'yacht_info_service' );
 			
-				$yachtInfoService->clearCache();
-				$yachtData = $yachtInfoService->extractYachtInfo( $url );
+			if ( $force_refresh ) {
+				// Clear cache for this specific URL (uses normalized key internally)
+				if ( method_exists( $yachtInfoService, 'clearCacheForUrl' ) ) {
+					$yachtInfoService->clearCacheForUrl( $url );
+				}
+			}
+ 			
+ 			$yachtData = $yachtInfoService->extractYachtInfo( $url );
 
 			// Check if the result is a WP_Error
 			if ( is_wp_error( $yachtData ) ) {
+				$error_code = $yachtData->get_error_code();
+				$error_message = $yachtData->get_error_message();
+				$error_data = $yachtData->get_error_data();
+
+				// Si es rate limiting, devolver 429 y Retry-After
+				if ( $error_code === 'rate_limit_exceeded' ) {
+					$retry_after = is_array( $error_data ) && isset( $error_data['retry_after'] ) ? intval( $error_data['retry_after'] ) : 300;
+					if ( $retry_after < 0 ) { $retry_after = 0; }
+					// Establecer cabecera HTTP 429 y Retry-After
+					status_header( 429 );
+					@header( 'Retry-After: ' . $retry_after );
+					wp_send_json_error( array(
+						'message' => $error_message,
+						'code'    => $error_code,
+						'retry_after' => $retry_after,
+					), 429 );
+					return;
+				}
+
 				wp_send_json_error( array(
-					'message' => $yachtData->get_error_message(),
-					'code' => $yachtData->get_error_code()
+					'message' => $error_message,
+					'code' => $error_code
 				) );
 				return;
 			}
@@ -274,7 +307,7 @@ class AppYachtBootstrap {
 			// Check if we got empty data
 			if ( empty( $yachtData ) ) {
 				wp_send_json_error( array(
-					'message' => 'Could not extract yacht information. Please try a different URL.',
+					'message' => __( 'Could not extract yacht information. Please try a different URL.', 'creativoypunto' ),
 					'code' => 'extraction_failed'
 				) );
 				return;
@@ -283,7 +316,7 @@ class AppYachtBootstrap {
 			// Verificar que se obtuvieron datos mínimos necesarios
 			if ( empty( $yachtData['name'] ) ) {
 				wp_send_json_error( array(
-					'message' => 'Could not extract yacht name. Please try a different URL.',
+					'message' => __( 'Could not extract yacht name. Please try a different URL.', 'creativoypunto' ),
 					'code' => 'missing_data'
 				) );
 				return;
@@ -326,7 +359,7 @@ class AppYachtBootstrap {
 		} catch ( Exception $e ) {
 			error_log( 'Extract Yacht Info Error: ' . $e->getMessage() );
 			wp_send_json_error( array(
-				'message' => 'Error extracting yacht information: ' . $e->getMessage(),
+				'message' => __( 'Error extracting yacht information: ', 'creativoypunto' ) . $e->getMessage(),
 				'code' => 'extraction_error'
 			) );
 		}

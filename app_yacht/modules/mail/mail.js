@@ -91,7 +91,7 @@ function restoreFormContent() {
         }
         
         function handleMailError(error) {
-            console.error('Error en el módulo de correo:', error);
+            (window.AppYacht?.error || console.error)('Error en el módulo de correo:', error);
             // Aquí puedes añadir lógica para manejar errores
         }
         
@@ -113,7 +113,7 @@ function restoreFormContent() {
 
         // Función reutilizable para insertar enlace (MODIFICADA para usar modal y contexto)
         function insertLinkHandler(fromContextMenu = false) {
-            console.log(`insertLinkHandler called. From context menu: ${fromContextMenu}`); // Log entry point
+            (window.AppYacht?.log || console.log)(`insertLinkHandler called. From context menu: ${fromContextMenu}`); // Log entry point
             const editor = mailComposer.editor;
             const selection = window.getSelection();
             savedRangeForLink = null; // Resetear antes de guardar
@@ -121,26 +121,26 @@ function restoreFormContent() {
             if (fromContextMenu && rangeFromContextMenu) {
                 // If called from context menu and we successfully saved a range earlier
                 savedRangeForLink = rangeFromContextMenu.cloneRange();
-                console.log("Using pre-saved range from context menu:", savedRangeForLink); // Debug
+                (window.AppYacht?.log || console.log)("Using pre-saved range from context menu:", savedRangeForLink); // Debug
                 rangeFromContextMenu = null; // Clear the temporary range
             } else if (!fromContextMenu) {
                 // Original logic for toolbar button or if context menu failed to save range
-                console.log("Attempting to get current selection for toolbar/fallback."); // Debug
+                (window.AppYacht?.log || console.log)("Attempting to get current selection for toolbar/fallback."); // Debug
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
                     const isInsideEditor = editor.contains(range.commonAncestorContainer);
-                    console.log("Is selection inside editor?", isInsideEditor, "Container:", range.commonAncestorContainer); // Log container check
+                    (window.AppYacht?.log || console.log)("Is selection inside editor?", isInsideEditor, "Container:", range.commonAncestorContainer); // Log container check
                     if (isInsideEditor) {
                         savedRangeForLink = range.cloneRange();
-                        console.log("Selection saved for link modal (toolbar/fallback):", savedRangeForLink); // Debug
+                        (window.AppYacht?.log || console.log)("Selection saved for link modal (toolbar/fallback):", savedRangeForLink); // Debug
                     } else {
-                        console.log("Selection is outside editor, not saving range (toolbar/fallback)."); // Log if outside
+                        (window.AppYacht?.log || console.log)("Selection is outside editor, not saving range (toolbar/fallback)."); // Log if outside
                     }
                 } else {
-                    console.log("No selection range found (toolbar/fallback)."); // Log if no range
+                    (window.AppYacht?.log || console.log)("No selection range found (toolbar/fallback)."); // Log if no range
                 }
             } else {
-                 console.log("Called from context menu, but no pre-saved range available."); // Debug
+                 (window.AppYacht?.log || console.log)("Called from context menu, but no pre-saved range available."); // Debug
                  // Optionally, could try to get current selection as a last resort, but it's likely wrong.
             }
 
@@ -148,9 +148,9 @@ function restoreFormContent() {
             if (editor) { 
                 savedScrollTopWindow = window.pageYOffset || document.documentElement.scrollTop;
                 savedScrollTopEditor = editor.scrollTop;
-                console.log(`Scroll positions saved: window=${savedScrollTopWindow}, editor=${savedScrollTopEditor}`); // Debug
+                (window.AppYacht?.log || console.log)(`Scroll positions saved: window=${savedScrollTopWindow}, editor=${savedScrollTopEditor}`); // Debug
             } else {
-                console.warn("Editor not found in insertLinkHandler, cannot save scroll positions.");
+                (window.AppYacht?.warn || console.warn)("Editor not found in insertLinkHandler, cannot save scroll positions.");
             }
 
             // 2. Mostrar el modal personalizado (common part)
@@ -169,7 +169,7 @@ function restoreFormContent() {
             if (editor) {
                 currentSavedScrollTopWindow = window.pageYOffset || document.documentElement.scrollTop;
                 currentSavedScrollTopEditor = editor.scrollTop;
-                console.log(`Scroll positions saved before image prompt: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
+                (window.AppYacht?.log || console.log)(`Scroll positions saved before image prompt: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
             }
 
             const url = prompt("Introduce la URL de la imagen:", "http://");
@@ -183,7 +183,7 @@ function restoreFormContent() {
                     const range = rangeFromContextMenu.cloneRange(); // Usar el rango guardado
                     rangeFromContextMenu = null; // Limpiar inmediatamente
 
-                    console.log("Attempting to insert image via context menu. Range details:",
+                    (window.AppYacht?.log || console.log)("Attempting to insert image via context menu. Range details:",
                         "StartNode:", range.startContainer, "StartOffset:", range.startOffset,
                         "EndNode:", range.endContainer, "EndOffset:", range.endOffset,
                         "Collapsed:", range.collapsed);
@@ -207,17 +207,17 @@ function restoreFormContent() {
                             selection.removeAllRanges();
                             selection.addRange(range);
                         }
-                        console.log("Image inserted manually via context menu range.");
+                        (window.AppYacht?.log || console.log)("Image inserted manually via context menu range.");
                         handleContentChange(mailComposer.editor.innerHTML); // Guardar contenido
                     } catch (e) {
-                        console.error("Error inserting image manually with range:", e);
+                        (window.AppYacht?.error || console.error)("Error inserting image manually with range:", e);
                         // Fallback a la inserción normal si la manipulación del DOM falla
                         applyCommand("insertImage", url);
                         saveFormContent();
                     }
                 } else {
                     // Inserción normal (sin menú contextual)
-                    console.log("Image insertion using current editor selection/caret (no context menu range).");
+                    (window.AppYacht?.log || console.log)("Image insertion using current editor selection/caret (no context menu range).");
                     applyCommand("insertImage", url);
                     saveFormContent();
                 }
@@ -227,7 +227,7 @@ function restoreFormContent() {
                     requestAnimationFrame(() => {
                         window.scrollTo(0, currentSavedScrollTopWindow);
                         editor.scrollTop = currentSavedScrollTopEditor;
-                        console.log(`Scroll positions restored after image insertion: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
+                        (window.AppYacht?.log || console.log)(`Scroll positions restored after image insertion: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
                     });
                 }
             } else {
@@ -239,7 +239,7 @@ function restoreFormContent() {
                          requestAnimationFrame(() => {
                             window.scrollTo(0, currentSavedScrollTopWindow);
                             editor.scrollTop = currentSavedScrollTopEditor;
-                            console.log(`Scroll positions restored after image prompt cancellation: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
+                            (window.AppYacht?.log || console.log)(`Scroll positions restored after image prompt cancellation: window=${currentSavedScrollTopWindow}, editor=${currentSavedScrollTopEditor}`);
                         });
                     }
                 }
@@ -284,12 +284,12 @@ function restoreFormContent() {
                 const range = selection.getRangeAt(0);
                 if (editor.contains(range.commonAncestorContainer)) {
                     savedRangeForLink = range.cloneRange();
-                    console.log("Selection saved on mousedown (toolbar):", savedRangeForLink);
+                    (window.AppYacht?.log || console.log)("Selection saved on mousedown (toolbar):", savedRangeForLink);
                 } else {
-                    console.log("Selection is outside editor on mousedown (toolbar).");
+                    (window.AppYacht?.log || console.log)("Selection is outside editor on mousedown (toolbar).");
                 }
             } else {
-                console.log("No selection range found on mousedown (toolbar).");
+                (window.AppYacht?.log || console.log)("No selection range found on mousedown (toolbar).");
             }
         }).on('click', function() {
              // Llamar al handler que ahora solo mostrará el modal
@@ -318,7 +318,7 @@ function restoreFormContent() {
                 focusCaretEnd($("#contenido")[0]);
                 // saveFormContent se llamará automáticamente por el onContentChange
             } else {
-                console.error("No se encontró el div con id 'result'");
+                (window.AppYacht?.error || console.error)("No se encontró el div con id 'result'");
             }
         });
 
@@ -361,11 +361,11 @@ function restoreFormContent() {
                     const selection = window.getSelection();
                     selection.removeAllRanges();
                     selection.addRange(rangeFromContextMenu);
-                    console.log(`Restored range for context menu command: ${command}`, rangeFromContextMenu); // Debug
+                    (window.AppYacht?.log || console.log)(`Restored range for context menu command: ${command}`, rangeFromContextMenu); // Debug
                     targetRange = rangeFromContextMenu.cloneRange(); // Guardar el rango restaurado
                     rangeFromContextMenu = null; // Clear after use
                 } else {
-                    console.warn(`No saved range for context menu command: ${command}. Applying to current selection/caret.`);
+                    (window.AppYacht?.warn || console.warn)(`No saved range for context menu command: ${command}. Applying to current selection/caret.`);
                     // El foco ya está asegurado arriba
                     // Intentar obtener el rango actual si no se guardó uno
                     const selection = window.getSelection();
@@ -395,7 +395,7 @@ function restoreFormContent() {
                                         selection.addRange(targetRange);
                                     } else {
                                         // Fallback: si no hay rango, intenta insertar con execCommand (menos fiable)
-                                        console.warn('Paste fallback: No target range found, attempting execCommand.');
+                                        (window.AppYacht?.warn || console.warn)('Paste fallback: No target range found, attempting execCommand.');
                                         document.execCommand('insertText', false, text);
                                     }
                                     // Guardar contenido después de pegar
@@ -403,7 +403,7 @@ function restoreFormContent() {
                                 }
                             })
                             .catch(err => {
-                                console.error('Error al leer el portapapeles:', err);
+                                (window.AppYacht?.error || console.error)('Error al leer el portapapeles:', err);
                                 // Opcional: Informar al usuario que el pegado falló o requiere permisos
                                 alert('No se pudo pegar desde el portapapeles. Asegúrate de haber otorgado permisos.');
                                 // Como fallback, intentar el método antiguo (puede no funcionar)
@@ -411,7 +411,7 @@ function restoreFormContent() {
                                 saveFormContent();
                             });
                     } else {
-                        console.warn('La API del portapapeles no está disponible. Usando execCommand("paste").');
+                        (window.AppYacht?.warn || console.warn)('La API del portapapeles no está disponible. Usando execCommand("paste").');
                         // Fallback si la API no está soportada
                         mailComposer.applyCommand(command, value);
                         saveFormContent();
@@ -440,7 +440,7 @@ function restoreFormContent() {
                 { text: 'Subrayado', action: () => applyCommandWithSavedRange('underline') }, // Use helper
                 { separator: true },
                 { text: 'Insertar enlace', action: () => {
-                    console.log("Context menu 'Insertar enlace' clicked. Using range saved from contextmenu event if available.");
+                    (window.AppYacht?.log || console.log)("Context menu 'Insertar enlace' clicked. Using range saved from contextmenu event if available.");
                     // insertLinkHandler already uses rangeFromContextMenu internally
                     insertLinkHandler(true); 
                 } },
@@ -520,7 +520,7 @@ function restoreFormContent() {
                     // Ensure the range is actually within the editor content
                     if (editor.contains(range.commonAncestorContainer)) {
                         rangeFromContextMenu = range.cloneRange();
-                        console.log(
+                        (window.AppYacht?.log || console.log)(
                             "Range saved from contextmenu. StartNode:", rangeFromContextMenu.startContainer,
                             "StartOffset:", rangeFromContextMenu.startOffset,
                             "EndNode:", rangeFromContextMenu.endContainer,
@@ -529,13 +529,13 @@ function restoreFormContent() {
                             "CommonAncestor:", rangeFromContextMenu.commonAncestorContainer
                         ); // Debug
                     } else {
-                         console.log("Contextmenu range ancestor not in editor."); // Debug
+                         (window.AppYacht?.log || console.log)("Contextmenu range ancestor not in editor."); // Debug
                     }
                 } else {
-                     console.log("No selection range on contextmenu event."); // Debug
+                     (window.AppYacht?.log || console.log)("No selection range on contextmenu event."); // Debug
                 }
             } else {
-                 console.log("Contextmenu event not inside editor."); // Debug
+                 (window.AppYacht?.log || console.log)("Contextmenu event not inside editor."); // Debug
             }
 
 
@@ -745,7 +745,7 @@ function handleLinkModalOk(event) {
     }
     const urlInput = document.getElementById('link-url-input');
     let url = urlInput.value.trim(); // Use let since it might be reassigned
-    console.log("handleLinkModalOk called. URL:", url); // Log entry
+    (window.AppYacht?.log || console.log)("handleLinkModalOk called. URL:", url); // Log entry
 
     // Añadir https:// si no tiene protocolo
     if (url && !url.match(/^([a-z]+:)?\/\//i)) {
@@ -766,7 +766,7 @@ function handleLinkModalOk(event) {
                     if (mailComposer && mailComposer.editor) { // Doble chequeo por si acaso
                         // 1. Ensure editor has focus, without causing a scroll
                         mailComposer.editor.focus({preventScroll: true}); 
-                        console.log("Editor explicitly focused with preventScroll. Active element:", document.activeElement);
+                        (window.AppYacht?.log || console.log)("Editor explicitly focused with preventScroll. Active element:", document.activeElement);
 
                         // 2. Restore selection if available
                         if (rangeToRestore) {
@@ -774,38 +774,38 @@ function handleLinkModalOk(event) {
                             if (mailComposer.editor.contains(rangeToRestore.commonAncestorContainer)) {
                                 selection.removeAllRanges();
                                 selection.addRange(rangeToRestore);
-                                console.log("Selection restored. Selection:", selection.toString());
+                                (window.AppYacht?.log || console.log)("Selection restored. Selection:", selection.toString());
                             } else {
-                                console.warn("Saved range is no longer valid or outside editor. Editor remains focused.");
+                                (window.AppYacht?.warn || console.warn)("Saved range is no longer valid or outside editor. Editor remains focused.");
                             }
                         } else {
-                            console.log("No saved range to restore. Editor remains focused.");
+                            (window.AppYacht?.log || console.log)("No saved range to restore. Editor remains focused.");
                         }
 
                         // 3. Aplicar el comando
                         const selectionBeforeCommand = window.getSelection();
-                        console.log("Selection *just before* applyCommand:", selectionBeforeCommand.toString(), "Range count:", selectionBeforeCommand.rangeCount);
+                        (window.AppYacht?.log || console.log)("Selection *just before* applyCommand:", selectionBeforeCommand.toString(), "Range count:", selectionBeforeCommand.rangeCount);
                         
                         mailComposer.applyCommand('createLink', url);
-                        console.log("Applied createLink command with URL:", url);
+                        (window.AppYacht?.log || console.log)("Applied createLink command with URL:", url);
 
                         // 4. Restaurar scrolls DESPUÉS de aplicar el comando
                         if (typeof savedScrollTopEditor !== 'undefined' && mailComposer && mailComposer.editor) {
                             mailComposer.editor.scrollTop = savedScrollTopEditor;
-                            console.log(`Editor scroll restored AFTER command to: ${savedScrollTopEditor}`);
+                            (window.AppYacht?.log || console.log)(`Editor scroll restored AFTER command to: ${savedScrollTopEditor}`);
                         }
                         if (typeof savedScrollTopWindow !== 'undefined') {
                             window.scrollTo(0, savedScrollTopWindow);
-                            console.log(`Window scroll restored AFTER command to: ${savedScrollTopWindow}`);
+                            (window.AppYacht?.log || console.log)(`Window scroll restored AFTER command to: ${savedScrollTopWindow}`);
                         }
 
                         // 5. Clean up scroll variables 
                         savedScrollTopWindow = undefined;
                         savedScrollTopEditor = undefined;
-                        console.log("Scroll variables cleaned up after command.");
+                        (window.AppYacht?.log || console.log)("Scroll variables cleaned up after command.");
                     }
                 } catch (error) {
-                     console.error("Error during link application or scroll restoration in setTimeout:", error);
+                     (window.AppYacht?.error || console.error)("Error during link application or scroll restoration in setTimeout:", error);
                      // Asegurar la limpieza de variables de scroll incluso en caso de error
                      savedScrollTopWindow = undefined;
                      savedScrollTopEditor = undefined;
@@ -813,7 +813,7 @@ function handleLinkModalOk(event) {
             }, 0); // Un retraso de 0ms a menudo funciona
 
         } else {
-            console.error("MailComposer o editor no disponible para aplicar enlace.");
+            (window.AppYacht?.error || console.error)("MailComposer o editor no disponible para aplicar enlace.");
             // Limpiar el rango si no se pudo usar
             savedRangeForLink = null;
         }
