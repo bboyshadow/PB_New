@@ -385,6 +385,23 @@ class TemplateManager {
             field.style.display = isEnabled ? 'block' : 'none';
         });
         
+        // Hide promotion UI when one-day is enabled
+        const charterRateGroups = document.querySelectorAll('.charter-rate-group');
+        charterRateGroups.forEach(group => {
+            const promotionContainer = group.querySelector('.promotion-container');
+            const promotionBtn = group.querySelector('.toggle-promotion-btn');
+            if (isEnabled) {
+                if (promotionContainer) {
+                    promotionContainer.style.display = 'none';
+                    const promotionNights = promotionContainer.querySelector('input[name="promotionNights"]');
+                    if (promotionNights) promotionNights.value = '';
+                }
+                if (promotionBtn) promotionBtn.style.display = 'none';
+            } else {
+                if (promotionBtn) promotionBtn.style.display = '';
+            }
+        });
+        
         // Publicar evento si hay eventBus
         if (this.eventBus) {
             this.eventBus.publish('template:oneDayCharter', { isEnabled });

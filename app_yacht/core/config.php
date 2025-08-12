@@ -111,6 +111,19 @@ class AppYachtConfig {
 				'max_file_size' => 5 * 1024 * 1024, 
 				'max_files'     => 5,
 			),
+
+			'features' => array(
+				'enhanced_logging'         => false,  // Logger.php integration
+				'data_validation'          => false,  // DataValidator helper  
+				'enhanced_sanitization'    => false,  // Sanitizer helper
+				'frontend_validation'      => false,  // JS input validation
+				'enhanced_error_handling'  => false,  // Better error display
+				'loading_states'           => false,  // Loading indicators
+				'request_throttling'       => false,  // Anti-spam protection
+				'calculation_caching'      => false,  // Result caching
+				'performance_monitoring'   => false,  // Performance logs
+				'debug_mode'               => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			),
 		);
 	}
 	

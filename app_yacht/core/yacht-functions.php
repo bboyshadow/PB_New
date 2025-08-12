@@ -295,3 +295,14 @@ function pb_register_yacht_roles_capabilities() {
 add_action( 'after_switch_theme', 'pb_register_yacht_roles_capabilities' );
 pb_register_yacht_roles_capabilities();
 
+
+// Helpers includes
+require_once get_template_directory() . '/app_yacht/shared/helpers/validator-helper.php';
+require_once get_template_directory() . '/app_yacht/shared/helpers/cache-helper.php';
+require_once get_template_directory() . '/app_yacht/shared/helpers/data-validator.php';
+require_once get_template_directory() . '/app_yacht/shared/helpers/sanitizer-helper.php';
+$__logger_helper = get_template_directory() . '/app_yacht/shared/helpers/Logger.php';
+if ( file_exists( $__logger_helper ) ) {
+	require_once $__logger_helper;
+}
+

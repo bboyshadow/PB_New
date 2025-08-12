@@ -215,16 +215,22 @@ if (vatRateMixEnabled) {
         }
 
         // Enviar AJAX usando async/await
+        // Loading state start (feature-flagged)
+        try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
         const response = await fetch(ajaxCalculatorData.ajaxurl, {
             method: 'POST',
             body: formData
         });
         
         if (!response.ok) {
+            // Enhanced error handling (feature-flagged)
+            try { window.AppYacht?.ui?.notifyError?.('Error de servidor en cálculo'); } catch (e) {}
             throw new Error('Server response error (calculate.php).');
         }
         
         const result = await response.json();
+        // Loading state end (feature-flagged)
+        try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
         
         if (result.success) {
             displayCalculatorResult(result.data);

@@ -16,8 +16,23 @@ add_action( 'wp_ajax_nopriv_calculate_charter', 'handle_calculate_charter' );
 function handle_calculate_charter() {
 	
 	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'calculate_nonce' ) ) {
+		// Log security failure if enhanced logging enabled
+		if ( class_exists( 'Logger' ) ) {
+			Logger::warning( 'Yacht calculation: Nonce verification failed', array(
+				'ip'         => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+			) );
+		}
 		wp_send_json_error( array( 'error' => 'Nonce inválido.' ), 400 );
 		return;
+	}
+
+	// Log calculation request start
+	if ( class_exists( 'Logger' ) ) {
+		Logger::info( 'Yacht calculation request started', array(
+			'post_data_size' => count( $_POST ),
+			'user_id'        => get_current_user_id(),
+		) );
 	}
 
 
@@ -102,6 +117,9 @@ function handle_calculate_charter() {
 
 	
 	wp_send_json_success( $textOutput );
+	if ( class_exists( 'Logger' ) ) {
+		Logger::info( 'Yacht calculation request completed successfully' );
+	}
 }
 
 function calculate( array $data ): array {
@@ -191,11 +209,17 @@ function calculate( array $data ): array {
 		$promotionValueDisplay = '--';
 
 		if ( $promotionActive && $promotionNights > 0 ) {
-			 $promotedRate = ceil( ( $discountedRate / $nights ) * $promotionNights );
+			// Avoid division by zero when nights is zero (e.g., one-day charter / hours mode)
+			if ( $nights > 0 ) {
+				$promotedRate = ceil( ( $discountedRate / $nights ) * $promotionNights );
+			} else {
+				// When nights are not provided, keep discountedRate (skip promotion adjustment)
+				$promotedRate = $discountedRate;
+			}
 			if ( $promotedRate < 0 ) {
 				$promotedRate = 0;
 			}
-			 $promotionValueDisplay = formatCurrency( $promotedRate, $symbolCode, true );
+			$promotionValueDisplay = formatCurrency( $promotedRate, $symbolCode, true );
 		}
 
 		
@@ -338,14 +362,14 @@ function calculate( array $data ): array {
 			'discountAmount'        => $discountAmountForDisplay, 
 			'discountValue'         => $discountValueDisplay, 
 			'discountedRate'        => ( $discountedRate !== $calculatedBaseRate && $discountedRate >= 0 )
-							   ? formatCurrency( $discountedRate, $symbolCode, true )
-							   : '--', 
+						   ? formatCurrency( $discountedRate, $symbolCode, true )
+						   : '--', 
 
 			'promotionActive'       => $promotionActive ? '1' : '0',
 			'promotionNights'       => (string) $promotionNights,
-			'promotedRate'          => ( $promotionActive && $promotedRate >= 0 )
-						   ? formatCurrency( $promotedRate, $symbolCode, true )
-						   : '--',
+			'promotedRate'          => ( $promotionActive && $promotedRate >= 0 && $hours == 0 )
+					   ? formatCurrency( $promotedRate, $symbolCode, true )
+					   : '--',
 			'promotionValueDisplay' => $promotionValueDisplay,
 
 			'vatRateForDisplay'     => (string) $vatRateDisp,

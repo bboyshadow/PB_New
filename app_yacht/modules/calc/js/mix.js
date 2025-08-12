@@ -327,16 +327,21 @@ function applyMix() {
     formData.append('highSeasonNights', highSeasonNights);
     formData.append('currency', currency);
 
+    try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
     fetch(ajaxData.ajaxurl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(formData)
     })
     .then(response => {
-        if (!response.ok) throw new Error('Server error in calculatemix.php');
+        if (!response.ok) {
+            try { window.AppYacht?.ui?.notifyError?.('Error en cálculo mixto'); } catch (e) {}
+            throw new Error('Server error in calculatemix.php');
+        }
         return response.json();
     })
     .then(result => {
+         try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {};
         if (result.success) {
             const { lowSeasonResult, highSeasonResult, mixedResult: totalMixedResult } = result.data;
 

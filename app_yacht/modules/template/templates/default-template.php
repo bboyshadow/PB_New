@@ -208,7 +208,7 @@ $block = $calcArr['structuredBlock'] ?? array();
 											<?php endif; ?>
 
 											<!-- Promoción -->
-											<?php if ( ! empty( $resultData['promotionActive'] ) && ! empty( $resultData['promotionNights'] ) && $resultData['promotionNights'] > 0 ) : ?>
+											<?php if ( ! empty( $resultData['promotionActive'] ) && ! empty( $resultData['promotionNights'] ) && $resultData['promotionNights'] > 0 && $resultData['nights'] !== '--' ) : ?>
 												<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"
 													style="width: 100%; border-spacing: 0; border-collapse: collapse; padding: 2px 5px; color: #4b4f54; font-family: Arial, sans-serif; font-size: 12px;">
 													<tr>

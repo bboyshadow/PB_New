@@ -13,8 +13,19 @@
 
 // Comprobar nonce de seguridad
 if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'relocation_calculate_nonce' ) ) {
+    if ( class_exists( 'Logger' ) ) {
+        Logger::warning( 'Relocation calculation: Nonce verification failed', array(
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        ) );
+    }
     wp_send_json_error( [ 'error' => 'Security check failed' ] );
     return;
+}
+
+if ( class_exists( 'Logger' ) ) {
+    Logger::info( 'Relocation calculation request started', array(
+        'user_id' => get_current_user_id(),
+    ) );
 }
 
 // Recoger parámetros opcionales
@@ -76,3 +87,6 @@ require_once __DIR__ . '/../../../shared/php/currency-functions.php';
 $feeFormatted = formatCurrency( $total, $currency, false );
 
 wp_send_json_success( [ 'fee' => $feeFormatted ] );
+if ( class_exists( 'Logger' ) ) {
+    Logger::info( 'Relocation calculation request completed successfully' );
+}

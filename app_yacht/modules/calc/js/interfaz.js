@@ -455,6 +455,31 @@ function toggleOneDayCharter(isOneDayActive) {
             if (typeof formatNumber === 'function') { formatNumber(event.target); }
         }, 300));
         fieldContainer.appendChild(label); fieldContainer.appendChild(input);
+        
+        // Hide and clear promotion fields when One Day Charter is active
+        const promotionContainer = group.querySelector('.promotion-container');
+        if (promotionContainer) {
+            if (isOneDayActive) {
+                // Hide promotion container and clear values
+                promotionContainer.style.display = 'none';
+                const promotionNights = promotionContainer.querySelector('[name="promotionNights"]');
+                if (promotionNights) promotionNights.value = '';
+                
+                // Also hide the promotion toggle button
+                const promotionBtn = group.querySelector('.toggle-promotion-btn');
+                if (promotionBtn) {
+                    promotionBtn.style.display = 'none';
+                }
+            } else {
+                // Show promotion button again when switching back to Nights mode
+                const promotionBtn = group.querySelector('.toggle-promotion-btn');
+                if (promotionBtn) {
+                    promotionBtn.style.display = '';
+                }
+                // Note: We don't automatically show the promotion container,
+                // the user needs to click the button again if they want it
+            }
+        }
     });
 }
 
