@@ -165,3 +165,256 @@ function formatCurrency(value, currency, round = false) {
     
     return new Intl.NumberFormat('en-US', formatOptions).format(round ? Math.ceil(value) : value);
 }
+
+// Función para validar campos obligatorios con warnings preventivos
+function validateFieldsWithWarnings() {
+    // Limpiar warnings previos
+    document.querySelectorAll('.warning-text').forEach(el => el.remove());
+    
+    let warnings = [];
+    
+    // Validar Mixed Seasons
+    const enableMixedSeasons = document.getElementById('enableMixedSeasons');
+    if (enableMixedSeasons && enableMixedSeasons.checked) {
+        const lowSeasonNights = document.getElementById('lowSeasonNights');
+        const highSeasonNights = document.getElementById('highSeasonNights');
+        const mixNights = document.getElementById('mix-nights');
+        
+        const lowValue = parseInt(lowSeasonNights?.value) || 0;
+        const highValue = parseInt(highSeasonNights?.value) || 0;
+        const mixValue = parseInt(mixNights?.value) || 0;
+        
+        if (mixValue <= 0) {
+            warnings.push('Mixed Seasons: Mix Nights debe ser mayor a 0');
+            addFieldWarning(mixNights, 'Debe ser mayor a 0');
+        }
+        
+        if (lowValue <= 0) {
+            warnings.push('Mixed Seasons: Low Season Nights debe ser mayor a 0');
+            addFieldWarning(lowSeasonNights, 'Debe ser mayor a 0');
+        }
+        
+        if (highValue <= 0) {
+            warnings.push('Mixed Seasons: High Season Nights debe ser mayor a 0');
+            addFieldWarning(highSeasonNights, 'Debe ser mayor a 0');
+        }
+        
+        if (mixValue > 0 && (lowValue + highValue !== mixValue)) {
+            warnings.push('Mixed Seasons: La suma de Low + High Season debe igual a Mix Nights');
+            addFieldWarning(lowSeasonNights, 'Suma no coincide con Mix Nights');
+            addFieldWarning(highSeasonNights, 'Suma no coincide con Mix Nights');
+        }
+    }
+    
+    // Validar VAT Mix
+    const vatRateMix = document.getElementById('vatRateMix');
+    if (vatRateMix && vatRateMix.checked) {
+        const vatCountryItems = document.querySelectorAll('.country-vat-item-wrapper');
+        let hasValidVatEntry = false;
+        
+        vatCountryItems.forEach(item => {
+            const countryName = item.querySelector('input[name="vatCountryName[]"]');
+            const vatRate = item.querySelector('input[name="vatRate[]"]');
+            const nights = item.querySelector('input[name="vatNights[]"]');
+            
+            const country = countryName?.value.trim() || '';
+            const rate = parseFloat(vatRate?.value) || 0;
+            const nightsValue = parseInt(nights?.value) || 0;
+            
+            if (country && rate > 0 && nightsValue > 0) {
+                hasValidVatEntry = true;
+            }
+            
+            if (country && rate <= 0) {
+                addFieldWarning(vatRate, 'Debe ser mayor a 0%');
+            }
+            
+            if (country && nightsValue <= 0) {
+                addFieldWarning(nights, 'Debe ser mayor a 0');
+            }
+            
+            if (!country && (rate > 0 || nightsValue > 0)) {
+                addFieldWarning(countryName, 'Nombre del país requerido');
+            }
+        });
+        
+        if (!hasValidVatEntry) {
+            warnings.push('VAT Mix: Debe agregar al menos un país con datos válidos');
+        }
+    }
+    
+    // Mostrar warnings si existen
+    if (warnings.length > 0) {
+        showWarnings(warnings);
+    }
+    
+    // Retornar si hay warnings críticos (opcional - no bloquear por ahora)
+    return warnings.length === 0;
+}
+
+function addFieldWarning(field, message) {
+    if (!field) return;
+    
+    // Remover warning previo en este campo
+    const existingWarning = field.parentNode.querySelector('.warning-text');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+    
+    // Crear nuevo elemento de warning
+    const warningEl = document.createElement('small');
+    warningEl.className = 'warning-text text-warning d-block';
+    warningEl.textContent = '⚠ ' + message;
+    
+    // Insertar después del campo
+    field.parentNode.insertBefore(warningEl, field.nextSibling);
+    
+    // Añadir clase visual al campo
+    field.classList.add('border-warning');
+    
+    // Remover la clase después de 5 segundos
+    setTimeout(() => {
+        field.classList.remove('border-warning');
+        if (warningEl.parentNode) {
+            warningEl.remove();
+        }
+    }, 5000);
+}
+
+function showWarnings(warnings) {
+    // Intentar usar la función de UI si está disponible
+    try {
+        if (window.AppYacht?.ui?.notifyWarning) {
+            warnings.forEach(warning => {
+                window.AppYacht.ui.notifyWarning(warning);
+            });
+            return;
+        }
+    } catch (e) {
+        console.warn('AppYacht.ui.notifyWarning no disponible:', e);
+    }
+    
+    // Fallback: mostrar en el área de mensajes existente
+    const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
+        warningDiv.innerHTML = `
+            <strong>⚠ Advertencias:</strong>
+            <ul class="mb-0 mt-1">
+                ${warnings.map(w => `<li>${w}</li>`).join('')}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insertar después del errorMessage
+        errorDiv.parentNode.insertBefore(warningDiv, errorDiv.nextSibling);
+        
+        // Auto-hide después de 7 segundos
+        setTimeout(() => {
+            if (warningDiv.parentNode) {
+                warningDiv.remove();
+            }
+        }, 7000);
+    }
+}
+
+// -----------------------------
+// Real-time validation helpers
+// -----------------------------
+function debounce(fn, delay = 300) {
+    let timerId;
+    return function(...args) {
+        if (timerId) clearTimeout(timerId);
+        timerId = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+function validateSingleField(field) {
+    if (!field || !isElementVisible(field)) return;
+
+    let fieldValid = true;
+    const tag = field.tagName.toLowerCase();
+
+    if (tag === 'select') {
+        if (!field.value || field.value === "" || field.value === field.querySelector('option[disabled][selected]')?.value) {
+            fieldValid = false;
+        }
+    } else if (tag === 'input' || tag === 'textarea') {
+        const type = (field.getAttribute('type') || '').toLowerCase();
+        if (type === 'checkbox' || type === 'radio') {
+            const form = field.form || document.getElementById('charterForm');
+            const checked = form ? form.querySelectorAll(`input[name="${field.name}"]:checked`) : [];
+            if (!checked || checked.length === 0) {
+                fieldValid = false;
+            }
+        } else {
+            const val = field.value != null ? String(field.value).trim() : '';
+            if (!val) {
+                fieldValid = false;
+            }
+            if (type === 'number') {
+                const num = parseFloat(field.value);
+                if (isNaN(num)) fieldValid = false;
+            }
+        }
+    }
+
+    if (!fieldValid) {
+        markFieldAsError(field);
+    } else {
+        unmarkFieldAsError(field);
+    }
+}
+
+function attachRealTimeValidation() {
+    const form = document.getElementById('charterForm');
+    if (!form) return;
+
+    const triggerWarnings = debounce(() => {
+        try { validateFieldsWithWarnings(); } catch (e) { /* noop */ }
+    }, 350);
+
+    const maybeValidateTarget = (target) => {
+        if (!target || !target.tagName) return;
+        // Validar sólo campos del formulario
+        if (!form.contains(target)) return;
+
+        // Actualizar estado del campo requerido si aplica
+        if (target.hasAttribute('required') || ['INPUT','SELECT','TEXTAREA'].includes(target.tagName)) {
+            validateSingleField(target);
+        }
+
+        // Disparar warnings no bloqueantes (debounced)
+        triggerWarnings();
+    };
+
+    // Delegación de eventos para cubrir campos dinámicos (VAT Mix)
+    form.addEventListener('input', (e) => {
+        const target = e.target;
+        maybeValidateTarget(target);
+    });
+
+    form.addEventListener('change', (e) => {
+        const target = e.target;
+        maybeValidateTarget(target);
+    });
+
+    // Cambios en toggles que habilitan secciones (Mixed Seasons / VAT Mix)
+    const toggles = ['enableMixedSeasons', 'vatRateMix'];
+    toggles.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', () => {
+                try { validateFieldsWithWarnings(); } catch (e) { /* noop */ }
+            });
+        }
+    });
+}
+
+// Inicializar al cargar el documento
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachRealTimeValidation);
+} else {
+    attachRealTimeValidation();
+}

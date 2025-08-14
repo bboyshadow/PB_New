@@ -47,6 +47,7 @@
 - ✅ `calculate.js` - hooks para loading states y error handling
 - ✅ `mix.js` - mismo patrón aplicado
 - ✅ Llamadas opcionales a `window.AppYacht?.ui?.setLoading()` y `window.AppYacht?.ui?.notifyError()`
+- ✅ `validate.js` - nueva función `validateFieldsWithWarnings()` para advertencias no bloqueantes (Mixed Seasons y VAT Mix) integrada en `calculate.js`, `classes/Calculator.js` y `classes/TemplateManager.js`; usa `AppYacht.ui.notifyWarning` si está disponible y fallback a `#errorMessage`
 
 ## 🚀 Cómo activar las mejoras
 
@@ -83,6 +84,21 @@
 3. **Activar progresivamente** otras mejoras según necesidad
 4. **Monitorear** rendimiento y errores
 5. **Crear tests** para validar funcionamiento
+
+### 🔐 5. Seguridad: Centralización de Nonces
+
+- ✅ Helper centralizado pb_verify_ajax_nonce en `shared/php/security.php`
+- ✅ Aplicado en handlers de `core/bootstrap.php`, `modules/calc/php/calculate.php`, `modules/calc/php/calculateRelocation.php`, `modules/calc/php/calculatemix.php`, `modules/template/php/load-template.php` y `modules/mail/outlook/outlook-functions.php`
+- ✅ Fallback seguro a lógica previa si el helper no existe
+- ✅ Logging de intentos fallidos vía pb_log_security_event y Logger
+
+### 🧮 6. Cálculo: Fix de VAT Mix 422
+
+- ✅ Back-end ajustado para aceptar `vatRate[]` (array) cuando el Mix está activo
+- ✅ Validación robusta con `DataValidator::isPercentage` para cada elemento
+- ✅ Sanitización protegida: evitar tratar arrays como strings
+- ✅ Confirmado que `calculate()` fuerza `vatRate=0` cuando `enableVatRateMix` está activo
+- ✅ Pruebas: activando Mix ya no retorna 422 por validación
 
 ---
 **Estado:** ✅ LISTO PARA PRODUCCIÓN (con flags desactivados)

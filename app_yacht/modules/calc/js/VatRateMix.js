@@ -112,6 +112,18 @@ const VatRateMix = {
             </div>`;
 
         container.insertAdjacentHTML('beforeend', countryFieldHTML);
+        // Añadir listener con debounce a campos con oninput="formatNumber(this)" dentro del nuevo bloque
+        const wrapper = document.getElementById(`vat_country_wrapper_${uniqueId}`);
+        if (wrapper) {
+            const debounceFunc = typeof window.pbDebounce === 'function' ? window.pbDebounce : 
+                                 typeof window.debounce === 'function' ? window.debounce : 
+                                 typeof debounce === 'function' ? debounce : (fn) => fn;
+            wrapper.querySelectorAll('input[oninput="formatNumber(this)"]').forEach(inp => {
+                inp.addEventListener('input', debounceFunc((event) => {
+                    if (typeof window.formatNumber === 'function') window.formatNumber(event.target);
+                }, 300));
+            });
+        }
     },
 
     /**

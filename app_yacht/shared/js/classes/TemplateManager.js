@@ -211,13 +211,23 @@ class TemplateManager {
             // Validación
             if (typeof validateFields === 'function') {
                 const isValid = validateFields();
-                if (!isValid) {
-                    throw new Error('Validation failed');
-                }
+                try { typeof validateFieldsWithWarnings === 'function' && validateFieldsWithWarnings(); } catch (e) {}
+                if (!isValid) return; // Detener si la validación estricta falla
             }
             
             // Indicar que estamos creando una plantilla
             this.isCreating = true;
+            
+            // Usar UI helper si está disponible para indicar estado de carga
+            try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
+            
+            // Controlar estado del botón Create Template
+            const createBtn = document.getElementById('createTemplateButton');
+            if (createBtn) {
+                createBtn.dataset.prevText = createBtn.textContent || 'Create Template';
+                createBtn.textContent = 'Creating...';
+                createBtn.disabled = true;
+            }
             
             // Notificar inicio si hay callback
             if (typeof this.config.onTemplateCreated === 'function') {
@@ -276,6 +286,9 @@ class TemplateManager {
             // Guardar la plantilla actual
             this.currentTemplate = result.data;
             
+            // Usar UI helper si está disponible para notificar éxito
+            try { window.AppYacht?.ui?.notifySuccess?.('Plantilla creada exitosamente'); } catch (e) {}
+            
             // Notificar éxito si hay callback
             if (typeof this.config.onTemplateCreated === 'function') {
                 this.config.onTemplateCreated(result.data);
@@ -293,6 +306,19 @@ class TemplateManager {
                 (window.AppYacht?.error || console.error)('Error creating template:', error);
             }
             
+            // Usar UI helper si está disponible para notificar error, fallback a #errorMessage
+            try { 
+                window.AppYacht?.ui?.notifyError?.('Error al crear plantilla: ' + error.message); 
+            } catch (e) {
+                // Fallback a #errorMessage
+                const errorEl = document.getElementById('errorMessage');
+                if (errorEl) {
+                    errorEl.textContent = 'Error al crear plantilla: ' + error.message;
+                    errorEl.style.display = 'block';
+                    errorEl.classList.add('text-danger');
+                }
+            }
+            
             // Notificar error si hay callback
             if (typeof this.config.onError === 'function') {
                 this.config.onError(error);
@@ -306,6 +332,16 @@ class TemplateManager {
             throw error;
         } finally {
             this.isCreating = false;
+            
+            // Desactivar estado de carga
+            try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
+            
+            // Restaurar estado del botón Create Template
+            const createBtn = document.getElementById('createTemplateButton');
+            if (createBtn) {
+                createBtn.textContent = createBtn.dataset.prevText || 'Create Template';
+                createBtn.disabled = false;
+            }
         }
     }
     
@@ -316,6 +352,15 @@ class TemplateManager {
      */
     async loadTemplate(templateId) {
         try {
+            // Usar UI helper si está disponible para indicar estado de carga
+            try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
+            
+            // Controlar estado del selector de templates
+            const templateSelector = document.getElementById('templateSelector');
+            const saveTemplateSelector = document.getElementById('saveTemplateSelector');
+            if (templateSelector) templateSelector.disabled = true;
+            if (saveTemplateSelector) saveTemplateSelector.disabled = true;
+            
             // Notificar inicio si hay callback
             if (typeof this.config.onTemplateLoaded === 'function') {
                 this.config.onTemplateLoaded();
@@ -351,6 +396,9 @@ class TemplateManager {
             // Guardar la plantilla actual
             this.currentTemplate = result.data;
             
+            // Usar UI helper si está disponible para notificar éxito
+            try { window.AppYacht?.ui?.notifySuccess?.('Plantilla cargada exitosamente'); } catch (e) {}
+            
             // Notificar éxito si hay callback
             if (typeof this.config.onTemplateLoaded === 'function') {
                 this.config.onTemplateLoaded(result.data);
@@ -364,6 +412,20 @@ class TemplateManager {
             return result.data;
         } catch (error) {
             (window.AppYacht?.error || console.error)('Error al cargar plantilla:', error);
+            
+            // Usar UI helper si está disponible para notificar error, fallback a #errorMessage
+            try { 
+                window.AppYacht?.ui?.notifyError?.('Error al cargar plantilla: ' + error.message); 
+            } catch (e) {
+                // Fallback a #errorMessage
+                const errorEl = document.getElementById('errorMessage');
+                if (errorEl) {
+                    errorEl.textContent = 'Error al cargar plantilla: ' + error.message;
+                    errorEl.style.display = 'block';
+                    errorEl.classList.add('text-danger');
+                }
+            }
+            
             // Notificar error si hay callback
             if (typeof this.config.onError === 'function') {
                 this.config.onError(error);
@@ -372,6 +434,15 @@ class TemplateManager {
                 this.eventBus.publish('template:error', { error: error.message });
             }
             throw error;
+        } finally {
+            // Desactivar estado de carga
+            try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
+            
+            // Restaurar estado de los selectores
+            const templateSelector = document.getElementById('templateSelector');
+            const saveTemplateSelector = document.getElementById('saveTemplateSelector');
+            if (templateSelector) templateSelector.disabled = false;
+            if (saveTemplateSelector) saveTemplateSelector.disabled = false;
         }
     }
     

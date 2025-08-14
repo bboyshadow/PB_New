@@ -331,9 +331,15 @@ function pb_outlook_send_mail_ajax_handler() {
 		wp_send_json_error( 'Has excedido el límite de intentos. Por favor, inténtalo más tarde.', 429 );
 		 return;
 	}
-	 check_ajax_referer( 'pb_outlook_nonce', 'nonce' ); 
-	 
-
+	// Verificación de nonce con helper centralizado
+	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+		pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'pb_outlook_nonce', array( 'endpoint' => 'outlook_send_mail' ), 403 );
+	} else {
+		// Fallback a verificación nativa de WP
+		check_ajax_referer( 'pb_outlook_nonce', 'nonce' );
+	}
+ 	 
+ 
 	if ( ! is_user_logged_in() ) {
 		wp_send_json_error( 'No estás autenticado en WordPress.', 401 );
 	}
@@ -461,18 +467,22 @@ function pb_outlook_disconnect_ajax_handler() {
 		pb_log_security_event( 0, 'outlook_disconnect_ajax_started' );
 		
 		
-		if ( ! isset( $_POST['nonce'] ) ) {
-			pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'missing_nonce' ) );
-			wp_send_json_error( 'Security error: Token not provided. Please reload the page and try again.', 403 );
-			return;
-		}
-		
-		
-		$nonce_verification = wp_verify_nonce( $_POST['nonce'], 'pb_outlook_nonce' );
-		if ( ! $nonce_verification ) {
-			pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'invalid_nonce' ) );
-			wp_send_json_error( 'Security error: Token invalid or expired. Please reload the page and try again.', 403 );
-			return;
+		// Verificación de nonce con helper centralizado
+		if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+			pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'pb_outlook_nonce', array( 'endpoint' => 'outlook_disconnect' ), 403 );
+		} else {
+			if ( ! isset( $_POST['nonce'] ) ) {
+				pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'missing_nonce' ) );
+				wp_send_json_error( 'Security error: Token not provided. Please reload the page and try again.', 403 );
+				return;
+			}
+			
+			$nonce_verification = wp_verify_nonce( $_POST['nonce'], 'pb_outlook_nonce' );
+			if ( ! $nonce_verification ) {
+				pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'invalid_nonce' ) );
+				wp_send_json_error( 'Security error: Token invalid or expired. Please reload the page and try again.', 403 );
+				return;
+			}
 		}
 		
 		

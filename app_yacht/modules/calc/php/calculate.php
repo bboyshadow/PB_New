@@ -15,7 +15,10 @@ add_action( 'wp_ajax_nopriv_calculate_charter', 'handle_calculate_charter' );
 
 function handle_calculate_charter() {
 	
-	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'calculate_nonce' ) ) {
+	// Verificación de nonce con helper centralizado
+	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+		pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'calculate_nonce', array( 'endpoint' => 'calculate_charter' ), 400 );
+	} else if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'calculate_nonce' ) ) {
 		// Log security failure if enhanced logging enabled
 		if ( class_exists( 'Logger' ) ) {
 			Logger::warning( 'Yacht calculation: Nonce verification failed', array(
@@ -35,11 +38,105 @@ function handle_calculate_charter() {
 		) );
 	}
 
+	// Validación de entrada con DataValidator cuando la feature esté activa
+	$features = class_exists( 'AppYachtConfig' ) ? ( AppYachtConfig::get()['features'] ?? array() ) : array();
+	if ( ! empty( $features['data_validation'] ) && class_exists( 'DataValidator' ) ) {
+		$errors = array();
 
+		$currency      = isset( $_POST['currency'] ) ? sanitize_text_field( $_POST['currency'] ) : '';
+		$vatRateRaw    = isset( $_POST['vatRate'] ) ? $_POST['vatRate'] : '';
+		$apaAmount     = isset( $_POST['apaAmount'] ) ? $_POST['apaAmount'] : '';
+		$apaPercentage = isset( $_POST['apaPercentage'] ) ? $_POST['apaPercentage'] : '';
+		$relocationFee = isset( $_POST['relocationFee'] ) ? $_POST['relocationFee'] : '';
+		$securityFee   = isset( $_POST['securityFee'] ) ? $_POST['securityFee'] : '';
 
-	
+		if ( ! DataValidator::required( $currency ) ) {
+			$errors['currency'] = 'Currency is required';
+		}
+
+		$enableVatRateMixFlag = ( ! empty( $_POST['vatRateMix'] ) && $_POST['vatRateMix'] === '1' );
+		if ( $enableVatRateMixFlag ) {
+			// Validación cuando el VAT Mix está activo: vatRate puede llegar como array (vatRate[])
+			if ( is_array( $vatRateRaw ) ) {
+				foreach ( $vatRateRaw as $i => $vr ) {
+					$vrNum = str_replace( ',', '', (string) $vr );
+					if ( $vrNum !== '' && ! DataValidator::isPercentage( $vrNum ) ) {
+						$errors[ "vatRate[$i]" ] = 'VAT must be a percentage between 0 and 100';
+					}
+				}
+			} else {
+				$vrNum = str_replace( ',', '', (string) $vatRateRaw );
+				if ( $vrNum !== '' && ! DataValidator::isPercentage( $vrNum ) ) {
+					$errors['vatRate'] = 'VAT must be a percentage between 0 and 100';
+				}
+			}
+		} else {
+			// Validación estándar (no mix): vatRate debe ser porcentaje único
+			if ( ! is_array( $vatRateRaw ) ) {
+				$vrNum = str_replace( ',', '', (string) $vatRateRaw );
+				if ( $vrNum !== '' && ! DataValidator::isPercentage( $vrNum ) ) {
+					$errors['vatRate'] = 'VAT must be a percentage between 0 and 100';
+				}
+			} else {
+				// Si llegara como array accidentalmente, validar cada uno para evitar 422
+				foreach ( $vatRateRaw as $i => $vr ) {
+					$vrNum = str_replace( ',', '', (string) $vr );
+					if ( $vrNum !== '' && ! DataValidator::isPercentage( $vrNum ) ) {
+						$errors[ "vatRate[$i]" ] = 'VAT must be a percentage between 0 y 100';
+					}
+				}
+			}
+		}
+
+		foreach ( array( 'apaAmount' => $apaAmount, 'apaPercentage' => $apaPercentage, 'relocationFee' => $relocationFee, 'securityFee' => $securityFee ) as $key => $val ) {
+			$valNum = str_replace( ',', '', $val );
+			if ( $valNum !== '' && ! DataValidator::isPositiveNumber( $valNum ) ) {
+				$errors[ $key ] = ucfirst( $key ) . ' must be a positive number';
+			}
+		}
+
+		$charterRates = isset( $_POST['charterRates'] ) ? $_POST['charterRates'] : array();
+		if ( ! is_array( $charterRates ) ) {
+			$errors['charterRates'] = 'charterRates must be an array';
+		} else {
+			foreach ( $charterRates as $idx => $rate ) {
+				$baseRate = isset( $rate['baseRate'] ) ? str_replace( ',', '', $rate['baseRate'] ) : '';
+				if ( $baseRate === '' || ! DataValidator::isPositiveNumber( $baseRate ) ) {
+					$errors["charterRates[$idx][baseRate]"] = 'baseRate must be a positive number';
+				}
+				$discountType   = $rate['discountType'] ?? '';
+				$discountAmount = isset( $rate['discountAmount'] ) ? str_replace( ',', '', $rate['discountAmount'] ) : '';
+				$discountActive = ! empty( $rate['discountActive'] ) && $rate['discountActive'] === '1';
+				if ( $discountActive && $discountType !== '' && $discountAmount !== '' ) {
+					if ( $discountType === 'percentage' ) {
+						if ( ! DataValidator::isPercentage( $discountAmount ) ) {
+							$errors["charterRates[$idx][discountAmount]"] = 'discountAmount must be a percentage between 0 and 100';
+						}
+					} else {
+						if ( ! DataValidator::isPositiveNumber( $discountAmount ) ) {
+							$errors["charterRates[$idx][discountAmount]"] = 'discountAmount must be a positive number';
+						}
+					}
+				}
+			}
+		}
+
+		if ( ! empty( $errors ) ) {
+			if ( class_exists( 'Logger' ) ) {
+				Logger::warning( 'Yacht calculation: Validation failed', array( 'errors' => $errors ) );
+			}
+			wp_send_json_error( array( 'error' => 'Validation error', 'fields' => $errors ), 422 );
+			return;
+		}
+	}
+
 	$currency            = isset( $_POST['currency'] ) ? sanitize_text_field( $_POST['currency'] ) : '';
-	$vatRate             = isset( $_POST['vatRate'] ) ? sanitize_text_field( $_POST['vatRate'] ) : '';
+	// vatRate puede ser string o array si está activo el VAT Mix; en este punto, sólo conservar string
+	if ( isset( $_POST['vatRate'] ) ) {
+		$vatRate = is_array( $_POST['vatRate'] ) ? '' : sanitize_text_field( $_POST['vatRate'] );
+	} else {
+		$vatRate = '';
+	}
 	$apaAmount           = isset( $_POST['apaAmount'] ) ? sanitize_text_field( $_POST['apaAmount'] ) : '';
 	$apaPercentage       = isset( $_POST['apaPercentage'] ) ? sanitize_text_field( $_POST['apaPercentage'] ) : '';
 	$relocationFee       = isset( $_POST['relocationFee'] ) ? sanitize_text_field( $_POST['relocationFee'] ) : '';
@@ -49,8 +146,7 @@ function handle_calculate_charter() {
 	$enableMixedSeasons  = ! empty( $_POST['enableMixedSeasons'] ) && $_POST['enableMixedSeasons'] === '1';
 	$enableOneDayCharter = ! empty( $_POST['enableOneDayCharter'] ) && $_POST['enableOneDayCharter'] === '1';
 	$enableExpenses      = ! empty( $_POST['enableExpenses'] ) && $_POST['enableExpenses'] === '1';
-	
-	
+
 	$hideElements = array(
 		'hideVAT'        => isset( $_POST['hideVAT'] ) && $_POST['hideVAT'] === '1',
 		'hideAPA'        => isset( $_POST['hideAPA'] ) && $_POST['hideAPA'] === '1',
@@ -88,7 +184,12 @@ function handle_calculate_charter() {
 				'vatRate' => sanitize_text_field( $vats[ $i ] ?? '' ),
 			);
 		}
-		error_log( 'VatMix constructed: ' . print_r( $vatMix, true ) );
+		if ( class_exists( 'Logger' ) ) {
+			Logger::debug( 'VatMix constructed', array( 'vatMix' => $vatMix ) );
+		} else {
+			// fallback legacy
+			// error_log( 'VatMix constructed: ' . print_r( $vatMix, true ) );
+		}
 	}
 
 	

@@ -189,6 +189,15 @@ const MixedTaxes = {
                     container.insertAdjacentHTML('beforeend', taxFieldHTML);
                 }
             }
+            // Añadir listeners con debounce para formatNumber a los inputs recién insertados
+            const debounceFunc = typeof window.pbDebounce === 'function' ? window.pbDebounce : 
+                                 typeof window.debounce === 'function' ? window.debounce : 
+                                 typeof debounce === 'function' ? debounce : (fn) => fn;
+            container.querySelectorAll('input[oninput="formatNumber(this)"]').forEach(inp => {
+                inp.addEventListener('input', debounceFunc((event) => {
+                    if (typeof window.formatNumber === 'function') window.formatNumber(event.target);
+                }, 300));
+            });
         });
     }
 };

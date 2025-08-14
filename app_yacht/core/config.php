@@ -113,8 +113,8 @@ class AppYachtConfig {
 			),
 
 			'features' => array(
-				'enhanced_logging'         => false,  // Logger.php integration
-				'data_validation'          => false,  // DataValidator helper  
+				'enhanced_logging'         => true,  // Logger.php integration
+				'data_validation'          => true,  // DataValidator helper  
 				'enhanced_sanitization'    => false,  // Sanitizer helper
 				'frontend_validation'      => false,  // JS input validation
 				'enhanced_error_handling'  => false,  // Better error display

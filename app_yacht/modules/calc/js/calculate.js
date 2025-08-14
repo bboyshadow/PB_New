@@ -40,6 +40,7 @@ async function handleCalculateButtonClick() {
         // Validación
         if (typeof validateFields === 'function') {
             const isValid = validateFields();
+            try { typeof validateFieldsWithWarnings === 'function' && validateFieldsWithWarnings(); } catch (e) {}
             if (!isValid) {
                 return; // Detener la ejecución si la validación falla
             }
@@ -214,6 +215,47 @@ if (vatRateMixEnabled) {
             });
         }
 
+        // === Cache básico por sesión ===
+        let cacheKey = null;
+        try {
+            const obj = {};
+            for (let [key, value] of formData.entries()) {
+                obj[key] = value;
+            }
+            const json = JSON.stringify(obj, Object.keys(obj).sort());
+            let hash = 0;
+            for (let i = 0; i < json.length; i++) {
+                const chr = json.charCodeAt(i);
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0;
+            }
+            cacheKey = `pb_calc_${Math.abs(hash).toString(16)}`;
+        } catch (e) {
+            (window.AppYacht?.warn || console.warn)('No se pudo generar clave de caché:', e);
+        }
+
+        const cacheMaxAge = (window.AppYacht?.config?.cacheMaxAgeMs) ?? (60 * 60 * 1000); // 1h por defecto
+        const enableCache = (window.AppYacht?.config?.enableCache) ?? true;
+
+        if (enableCache && cacheKey && typeof sessionStorage !== 'undefined') {
+            try {
+                const cachedStr = sessionStorage.getItem(cacheKey);
+                if (cachedStr) {
+                    const cached = JSON.parse(cachedStr);
+                    if (cached && cached.timestamp && (Date.now() - cached.timestamp) <= cacheMaxAge) {
+                        (window.AppYacht?.log || console.log)('Usando resultado cacheado (legacy) para', cacheKey);
+                        displayCalculatorResult(cached.result);
+                        const calculateBtn = document.getElementById('calculateButton');
+                        if (calculateBtn) calculateBtn.textContent = 'Recalculate';
+                        if (window.eventBus) window.eventBus.publish('calculator:success', cached.result);
+                        return; // Evitar petición si devolvemos cache
+                    }
+                }
+            } catch (e) {
+                (window.AppYacht?.warn || console.warn)('Fallo al acceder al caché de sesión (legacy):', e);
+            }
+        }
+
         // Enviar AJAX usando async/await
         // Loading state start (feature-flagged)
         try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
@@ -233,9 +275,23 @@ if (vatRateMixEnabled) {
         try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
         
         if (result.success) {
+            // Guardar en caché si aplica
+            if (enableCache && cacheKey && typeof sessionStorage !== 'undefined') {
+                try {
+                    sessionStorage.setItem(cacheKey, JSON.stringify({ result: result.data, timestamp: Date.now() }));
+                } catch (e) {
+                    (window.AppYacht?.warn || console.warn)('No se pudo guardar el resultado en caché (legacy):', e);
+                }
+            }
+
             displayCalculatorResult(result.data);
             const calculateBtn = document.getElementById('calculateButton');
             if (calculateBtn) calculateBtn.textContent = 'Recalculate';
+            
+            // Notificación de éxito y limpieza de errores
+            try { window.AppYacht?.ui?.notifySuccess?.('Cálculo completado'); } catch (e) {}
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
             
             // Publicar evento si hay eventBus disponible
             if (window.eventBus) {
@@ -248,6 +304,9 @@ if (vatRateMixEnabled) {
                 errorMessage.textContent = 'Calculation error.';
                 errorMessage.style.display = 'block';
             }
+            
+            // Notificación de error unificada
+            try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo'); } catch (e) {}
             
             // Publicar evento si hay eventBus disponible
             if (window.eventBus) {
@@ -262,10 +321,16 @@ if (vatRateMixEnabled) {
             errorMessage.style.display = 'block';
         }
         
+        // Notificación de error unificada
+        try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo: ' + err.message); } catch (e) {}
+        
         // Publicar evento si hay eventBus disponible
         if (window.eventBus) {
             window.eventBus.publish('calculator:error', { message: err.message });
         }
+        
+        // Asegurar desactivación del estado de carga
+        try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
     }
 }
 
@@ -333,17 +398,54 @@ function copyToClipboard() {
     });
 
     // Copiar al portapapeles
-    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
-        // Cambiar el texto del botón para indicar éxito
-        copyButton.textContent = 'Copied!';
-        copyButton.classList.add('btn-success');
-
-        setTimeout(() => {
-            copyButton.textContent = 'Copy Result';
-            copyButton.classList.remove('btn-success');
-        }, 2000);
-    }).catch(err => {
-        (window.AppYacht?.error || console.error)('Error al copiar:', err);
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+            // Notificación de éxito usando UI helpers
+            try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
+                // Fallback visual en el botón
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('btn-success');
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Result';
+                    copyButton.classList.remove('btn-success');
+                }, 2000);
+            }
+        }).catch(err => {
+            (window.AppYacht?.error || console.error)('Error al copiar:', err);
+            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
+                alert('Error al copiar al portapapeles');
+            }
+        });
+    } else {
+        // Fallback para navegadores sin Clipboard API
+        const tempEl = document.createElement('textarea');
+        tempEl.value = textToCopy.trim();
+        document.body.appendChild(tempEl);
+        tempEl.select();
+        try {
+            const success = document.execCommand('copy');
+            if (success) {
+                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.add('btn-success');
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy Result';
+                        copyButton.classList.remove('btn-success');
+                    }, 2000);
+                }
+            } else {
+                try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
+                    alert('Error al copiar al portapapeles');
+                }
+            }
+        } catch (err) {
+            (window.AppYacht?.error || console.error)('Error copying (fallback):', err);
+            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
+                alert('Error al copiar al portapapeles');
+            }
+        } finally {
+            document.body.removeChild(tempEl);
+        }
+    }
 }
   

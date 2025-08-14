@@ -12,7 +12,9 @@
  */
 
 // Comprobar nonce de seguridad
-if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'relocation_calculate_nonce' ) ) {
+if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+    pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'relocation_calculate_nonce', array( 'endpoint' => 'calculate_relocation' ), 400 );
+} else if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'relocation_calculate_nonce' ) ) {
     if ( class_exists( 'Logger' ) ) {
         Logger::warning( 'Relocation calculation: Nonce verification failed', array(
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
@@ -26,6 +28,56 @@ if ( class_exists( 'Logger' ) ) {
     Logger::info( 'Relocation calculation request started', array(
         'user_id' => get_current_user_id(),
     ) );
+}
+
+// Validación de entrada con DataValidator cuando la feature esté activa
+$features = class_exists( 'AppYachtConfig' ) ? ( AppYachtConfig::get()['features'] ?? array() ) : array();
+if ( ! empty( $features['data_validation'] ) && class_exists( 'DataValidator' ) ) {
+    $errors = array();
+
+    $currency         = isset( $_POST['currency'] ) ? sanitize_text_field( $_POST['currency'] ) : '';
+    $distanceStr      = isset( $_POST['distance'] ) ? str_replace( ',', '', $_POST['distance'] ) : '';
+    $hoursStr         = isset( $_POST['hours'] ) ? str_replace( ',', '', $_POST['hours'] ) : '';
+    $speedStr         = isset( $_POST['speed'] ) ? str_replace( ',', '', $_POST['speed'] ) : '';
+    $fuelConsStr      = isset( $_POST['fuelConsumption'] ) ? str_replace( ',', '', $_POST['fuelConsumption'] ) : '';
+    $fuelPriceStr     = isset( $_POST['fuelPrice'] ) ? str_replace( ',', '', $_POST['fuelPrice'] ) : '';
+    $crewCountStr     = isset( $_POST['crewCount'] ) ? str_replace( ',', '', $_POST['crewCount'] ) : '';
+    $crewWageStr      = isset( $_POST['crewWage'] ) ? str_replace( ',', '', $_POST['crewWage'] ) : '';
+    $portFeesStr      = isset( $_POST['portFees'] ) ? str_replace( ',', '', $_POST['portFees'] ) : '0';
+    $extraCostsStr    = isset( $_POST['extraCosts'] ) ? str_replace( ',', '', $_POST['extraCosts'] ) : '0';
+
+    if ( ! DataValidator::required( $currency ) ) {
+        $errors['currency'] = 'Currency is required';
+    }
+
+    // distance u hours pueden ser opcionales pero al menos uno debe existir y ser número positivo
+    $hasDistance = $distanceStr !== '' && DataValidator::isPositiveNumber( $distanceStr );
+    $hasHours    = $hoursStr !== '' && DataValidator::isPositiveNumber( $hoursStr );
+    if ( ! $hasDistance && ! $hasHours ) {
+        $errors['distance_or_hours'] = 'Provide distance or hours as a positive number';
+    }
+
+    foreach ( array(
+        'speed'           => $speedStr,
+        'fuelConsumption' => $fuelConsStr,
+        'fuelPrice'       => $fuelPriceStr,
+        'crewCount'       => $crewCountStr,
+        'crewWage'        => $crewWageStr,
+        'portFees'        => $portFeesStr,
+        'extraCosts'      => $extraCostsStr,
+    ) as $key => $val ) {
+        if ( $val !== '' && ! DataValidator::isPositiveNumber( $val ) ) {
+            $errors[ $key ] = ucfirst( $key ) . ' must be a positive number';
+        }
+    }
+
+    if ( ! empty( $errors ) ) {
+        if ( class_exists( 'Logger' ) ) {
+            Logger::warning( 'Relocation calculation: Validation failed', array( 'errors' => $errors ) );
+        }
+        wp_send_json_error( array( 'error' => 'Validation error', 'fields' => $errors ), 422 );
+        return;
+    }
 }
 
 // Recoger parámetros opcionales

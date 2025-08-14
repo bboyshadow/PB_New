@@ -133,14 +133,17 @@ class AppYachtBootstrap {
         public static function handleCalculateCharter() {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'calculate_nonce' ) ) {
+                        // Centralized nonce verification
+                        if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+                                pb_verify_ajax_nonce( $nonce ?: null, 'calculate_nonce', array( 'endpoint' => 'handleCalculateCharter' ), 400 );
+                        } else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'calculate_nonce' ) ) {
                                 wp_send_json_error( array(
                                         'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
                         }
-
+                        
                         $calcService = self::getContainer()->get( 'calc_service' );
                         $result      = $calcService->calculateCharter( $_POST );
                         wp_send_json_success( $result );
@@ -154,14 +157,17 @@ class AppYachtBootstrap {
         public static function handleCalculateMix() {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'mix_calculate_nonce' ) ) {
+                        // Centralized nonce verification
+                        if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+                                pb_verify_ajax_nonce( $nonce ?: null, 'mix_calculate_nonce', array( 'endpoint' => 'handleCalculateMix' ), 400 );
+                        } else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'mix_calculate_nonce' ) ) {
                                 wp_send_json_error( array(
                                         'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
                                 ) );
                                 return;
                         }
-
+                        
                         $calcService = self::getContainer()->get( 'calc_service' );
                         $result      = $calcService->calculateMix( $_POST );
                         wp_send_json_success( $result );
@@ -174,7 +180,10 @@ class AppYachtBootstrap {
         public static function handleCalculateRelocation() {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'relocation_calculate_nonce' ) ) {
+                        // Centralized nonce verification
+                        if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+                                pb_verify_ajax_nonce( $nonce ?: null, 'relocation_calculate_nonce', array( 'endpoint' => 'handleCalculateRelocation' ), 400 );
+                        } else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'relocation_calculate_nonce' ) ) {
                                 wp_send_json_error( array( 'message' => __( 'Security check failed', 'creativoypunto' ), 'code' => 'security_error' ) );
                                 return;
                         }
@@ -190,7 +199,10 @@ class AppYachtBootstrap {
         public static function handleLoadTemplatePreview() {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
+                        // Centralized nonce verification
+                        if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+                                pb_verify_ajax_nonce( $nonce ?: null, 'template_nonce', array( 'endpoint' => 'handleLoadTemplatePreview' ), 400 );
+                        } else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
                                 wp_send_json_error( array(
                                         'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
@@ -211,7 +223,10 @@ class AppYachtBootstrap {
         public static function handleCreateTemplate() {
                 try {
                         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-                        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
+                        // Centralized nonce verification
+                        if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+                                pb_verify_ajax_nonce( $nonce ?: null, 'template_nonce', array( 'endpoint' => 'handleCreateTemplate' ), 400 );
+                        } else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'template_nonce' ) ) {
                                 wp_send_json_error( array(
                                         'message' => __( 'Security check failed', 'creativoypunto' ),
                                         'code'    => 'security_error',
@@ -238,8 +253,11 @@ class AppYachtBootstrap {
 	
 	public static function handleExtractYachtInfo() {
 		try {
-			// Verificar nonce de seguridad
-			if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'yachtinfo_nonce' ) ) {
+			// Verificar nonce de seguridad (centralizado con fallback)
+			$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+			if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+				pb_verify_ajax_nonce( $nonce ?: null, 'yachtinfo_nonce', array( 'endpoint' => 'handleExtractYachtInfo' ), 400 );
+			} else if ( ! $nonce || ! wp_verify_nonce( $nonce, 'yachtinfo_nonce' ) ) {
 				wp_send_json_error( array(
 					'message' => __( 'Security check failed', 'creativoypunto' ),
 					'code' => 'security_error'

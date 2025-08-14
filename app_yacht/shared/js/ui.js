@@ -108,13 +108,63 @@ function removeDynamicField(button, fieldSelector, beforeRemoveCallback = null, 
 	return true;
 }
 
+// --- UI status helpers (loading, notifications) ---
+function setLoading(isLoading) {
+	try {
+		const btn = document.getElementById('calculateButton');
+		if (!btn) return;
+		if (isLoading) {
+			btn.dataset.prevText = btn.dataset.prevText || btn.textContent || 'Calculate';
+			btn.textContent = 'Calculating...';
+			btn.disabled = true;
+			btn.classList.add('loading');
+		} else {
+			btn.textContent = btn.dataset.prevText || 'Calculate';
+			btn.disabled = false;
+			btn.classList.remove('loading');
+		}
+	} catch (e) {
+		(console && console.warn) ? console.warn('setLoading error:', e) : null;
+	}
+}
+
+function showMessage(type, message) {
+	const el = document.getElementById('errorMessage');
+	if (el) {
+		el.textContent = message || '';
+		el.style.display = message ? 'block' : 'none';
+		el.classList.remove('text-danger', 'text-warning', 'text-success');
+		if (type === 'error') el.classList.add('text-danger');
+		if (type === 'warning') el.classList.add('text-warning');
+		if (type === 'success') el.classList.add('text-success');
+	} else if (typeof alert !== 'undefined' && message) {
+		alert(message);
+	}
+}
+
+function notifyError(message) {
+	showMessage('error', message || 'An unexpected error occurred');
+}
+
+function notifyWarning(message) {
+	showMessage('warning', message || 'Please review the highlighted fields');
+}
+
+function notifySuccess(message) {
+	showMessage('success', message || 'Operation completed successfully');
+}
+
 // Export functions for module use
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = {
 		toggleContainer,
 		toggleField,
 		addDynamicField,
-		removeDynamicField
+		removeDynamicField,
+		setLoading,
+		notifyError,
+		notifyWarning,
+		notifySuccess
 	};
 }
 
@@ -124,4 +174,12 @@ if (typeof window !== 'undefined') {
 	window.toggleField        = toggleField;
 	window.addDynamicField    = addDynamicField;
 	window.removeDynamicField = removeDynamicField;
+
+	// Expose AppYacht.ui helpers
+	window.AppYacht = window.AppYacht || {};
+	window.AppYacht.ui = window.AppYacht.ui || {};
+	window.AppYacht.ui.setLoading    = setLoading;
+	window.AppYacht.ui.notifyError   = notifyError;
+	window.AppYacht.ui.notifyWarning = notifyWarning;
+	window.AppYacht.ui.notifySuccess = notifySuccess;
 }

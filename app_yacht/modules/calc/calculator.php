@@ -171,8 +171,8 @@
 						<div class="d-flex align-items-center mb-1">
     <label class="me-2 mb-0">Relocation Fee:</label>
     <div class="form-check form-switch m-0">
-        <input class="form-check-input" type="checkbox" id="relocationAutoCheck" aria-controls="relocationAutoContainer" title="Auto calculate">
-        <label class="form-check-label small ms-1" for="relocationAutoCheck">Auto calculate</label>
+        <input class="form-check-input" type="checkbox" id="relocationAutoCheck" aria-controls="relocationAutoContainer" title="Auto">
+        <label class="form-check-label small ms-1" for="relocationAutoCheck">Auto</label>
     </div>
 </div>
 						<div class="input-group" style="flex-wrap: nowrap;">

@@ -353,11 +353,15 @@ function addCharterRate(isFirst = false) {
                          if (removeBtn) removeBtn.addEventListener('click', () => removeCharterRate(removeBtn));
                          const addBtn = addedElement.querySelector('.add-rate-btn');
                          if (addBtn) addBtn.addEventListener('click', () => addCharterRate(false)); 
-                         // Añadir listener formatNumber
+                         // Añadir listener formatNumber con debounce
                          addedElement.querySelectorAll('input[oninput="formatNumber(this)"]').forEach(input => {
-                             input.addEventListener('input', (event) => {
-                                 if(typeof formatNumber === 'function') formatNumber(event.target);
-                             });
+                             const debounceFunc = typeof window.pbDebounce === 'function' ? window.pbDebounce : 
+                                                  typeof window.debounce === 'function' ? window.debounce : 
+                                                  typeof debounce === 'function' ? debounce : 
+                                                  (fn) => fn;
+                             input.addEventListener('input', debounceFunc((event) => {
+                                 if (typeof formatNumber === 'function') formatNumber(event.target);
+                             }, 300));
                          });
                      })
                      : null;
@@ -409,11 +413,15 @@ function addExtraField() {
                          // Añadir listener al botón de borrar
                          const removeBtn = addedElement.querySelector('.remove-extra-btn');
                          if (removeBtn) removeBtn.addEventListener('click', () => removeExtraField(removeBtn));
-                          // Añadir listener formatNumber
+                          // Añadir listener formatNumber con debounce
                          addedElement.querySelectorAll('input[oninput="formatNumber(this)"]').forEach(input => {
-                             input.addEventListener('input', (event) => {
-                                 if(typeof formatNumber === 'function') formatNumber(event.target);
-                             });
+                             const debounceFunc = typeof window.pbDebounce === 'function' ? window.pbDebounce : 
+                                                  typeof window.debounce === 'function' ? window.debounce : 
+                                                  typeof debounce === 'function' ? debounce : 
+                                                  (fn) => fn;
+                             input.addEventListener('input', debounceFunc((event) => {
+                                 if (typeof formatNumber === 'function') formatNumber(event.target);
+                             }, 300));
                          });
                      })
                      : null;

@@ -23,6 +23,9 @@ class Calculator {
             onCalculationStart: null,
             onCalculationComplete: null,
             onCalculationError: null,
+            // NUEVO: configuración de caché básica
+            enableCache: true,
+            cacheMaxAge: 60 * 60 * 1000, // 1 hora
             ...config
         };
         
@@ -135,6 +138,23 @@ class Calculator {
             formData.append('highSeasonRate', highSeasonRate);
         }
         
+        // Mixed Taxes
+        const vatRateMixEnabled = document.getElementById('vatRateMix')?.checked;
+        formData.append('vatRateMix', vatRateMixEnabled ? '1' : '0');
+        if (vatRateMixEnabled) {
+            const vatItems = document.querySelectorAll('.country-vat-item-wrapper');
+            vatItems.forEach(item => {
+                const country = item.querySelector('input[name^="vatCountryName"]')?.value || '';
+                const nights = item.querySelector('input[name^="vatNights"]')?.value || '';
+                const vatRate = item.querySelector('input[name^="vatRate"]')?.value || '';
+                if (country && nights) {
+                    formData.append('vatCountryName[]', country);
+                    formData.append('vatNights[]', nights);
+                    formData.append('vatRate[]', vatRate);
+                }
+            });
+        }
+        
         // Recolectar Charter Rates
         const charterRateGroups = document.querySelectorAll('.charter-rate-group');
         charterRateGroups.forEach((group, i) => {
@@ -149,10 +169,26 @@ class Calculator {
             }
             
             const baseRate = group.querySelector('input[name="baseRate"]')?.value || '';
-            const discountType = group.querySelector('select[name="discountType"]')?.value || '';
-            const discountAmount = group.querySelector('input[name="discountAmount"]')?.value || '';
             const discountContainer = group.querySelector('.discount-container');
             const discountActive = discountContainer && discountContainer.style.display !== 'none';
+            
+            // Solo obtener valores de descuento si el contenedor está visible
+            let discountType = '';
+            let discountAmount = '';
+            
+            if (discountActive) {
+                discountType = group.querySelector('select[name="discountType"]')?.value || '';
+                discountAmount = group.querySelector('input[name="discountAmount"]')?.value || '';
+            }
+            
+            const promotionContainer = group.querySelector('.promotion-container');
+            const promotionActive = promotionContainer && promotionContainer.style.display !== 'none';
+            
+            let promotionNights = '';
+            
+            if (promotionActive) {
+                promotionNights = group.querySelector('input[name="promotionNights"]')?.value || '';
+            }
             
             formData.append(`charterRates[${i}][guests]`, guests);
             formData.append(`charterRates[${i}][nights]`, nights);
@@ -161,6 +197,8 @@ class Calculator {
             formData.append(`charterRates[${i}][discountType]`, discountType);
             formData.append(`charterRates[${i}][discountAmount]`, discountAmount);
             formData.append(`charterRates[${i}][discountActive]`, discountActive ? '1' : '0');
+            formData.append(`charterRates[${i}][promotionNights]`, promotionNights);
+            formData.append(`charterRates[${i}][promotionActive]`, promotionActive ? '1' : '0');
         });
         
         // Extras
@@ -183,7 +221,7 @@ class Calculator {
                 const costPerPerson = extra.querySelector('input[name="extraPerPersonCost"]')?.value || '';
                 
                 // Añadimos el prefijo "Guest Fee:" para que sea fácilmente identificable en PHP
-                const formattedName = `Guest Fee: ${extraName} (${guests} guests x ${costPerPerson})`;
+                const formattedName = `Guest Fee: ${extraName} (${guests} guests x ${this.config.currencyDisplay ? this.config.currencyDisplay + ' ' : ''}${costPerPerson})`;
                 
                 // Añadimos el guest fee como un extra normal para el cálculo final
                 formData.append(`extras[${extraGroups.length + i}][extraName]`, formattedName);
@@ -195,7 +233,7 @@ class Calculator {
     }
     
     /**
-     * Realiza el cálculo de tarifas
+     * Realiza el cálculo de tarifas con caché básico por sesión
      * @param {string} formId - ID del formulario
      * @returns {Promise} - Promesa que se resuelve con el resultado del cálculo
      */
@@ -203,6 +241,7 @@ class Calculator {
         // Validación
         if (typeof validateFields === 'function') {
             const isValid = validateFields();
+            try { typeof validateFieldsWithWarnings === 'function' && validateFieldsWithWarnings(); } catch (e) {}
             if (!isValid) {
                 (window.AppYacht?.error || console.error)('Validation failed');
                 return Promise.reject(new Error('Validation failed'));
@@ -222,6 +261,9 @@ class Calculator {
             this.config.onCalculationStart();
         }
         
+        // Usar UI helper si está disponible
+        try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
+        
         // Publicar evento de inicio si eventBus está disponible
         if (this.eventBus) {
             this.eventBus.publish('calculationStart', { formId });
@@ -230,6 +272,47 @@ class Calculator {
         try {
             // Recolectar datos del formulario
             const formData = this.collectFormData(formId);
+
+            // Generar clave de caché si está habilitado
+            let cacheKey = null;
+            if (this.config.enableCache && typeof sessionStorage !== 'undefined') {
+                try {
+                    const obj = {};
+                    for (let [key, value] of formData.entries()) {
+                        obj[key] = value;
+                    }
+                    // Crear hash simple de la representación JSON ordenada
+                    const json = JSON.stringify(obj, Object.keys(obj).sort());
+                    let hash = 0;
+                    for (let i = 0; i < json.length; i++) {
+                        const chr = json.charCodeAt(i);
+                        hash = ((hash << 5) - hash) + chr;
+                        hash |= 0; // 32-bit
+                    }
+                    cacheKey = `pb_calc_${Math.abs(hash).toString(16)}`;
+
+                    // Intentar recuperar del caché
+                    const cachedStr = sessionStorage.getItem(cacheKey);
+                    if (cachedStr) {
+                        const cached = JSON.parse(cachedStr);
+                        if (cached && cached.timestamp && (Date.now() - cached.timestamp) <= this.config.cacheMaxAge) {
+                            (window.AppYacht?.log || console.log)('Usando resultado cacheado para la clave', cacheKey);
+                            this.lastResult = cached.result;
+                            
+                            // Notificar finalización exitosa desde caché
+                            if (this.config.onCalculationComplete) {
+                                this.config.onCalculationComplete(cached.result);
+                            }
+                            if (this.eventBus) {
+                                this.eventBus.publish('calculationComplete', cached.result);
+                            }
+                            return cached.result;
+                        }
+                    }
+                } catch (e) {
+                    (window.AppYacht?.warn || console.warn)('Fallo al acceder al caché de sesión:', e);
+                }
+            }
             
             // Realizar petición AJAX
             const response = await fetch(this.config.ajaxUrl, {
@@ -249,11 +332,23 @@ class Calculator {
             
             // Guardar resultado
             this.lastResult = result.data;
+
+            // Guardar en caché si procede
+            if (cacheKey) {
+                try {
+                    sessionStorage.setItem(cacheKey, JSON.stringify({ result: result.data, timestamp: Date.now() }));
+                } catch (e) {
+                    (window.AppYacht?.warn || console.warn)('No se pudo guardar el resultado en caché:', e);
+                }
+            }
             
             // Notificar finalización exitosa
             if (this.config.onCalculationComplete) {
                 this.config.onCalculationComplete(result.data);
             }
+            
+            // Usar UI helper si está disponible para notificar éxito
+            try { window.AppYacht?.ui?.notifySuccess?.('Cálculo completado exitosamente'); } catch (e) {}
             
             // Publicar evento de finalización si eventBus está disponible
             if (this.eventBus) {
@@ -263,6 +358,9 @@ class Calculator {
             return result.data;
         } catch (error) {
             (window.AppYacht?.error || console.error)('Calculation error:', error);
+            
+            // Usar UI helper si está disponible para notificar error
+            try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo: ' + error.message); } catch (e) {}
             
             // Notificar error
             if (this.config.onCalculationError) {
@@ -277,6 +375,9 @@ class Calculator {
             return Promise.reject(error);
         } finally {
             this.isCalculating = false;
+            
+            // Desactivar estado de carga
+            try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
         }
     }
     
@@ -335,7 +436,9 @@ class Calculator {
             // Usar la API moderna de portapapeles si está disponible
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(tempElement.innerText);
-                (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando Clipboard API');
+                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
+                    (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando Clipboard API');
+                }
                 return true;
             }
             
@@ -350,13 +453,16 @@ class Calculator {
             document.body.removeChild(tempElement);
             
             if (success) {
-                (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando execCommand');
+                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
+                    (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando execCommand');
+                }
                 return true;
             } else {
                 throw new Error('No se pudo copiar el texto');
             }
         } catch (error) {
             (window.AppYacht?.error || console.error)('Error al copiar al portapapeles:', error);
+            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {}
             return Promise.reject(error);
         }
     }

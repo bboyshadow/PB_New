@@ -7,88 +7,107 @@ Implementar mejoras de forma fraccionada y segura, testando cada cambio antes de
 
 ## 📋 FASE 1: ESTABILIZACIÓN Y DEBUGGING (Prioridad ALTA)
 
-### ✅ 1.1 Sistema de Logs Mejorado
-- [ ] **Tarea 1.1.1**: Crear archivo `app_yacht/shared/helpers/Logger.php`
-  - Implementar clase Logger básica con niveles (ERROR, WARNING, INFO, DEBUG)
-  - **Test**: Verificar que se crea el archivo de log correctamente
+### ✅ 1.1 Sistema de Logs Mejorado - **COMPLETADO**
+- [x] **Tarea 1.1.1**: Crear archivo `app_yacht/shared/helpers/Logger.php`
+  - ✅ Implementar clase Logger básica con niveles (ERROR, WARNING, INFO, DEBUG)
+  - ✅ **Test**: Verificar que se crea el archivo de log correctamente
   - **Rollback**: Eliminar archivo si hay problemas
 
-- [ ] **Tarea 1.1.2**: Integrar Logger en `calculate.php`
-  - Añadir logs en puntos críticos (inicio, validaciones, errores)
-  - **Test**: Ejecutar calculadora y verificar logs generados
+- [x] **Tarea 1.1.2**: Integrar Logger en `calculate.php`
+  - ✅ Añadir logs en puntos críticos (inicio, validaciones, errores)
+  - ✅ **Test**: Ejecutar calculadora y verificar logs generados
   - **Rollback**: Comentar líneas de log si afecta rendimiento
 
-- [ ] **Tarea 1.1.3**: Integrar Logger en archivos AJAX críticos
-  - Aplicar en `calculateRelocation.php`, `calculatemix.php`
-  - **Test**: Probar cada calculadora individualmente
+- [x] **Tarea 1.1.3**: Integrar Logger en archivos AJAX críticos
+  - ✅ Aplicar en `calculateRelocation.php`, `calculatemix.php`
+  - ✅ **Test**: Probar cada calculadora individualmente
   - **Rollback**: Revertir archivo por archivo si es necesario
 
-### ✅ 1.2 Validación de Datos Robusta
-- [ ] **Tarea 1.2.1**: Crear validador de `charterRates`
-  - Archivo: `app_yacht/shared/helpers/DataValidator.php`
-  - Validar estructura, tipos de datos, rangos
-  - **Test**: Enviar datos inválidos y verificar rechazo
+### ✅ 1.2 Validación de Datos Robusta - **COMPLETADO**
+- [x] **Tarea 1.2.1**: Crear validador de `charterRates`
+  - ✅ Archivo: `app_yacht/shared/helpers/DataValidator.php`
+  - ✅ Validar estructura, tipos de datos, rangos
+  - ✅ **Test**: Enviar datos inválidos y verificar rechazo
   - **Rollback**: Usar validación anterior si falla
 
-- [ ] **Tarea 1.2.2**: Aplicar validación en `calculate.php`
-  - Reemplazar validación básica con DataValidator
-  - **Test**: Probar con datos válidos e inválidos
+- [x] **Tarea 1.2.2**: Aplicar validación en `calculate.php`
+  - ✅ Reemplazar validación básica con DataValidator
+  - ✅ **Test**: Probar con datos válidos e inválidos
   - **Rollback**: Restaurar validación original
 
-- [ ] **Tarea 1.2.3**: Extender validación a otros endpoints
-  - Aplicar en calculadoras de reubicación y mix
-  - **Test**: Verificar funcionamiento de cada calculadora
+- [x] **Tarea 1.2.3**: Extender validación a otros endpoints
+  - ✅ Aplicar en calculadoras de reubicación y mix
+  - ✅ **Test**: Verificar funcionamiento de cada calculadora
   - **Rollback**: Implementar uno por uno, revertir si falla
 
-### ✅ 1.3 Manejo de Errores Frontend
-- [ ] **Tarea 1.3.1**: Mejorar `calculate.js` - Manejo de errores
-  - Añadir try-catch en `handleCalculateButtonClick`
-  - Mostrar mensajes de error específicos al usuario
-  - **Test**: Simular error 500 y verificar mensaje amigable
+### ✅ 1.3 Manejo de Errores Frontend - **COMPLETADO**
+- [x] **Tarea 1.3.1**: Mejorar `calculate.js` - Manejo de errores
+  - ✅ Añadir try-catch en `handleCalculateButtonClick`
+  - ✅ Mostrar mensajes de error específicos al usuario
+  - ✅ **Test**: Simular error 500 y verificar mensaje amigable
   - **Rollback**: Mantener alert() anterior si hay problemas
 
-- [ ] **Tarea 1.3.2**: Implementar estado de loading
-  - Deshabilitar botón durante cálculo
-  - Mostrar spinner o indicador visual
-  - **Test**: Verificar UX durante cálculo lento
+- [x] **Tarea 1.3.2**: Implementar estado de loading
+  - ✅ Deshabilitar botón durante cálculo
+  - ✅ Mostrar spinner o indicador visual (hooks implementados)
+  - ✅ **Test**: Verificar UX durante cálculo lento
   - **Rollback**: Remover indicadores si interfieren
 
-- [ ] **Tarea 1.3.3**: Validación frontend antes de envío
-  - Verificar campos requeridos antes de AJAX
-  - Validar formatos numéricos
-  - **Test**: Intentar enviar formulario incompleto
-  - **Rollback**: Permitir validación solo en servidor
+- [x] **Tarea 1.3.3**: Fix VAT Mix 422 Error
+  - ✅ Corregir validación en `calculate.php` para manejar `vatRate[]` como array cuando Mix está activo
+  - ✅ Evitar sanitización incorrecta de arrays como strings
+  - ✅ **Test**: Activar "VAT rate mix" y verificar que no devuelve 422
+  - **Rollback**: Revertir lógica de validación si genera otros errores
+
+### ✅ 1.4 Validación Frontend Preventiva - **COMPLETADO**
+- [x] **Tarea 1.4.1**: Validación de campos básicos antes de envío
+  - ✅ Implementada función `validateFieldsWithWarnings()` en `validate.js`
+  - ✅ Validaciones para Mixed Seasons (nights > 0, suma correcta)
+  - ✅ Validaciones para VAT Mix (al menos una entrada válida)
+  - ✅ Mensajes preventivos sin bloquear envío
+  - ✅ **Test**: Integrada en Calculator.js, calculate.js y TemplateManager.js
+  - **Rollback**: Comentar llamadas `validateFieldsWithWarnings()` si interfieren con UX
+
+- [x] **Tarea 1.4.2**: Validación de coherencia de datos
+  - ✅ Verificar que Mixed Seasons tenga nights > 0 si está activo
+  - ✅ Verificar suma correcta (lowSeasonNights + highSeasonNights = mix-nights)
+  - ✅ Verificar que VAT Mix tenga al menos una fila completa si está activo
+  - ✅ Advertencias visuales en campos específicos con auto-hide
+  - ✅ **Test**: Funciona con fallback a errorMessage si no hay AppYacht.ui
+  - **Rollback**: Desactivar validaciones específicas si causan falsas alarmas
 
 ---
 
 ## 📋 FASE 2: SEGURIDAD (Prioridad ALTA)
 
-### ✅ 2.1 Sanitización de Datos
-- [ ] **Tarea 2.1.1**: Crear helper de sanitización
-  - Archivo: `app_yacht/shared/helpers/Sanitizer.php`
-  - Métodos para números, strings, arrays
-  - **Test**: Probar con datos maliciosos simulados
+### 🔄 2.1 Sanitización de Datos - **PARCIALMENTE COMPLETADO**
+- [x] **Tarea 2.1.1**: Crear helper de sanitización
+  - ✅ Archivo: `app_yacht/shared/helpers/sanitizer-helper.php`
+  - ✅ Métodos para números, strings, arrays
+  - ✅ **Test**: Probar con datos maliciosos simulados
   - **Rollback**: Usar sanitize_text_field() de WordPress
 
-- [ ] **Tarea 2.1.2**: Aplicar sanitización en calculate.php
-  - Sanitizar todos los inputs $_POST
-  - **Test**: Enviar datos con caracteres especiales
+- [x] **Tarea 2.1.2**: Aplicar sanitización en calculate.php
+  - ✅ Sanitizar todos los inputs $_POST
+  - ✅ **Test**: Enviar datos con caracteres especiales
   - **Rollback**: Restaurar código original
 
-- [ ] **Tarea 2.1.3**: Extender a otros endpoints
-  - Aplicar en todos los archivos AJAX
-  - **Test**: Verificar funcionamiento normal
+- [x] **Tarea 2.1.3**: Extender a otros endpoints
+  - ✅ Aplicar en todos los archivos AJAX
+  - ✅ **Test**: Verificar funcionamiento normal
   - **Rollback**: Implementar gradualmente
 
-### ✅ 2.2 Validación de Nonces Mejorada
-- [ ] **Tarea 2.2.1**: Centralizar validación de nonces
-  - Crear función helper en `yacht-functions.php`
-  - **Test**: Verificar que nonces siguen funcionando
-  - **Rollback**: Mantener validación distribuida
+### 🔄 2.2 Validación de Nonces Mejorada - **COMPLETADO**
+- [x] **Tarea 2.2.1**: Centralizar validación de nonces
+  - Implementado helper pb_verify_ajax_nonce en app_yacht/shared/php/security.php
+  - Aplicado en calculate.php, calculateRelocation.php, calculatemix.php, core/bootstrap.php (handlers), template/load-template.php y módulos de Outlook
+  - **Test**: Nonces funcionando y eventos de seguridad logueados correctamente
+  - **Rollback**: Fallback a validación distribuida en cada endpoint si helper no existe
+  - **Nota**: Mantenemos algunas verificaciones originales en signature/ y functions.php (fuera del scope yachts)
 
-- [ ] **Tarea 2.2.2**: Añadir logs de seguridad
-  - Registrar intentos de acceso sin nonce válido
-  - **Test**: Intentar acceso sin nonce y verificar log
+- [x] **Tarea 2.2.2**: Añadir logs de seguridad
+  - ✅ Registrar intentos de acceso sin nonce válido
+  - ✅ **Test**: Intentar acceso sin nonce y verificar log
   - **Rollback**: Comentar logs si generan mucho volumen
 
 ---
@@ -96,26 +115,57 @@ Implementar mejoras de forma fraccionada y segura, testando cada cambio antes de
 ## 📋 FASE 3: RENDIMIENTO Y UX (Prioridad MEDIA)
 
 ### ✅ 3.1 Optimización de Requests
-- [ ] **Tarea 3.1.1**: Implementar debounce en inputs
-  - Evitar cálculos automáticos excesivos
+- [x] **Tarea 3.1.1**: Implementar debounce en inputs
+  - ✅ Evitar cálculos automáticos excesivos
+  - ✅ Aplicado debounce (300ms) en listeners de formatNumber en:
+    - interfaz.js (addCharterRate, addExtraField)
+    - template.js (addCharterRateGroup, addExtraGroup)
+    - VatRateMix.js (addCountryField)
+    - MixedTaxes.js (_updateVatFields)
+  - ✅ Fallback a múltiples funciones debounce disponibles (pbDebounce, debounce)
   - **Test**: Escribir rápido en campos y verificar requests
   - **Rollback**: Eliminar debounce si afecta responsividad
 
-- [ ] **Tarea 3.1.2**: Cache de resultados básico
-  - Cachear cálculos idénticos por sesión
-  - **Test**: Repetir mismo cálculo y verificar velocidad
-  - **Rollback**: Desactivar cache si causa problemas
+- [x] **Tarea 3.1.2**: Cache de resultados básico
+  - ✅ Cachear cálculos idénticos por sesión (sessionStorage, maxAge configurable)
+  - ✅ Implementado en Calculator.js (método calculate) y calculate.js (handleCalculateButtonClick)
+  - ✅ Clave: hash estable de FormData (JSON ordenado)
+  - ✅ Feature flag: AppYacht.config.enableCache y AppYacht.config.cacheMaxAgeMs
+  - **Test**: Repetir mismo cálculo y verificar velocidad (hit de caché)
+  - **Rollback**: Desactivar flag enableCache si causa problemas
 
 ### ✅ 3.2 Feedback Visual Mejorado
-- [ ] **Tarea 3.2.1**: Mejorar indicadores de estado
-  - Estados: loading, success, error, warning
-  - **Test**: Probar cada estado visualmente
+- [x] **Tarea 3.2.1**: Mejorar indicadores de estado
+  - ✅ Estados: loading, success, error, warning
+  - ✅ Implementado helpers en `shared/js/ui.js`: `setLoading`, `notifyError`, `notifyWarning`, `notifySuccess` (expuestos en `window.AppYacht.ui`)
+  - ✅ Integrado en `modules/calc/js/calculate.js`, `modules/calc/js/mix.js` y `shared/js/classes/Calculator.js` con llamadas opcionales `window.AppYacht?.ui?...`
+  - ✅ Fallback a `#errorMessage` y cambios de texto/botón cuando AppYacht.ui no está disponible
+  - **Test**: Probar cada estado visualmente en flujos de cálculo y mixto
   - **Rollback**: Usar alertas simples
 
-- [ ] **Tarea 3.2.2**: Validación en tiempo real
-  - Mostrar errores mientras el usuario escribe
-  - **Test**: Ingresar valores inválidos y verificar feedback
+- [x] **Tarea 3.2.2**: Validación en tiempo real
+  - ✅ Delegación de eventos en `#charterForm` para `input` y `change`
+  - ✅ Validación puntual de campo (`validateSingleField`) y warnings debounced (`validateFieldsWithWarnings`)
+  - ✅ Cobertura de campos dinámicos (VAT Mix) y toggles (`enableMixedSeasons`, `vatRateMix`)
+  - ✅ Fallback a `#errorMessage` cuando no está `AppYacht.ui`
+  - **Test**: Escribir/modificar campos, activar toggles, verificar marcado y mensajes en tiempo real
   - **Rollback**: Validar solo al enviar
+
+### ✅ 3.3 Sistema de Plantillas Inteligente - **COMPLETADO**
+- [x] **Tarea 3.3.1**: Comportamiento condicional del selector de plantillas
+  - ✅ Implementar lógica en `onTemplateChange()` para detectar presencia de datos
+  - ✅ Sin datos: mostrar vista previa (prev.php) únicamente
+  - ✅ Con datos: ejecutar creación completa automáticamente (como botón "Crear plantilla")
+  - ✅ Fallback a vista previa si creación falla (validación, 401/403, etc.)
+  - ✅ **Test**: Probar selector vacío vs. con datos (yachtUrl + currency + al menos una tarifa)
+  - **Rollback**: Restaurar comportamiento anterior (siempre vista previa)
+
+- [x] **Tarea 3.3.2**: Funciones helper para detección y carga
+  - ✅ `hasFormData()`: detecta si hay datos suficientes para crear plantilla
+  - ✅ `loadTemplatePreview()`: carga vista previa como función separada
+  - ✅ Criterio: yachtUrl + currency + al menos una tarifa con baseRate/guests/nights
+  - ✅ **Test**: Verificar detección correcta en diferentes estados del formulario
+  - **Rollback**: Simplificar criterio si es muy restrictivo
 
 ---
 

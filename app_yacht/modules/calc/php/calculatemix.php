@@ -6,34 +6,84 @@ add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
 add_action( 'wp_ajax_nopriv_calculate_mix', 'handle_calculate_mix' );
 
 function handle_calculate_mix() {
-	
-	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'mix_calculate_nonce' ) ) {
+	// Verificación de nonce y logging de seguridad
+	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+		pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'mix_calculate_nonce', array( 'endpoint' => 'calculate_mix' ), 400 );
+	} else if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'mix_calculate_nonce' ) ) {
+		// Log security failure if enhanced logging enabled
+		if ( class_exists( 'Logger' ) ) {
+			Logger::warning( 'Mix calculation: Nonce verification failed', array(
+				'ip'         => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+			) );
+		}
 		wp_send_json_error( array( 'error' => 'Nonce inválido.' ), 400 );
 		return;
 	}
-	
+
+	// Log calculation request start
+	if ( class_exists( 'Logger' ) ) {
+		Logger::info( 'Mix calculation request started', array(
+			'post_data_size' => count( $_POST ),
+			'user_id'        => get_current_user_id(),
+		) );
+	}
 	
 	$data = $_POST;
+
+	// Validación de entrada con DataValidator cuando la feature esté activa
+	$features = class_exists( 'AppYachtConfig' ) ? ( AppYachtConfig::get()['features'] ?? array() ) : array();
+	if ( ! empty( $features['data_validation'] ) && class_exists( 'DataValidator' ) ) {
+		$errors = array();
+
+		$currency         = isset( $data['currency'] ) ? sanitize_text_field( $data['currency'] ) : '';
+		$mixNightsStr     = isset( $data['mixnights'] ) ? str_replace( ',', '', $data['mixnights'] ) : '';
+		$lowRateStr       = isset( $data['lowSeasonRate'] ) ? str_replace( ',', '', $data['lowSeasonRate'] ) : '';
+		$lowNightsStr     = isset( $data['lowSeasonNights'] ) ? str_replace( ',', '', $data['lowSeasonNights'] ) : '';
+		$highRateStr      = isset( $data['highSeasonRate'] ) ? str_replace( ',', '', $data['highSeasonRate'] ) : '';
+		$highNightsStr    = isset( $data['highSeasonNights'] ) ? str_replace( ',', '', $data['highSeasonNights'] ) : '';
+
+		if ( ! DataValidator::required( $currency ) ) {
+			$errors['currency'] = 'Currency is required';
+		}
+		foreach ( array(
+			'mixnights'        => $mixNightsStr,
+			'lowSeasonRate'    => $lowRateStr,
+			'lowSeasonNights'  => $lowNightsStr,
+			'highSeasonRate'   => $highRateStr,
+			'highSeasonNights' => $highNightsStr,
+		) as $key => $val ) {
+			if ( $val === '' || ! DataValidator::isPositiveNumber( $val ) ) {
+				$errors[ $key ] = ucfirst( $key ) . ' must be a positive number';
+			}
+		}
+
+		if ( ! empty( $errors ) ) {
+			if ( class_exists( 'Logger' ) ) {
+				Logger::warning( 'Mix calculation: Validation failed', array( 'errors' => $errors ) );
+			}
+			wp_send_json_error( array( 'error' => 'Validation error', 'fields' => $errors ), 422 );
+			return;
+		}
+	}
 
 	if ( ! isset( $data['mixnights'], $data['lowSeasonRate'], $data['lowSeasonNights'], $data['highSeasonRate'], $data['highSeasonNights'], $data['currency'] ) ) {
 		wp_send_json_error( array( 'error' => 'Datos insuficientes para realizar el cálculo.' ), 400 );
 		return;
 	}
 
-	
 	$mixNights        = (float) str_replace( ',', '', $data['mixnights'] );
 	$lowSeasonRate    = (float) str_replace( ',', '', $data['lowSeasonRate'] );
 	$lowSeasonNights  = (float) str_replace( ',', '', $data['lowSeasonNights'] );
 	$highSeasonRate   = (float) str_replace( ',', '', $data['highSeasonRate'] );
 	$highSeasonNights = (float) str_replace( ',', '', $data['highSeasonNights'] );
-	$currency         = htmlspecialchars( $data['currency'] );
+	$currency         = isset( $data['currency'] ) ? sanitize_text_field( $data['currency'] ) : '€';
 
 	if ( $mixNights <= 0 || $lowSeasonRate <= 0 || $lowSeasonNights <= 0 || $highSeasonRate <= 0 || $highSeasonNights <= 0 ) {
 		wp_send_json_error( array( 'error' => 'Todos los valores deben ser mayores a cero.' ), 400 );
 		return;
 	}
 
-	
 	$lowSeasonRatePerNight  = $lowSeasonRate / ( $mixNights <= 5 ? 6 : 7 );
 	$lowSeasonTotal         = $lowSeasonRatePerNight * $lowSeasonNights;
 	$highSeasonRatePerNight = $highSeasonRate / ( $mixNights <= 5 ? 6 : 7 );
@@ -49,4 +99,9 @@ function handle_calculate_mix() {
 	);
 
 	wp_send_json_success( $response );
+	
+	// Log successful completion
+	if ( class_exists( 'Logger' ) ) {
+		Logger::info( 'Mix calculation request completed successfully' );
+	}
 }

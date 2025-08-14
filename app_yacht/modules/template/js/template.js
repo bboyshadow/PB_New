@@ -95,14 +95,15 @@ function addCharterRateGroup(isFirst = false, initialData = null) {
 
         // Añadir listener para formatNumber
         newGroup.querySelectorAll('input[oninput]').forEach(input => {
-             if (input.getAttribute('oninput') === 'formatNumber(this)') {
-                 input.addEventListener('input', (event) => {
-                     if(typeof window.formatNumber === 'function') window.formatNumber(event.target);
-                 });
-                 // Opcional: quitar el inline
-                 // input.removeAttribute('oninput'); 
-             }
-         });
+            if (input.getAttribute('oninput') === 'formatNumber(this)') {
+                const db = (typeof window.pbDebounce === 'function') ? window.pbDebounce : (typeof window.debounce === 'function') ? window.debounce : (typeof debounce === 'function') ? debounce : (fn) => fn;
+                input.addEventListener('input', db((event) => {
+                    if (typeof window.formatNumber === 'function') window.formatNumber(event.target);
+                }, 300));
+                // Opcional: quitar el inline
+                // input.removeAttribute('oninput'); 
+            }
+        });
 
         // Mover foco al primer input si no es una restauración
         if (!initialData) {
@@ -163,10 +164,11 @@ function addExtraGroup(initialData = null) {
 
         // Añadir listener formatNumber
         newGroup.querySelectorAll('input[oninput]').forEach(input => {
-             if (input.getAttribute('oninput') === 'formatNumber(this)') {
-                 input.addEventListener('input', (event) => {
-                     if(typeof window.formatNumber === 'function') window.formatNumber(event.target);
-                 });
+            if (input.getAttribute('oninput') === 'formatNumber(this)') {
+                const db = (typeof window.pbDebounce === 'function') ? window.pbDebounce : (typeof window.debounce === 'function') ? window.debounce : (typeof debounce === 'function') ? debounce : (fn) => fn;
+                input.addEventListener('input', db((event) => {
+                    if (typeof window.formatNumber === 'function') window.formatNumber(event.target);
+                }, 300));
              }
          });
 
@@ -252,8 +254,16 @@ function restoreTemplateFormData() {
 
 // Callbacks para los eventos de TemplateManager
 function handleTemplateCreated(data) {
+    // Notificar éxito visualmente y limpiar errores visibles
+    try { window.AppYacht?.ui?.notifySuccess?.('Plantilla creada exitosamente'); } catch (e) {}
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
 }
 function handleTemplateLoaded(data) {
+    // Notificar éxito al cargar datos de plantilla
+    try { window.AppYacht?.ui?.notifySuccess?.('Plantilla cargada'); } catch (e) {}
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
 }
 function handleTemplateError(error) {
     // Solo mostrar en consola si es un error inesperado (no validación)
@@ -265,6 +275,8 @@ function handleTemplateError(error) {
         errorMessage.textContent = error.message || 'Template error';
         errorMessage.style.display = 'block';
     }
+    // Notificación de error unificada
+    try { window.AppYacht?.ui?.notifyError?.(error?.message || 'Error de plantilla'); } catch (e) {}
 }
 
 function toggleCreateTemplateButton() {
@@ -315,19 +327,70 @@ function copyTemplate() {
     let container = document.getElementById('result');
     if (!container || !container.innerHTML.trim()) {
          const fallbackContainer = document.getElementById('yachtInfoContainer');
-         if (!fallbackContainer) {
-            alert('No template content found to copy.');
+         if (!fallbackContainer || !fallbackContainer.innerHTML.trim()) {
+            try { window.AppYacht?.ui?.notifyWarning?.('No hay contenido de plantilla para copiar.'); } catch (e) { alert('No template content found to copy.'); }
             return;
          }
          container = fallbackContainer;
     }
     const htmlContent = container.innerHTML; 
-    navigator.clipboard.writeText(htmlContent).then(() => {
-        alert('Template content copied to clipboard.');
-    }).catch(err => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(htmlContent).then(() => {
+            try { window.AppYacht?.ui?.notifySuccess?.('Contenido de plantilla copiado al portapapeles.'); } catch (e) { alert('Template content copied to clipboard.'); }
+        }).catch(err => {
             (window.AppYacht?.error || console.error)('Error copying template:', err);
-            alert('Unable to copy template.');
+            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e2) { alert('Unable to copy template.'); }
         });
+    } else {
+        // Fallback básico usando selección
+        const tempEl = document.createElement('textarea');
+        tempEl.value = htmlContent;
+        document.body.appendChild(tempEl);
+        tempEl.select();
+        try {
+            const ok = document.execCommand('copy');
+            if (ok) {
+                try { window.AppYacht?.ui?.notifySuccess?.('Contenido de plantilla copiado al portapapeles.'); } catch (e) { alert('Template content copied to clipboard.'); }
+            } else {
+                try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e) { alert('Unable to copy template.'); }
+            }
+        } catch (err) {
+            (window.AppYacht?.error || console.error)('Error copying template (fallback):', err);
+            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e) { alert('Unable to copy template.'); }
+        } finally {
+            tempEl.remove();
+        }
+    }
+}
+
+/**
+ * Verifica si hay datos suficientes en el formulario para crear una plantilla completa
+ * @returns {boolean} - True si hay datos suficientes, false si solo debe mostrar preview
+ */
+function hasFormData() {
+    // Verificar datos básicos mínimos
+    const yachtUrl = document.getElementById('yacht-url')?.value.trim() || '';
+    if (!yachtUrl) return false;
+    
+    // Verificar campos básicos de configuración
+    const currency = document.getElementById('currency')?.value || '';
+    if (!currency) return false;
+    
+    // Verificar si hay al menos una tarifa de charter
+    const charterRateGroups = document.querySelectorAll('.charter-rate-group');
+    let hasValidRate = false;
+    
+    charterRateGroups.forEach(group => {
+        const baseRate = group.querySelector('input[name*="baseRate"]')?.value || '';
+        const guests = group.querySelector('input[name*="guests"]')?.value || '';
+        const nights = group.querySelector('input[name*="nights"]')?.value || '';
+        
+        if (baseRate && guests && nights) {
+            hasValidRate = true;
+        }
+    });
+    
+    return hasValidRate;
 }
 
 /**
@@ -345,46 +408,67 @@ function onTemplateChange() {
         return;
     }
 
-    const yachtUrl = document.getElementById('yacht-url')?.value.trim() || '';
-        if (!yachtUrl) {
-        const params = new URLSearchParams({
-            action: 'load_template_preview',
-            template: selectedTemplate,
-            nonce: ajaxTemplateData?.nonce || '' 
-        });
-        fetch(`${ajaxTemplateData.ajaxurl}?${params.toString()}`)
-        .then(r => {
-            if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-            return r.text();
-        })
-        .then(previewHtml => {
-            resultContainer.innerHTML = previewHtml;
-        })
-        .catch(err => {
-            (window.AppYacht?.error || console.error)('Error loading template preview:', err);
-            resultContainer.innerHTML = '<p>Error loading template preview.</p>';
-        });
+    // Verificar si hay datos suficientes para crear plantilla completa
+    if (hasFormData()) {
+        // Hay datos: crear plantilla completa como si se presionara el botón "Crear plantilla"
+        if (templateManager) {
+            templateManager.createTemplate().catch(err => {
+                // Si falla la creación, mostrar vista previa como fallback
+                (window.AppYacht?.warn || console.warn)('Error creating template, falling back to preview:', err);
+                loadTemplatePreview(selectedTemplate, resultContainer);
+            });
+        } else {
+            // Fallback si no hay templateManager
+            loadTemplatePreview(selectedTemplate, resultContainer);
+        }
     } else {
-        // No hay URL de yate, solo cargar plantilla vacía sin llamar createTemplate
-        const params = new URLSearchParams({
-            action: 'load_template_preview',
-            template: selectedTemplate,
-            nonce: ajaxTemplateData?.nonce || '' 
-        });
-        fetch(`${ajaxTemplateData.ajaxurl}?${params.toString()}`)
-        .then(r => {
-            if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-            return r.text();
-        })
-        .then(previewHtml => {
-            resultContainer.innerHTML = previewHtml;
-        })
-        .catch(err => {
-            (window.AppYacht?.error || console.error)('Error loading template preview:', err);
-            resultContainer.innerHTML = '<p>Error loading template preview.</p>';
-        });
+        // No hay datos suficientes: mostrar solo vista previa
+        loadTemplatePreview(selectedTemplate, resultContainer);
     }
-     saveTemplateFormData(); 
+    
+    saveTemplateFormData(); 
+}
+
+/**
+ * Carga la vista previa de una plantilla
+ * @param {string} selectedTemplate - Plantilla seleccionada
+ * @param {HTMLElement} resultContainer - Contenedor donde mostrar el resultado
+ */
+function loadTemplatePreview(selectedTemplate, resultContainer) {
+    const params = new URLSearchParams({
+        action: 'load_template_preview',
+        template: selectedTemplate,
+        nonce: ajaxTemplateData?.nonce || '' 
+    });
+
+    // Estado de carga y deshabilitar controles relacionados
+    try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
+    const templateSelectorEl = document.getElementById('templateSelector');
+    const saveTemplateSelector = document.getElementById('saveTemplateSelector');
+    const createTemplateBtn = document.getElementById('createTemplateButton');
+    if (templateSelectorEl) templateSelectorEl.disabled = true;
+    if (saveTemplateSelector) saveTemplateSelector.disabled = true;
+    if (createTemplateBtn) createTemplateBtn.disabled = true;
+    
+    fetch(`${ajaxTemplateData.ajaxurl}?${params.toString()}`)
+    .then(r => {
+        if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+        return r.text();
+    })
+    .then(previewHtml => {
+        resultContainer.innerHTML = previewHtml;
+    })
+    .catch(err => {
+        (window.AppYacht?.error || console.error)('Error loading template preview:', err);
+        try { window.AppYacht?.ui?.notifyError?.('Error cargando vista previa: ' + (err?.message || '')); } catch (e) {}
+        resultContainer.innerHTML = '<p>Error loading template preview.</p>';
+    })
+    .finally(() => {
+        try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
+        if (templateSelectorEl) templateSelectorEl.disabled = false;
+        if (saveTemplateSelector) saveTemplateSelector.disabled = false;
+        if (createTemplateBtn) createTemplateBtn.disabled = false;
+    });
 }
 
 // --- Inicialización y Listeners Globales ---
@@ -461,21 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
      const extrasContainer = document.getElementById('extrasContainer');
      if (extrasContainer) {
          extrasContainer.addEventListener('input', debounce(saveTemplateFormData, 300));
-     }
-
-     // Listener para el botón global "Add Extra" (si existe en la página)
-     const addExtraBtnGlobal = document.querySelector('button[onclick="addExtraField()"]'); 
-     if(addExtraBtnGlobal) {
-         addExtraBtnGlobal.addEventListener('click', () => {
-             if(typeof window.addExtraField === 'function') {
-                 window.addExtraField(); // Llama a la función global de interfaz.js
-                 setTimeout(saveTemplateFormData, 50);
-             } else {
-                 (window.AppYacht?.error || console.error)('addExtraField no está definida globalmente');
-             }
-         });
+         // ... resto sin cambios ...
      }
 });
 
-// Asegurar que copyTemplate esté disponible globalmente
+// Exponer utilidades necesarias globalmente
 window.copyTemplate = copyTemplate;

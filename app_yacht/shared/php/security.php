@@ -53,10 +53,10 @@ function pb_sanitize_html_content( $content ) {
 
 	
 	$clean_content = preg_replace_callback(
-		'/href=(["\'])([^"\']*)(["\'])/i',
+		'/href=((["\']))([^"\']*)(["\'])/i',
 		function( $matches ) {
-			$url = esc_url( $matches[2] );
-			return "href={$matches[1]}{$url}{$matches[3]}";
+			$url = esc_url( $matches[3] );
+			return "href={$matches[1]}{$url}{$matches[4]}";
 		},
 		$clean_content
 	);
@@ -171,4 +171,41 @@ function pb_log_security_event( $user_id, $event_type, $details = array() ) {
 		$_SERVER['REQUEST_URI'] ?? 'UNKNOWN'
 	);
 	error_log( $log_message );
+}
+
+
+/**
+ * Verifica un nonce AJAX de forma centralizada.
+ * - Loguea el evento de seguridad cuando falla (pb_log_security_event y Logger si existe)
+ * - Responde con wp_send_json_error y termina la ejecución si es inválido
+ * - Devuelve true si es válido
+ *
+ * @param mixed  $nonce        Valor del nonce recibido (string o null)
+ * @param string $action       Acción/handle del nonce
+ * @param array  $context      Datos extra para logs (endpoint, etc.)
+ * @param int    $http_status  Código HTTP para la respuesta de error
+ * @return bool
+ */
+function pb_verify_ajax_nonce( $nonce, $action, $context = array(), $http_status = 400 ) {
+	if ( isset( $nonce ) && wp_verify_nonce( $nonce, $action ) ) {
+		return true;
+	}
+
+	$details = array_merge(
+		array(
+			'reason'     => 'invalid_or_missing_nonce',
+			'action'     => $action,
+			'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+		),
+		is_array( $context ) ? $context : array( 'context' => (string) $context )
+	);
+
+	if ( function_exists( 'pb_log_security_event' ) ) {
+		pb_log_security_event( get_current_user_id(), 'ajax_nonce_failed', $details );
+	}
+	if ( class_exists( 'Logger' ) ) {
+		Logger::warning( 'AJAX nonce verification failed', $details );
+	}
+
+	wp_send_json_error( array( 'error' => 'Invalid or missing nonce.' ), $http_status );
 }

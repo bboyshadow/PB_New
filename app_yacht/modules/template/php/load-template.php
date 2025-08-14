@@ -9,7 +9,10 @@ $allowedTemplates = array( 'default-template', 'template-01', 'template-02' );
 
 function handle_load_template_preview() {
 	
-	if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'template_nonce' ) ) {
+	// Verificación de nonce con helper centralizado
+	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+		pb_verify_ajax_nonce( $_GET['nonce'] ?? null, 'template_nonce', array( 'endpoint' => 'load_template_preview' ), 400 );
+	} else if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'template_nonce' ) ) {
 		wp_send_json_error( 'Invalid or missing nonce.', 400 );
 		return;
 	}
@@ -41,8 +44,10 @@ function handle_create_template() {
 		wp_send_json_error( 'Invalid request method.', 400 );
 	}
 
-	
-	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'template_nonce' ) ) {
+	// Verificación de nonce con helper centralizado
+	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
+		pb_verify_ajax_nonce( $_POST['nonce'] ?? null, 'template_nonce', array( 'endpoint' => 'create_template' ), 400 );
+	} else if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'template_nonce' ) ) {
 		wp_send_json_error( 'Invalid or missing nonce.', 400 );
 	}
 	
