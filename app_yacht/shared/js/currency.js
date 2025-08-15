@@ -9,6 +9,7 @@
 /**
  * Actualiza los símbolos de moneda en todos los campos relevantes de la interfaz
  * Esta función debe ser llamada cuando cambia la moneda seleccionada
+ * This function should be called when the selected currency changes
  */
 function updateCurrencySymbols() {
     // Obtenemos la moneda seleccionada

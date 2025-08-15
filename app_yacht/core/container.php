@@ -35,7 +35,7 @@ class AppYachtContainer {
 		
 		
 		if ( ! isset( $this->services[ $name ] ) ) {
-			throw new Exception( "Servicio '{$name}' no está registrado en el contenedor DI" );
+			throw new Exception( "Service '{$name}' is not registered in the DI container" );
 		}
 		
 		

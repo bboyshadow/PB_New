@@ -136,6 +136,19 @@ const VatRateMix = {
         }
     },
 
+    /**
+     * Maneja cambios en los inputs de noches VAT para sincronizar con el total.
+     * Cuando hay exactamente 2 países, ajusta automáticamente el otro campo.
+     * 
+     * @function handleVatNightsInput
+     * @param {HTMLInputElement} input - El elemento input que cambió
+     * @returns {void}
+     * 
+     * @description
+     * - Calcula noches restantes basado en el total
+     * - Actualiza automáticamente el campo complementario
+     * - Solo funciona cuando hay exactamente 2 países configurados
+     */
     handleVatNightsInput: function(input) {
         const totalNightsInput = document.querySelector('input[name="nights"]');
         const totalNights = parseFloat(totalNightsInput.value) || 0;
@@ -146,6 +159,19 @@ const VatRateMix = {
         otherInput.value = Math.max(0, totalNights - currentValue);
     },
 
+    /**
+     * Actualiza las noches VAT cuando cambia el total de noches en la calculadora principal.
+     * Ajusta automáticamente el segundo país manteniendo el valor del primero.
+     * 
+     * @function updateVatNightsFromTotal
+     * @returns {void}
+     * 
+     * @description
+     * - Lee el total de noches de la calculadora principal
+     * - Mantiene el valor del primer país
+     * - Calcula automáticamente las noches del segundo país
+     * - Solo funciona cuando hay exactamente 2 países configurados
+     */
     updateVatNightsFromTotal: function() {
         const totalNights = parseFloat(document.querySelector('input[name="nights"]').value) || 0;
         const nightsInputs = document.querySelectorAll('input[name="vatNights[]"]');

@@ -1,14 +1,38 @@
 <?php
 /**
+ * AJAX endpoint to calculate the "Relocation Fee" for a charter
+ *
+ * Reads parameters sent via POST (distance, hours, speed, consumption, fuel price,
+ * crew and additional expenses), calculates an approximate cost and returns the formatted fee
+ * according to the currency.
+ *
+ * Expects via POST:
+ * - nonce: string
+ * - currency: string (€, $USD, $AUD, ...)
+ * - distance: float|null (NM)
+ * - hours: float|null
+ * - speed: float|null (knots)
+ * - fuelConsumption: float|null (liters/hour)
+ * - fuelPrice: float|null (currency/liter)
+ * - crewCount: int|null
+ * - crewWage: float|null (currency/day)
+ * - portFees: float|null
+ * - extraCosts: float|null
+ *
+ * @return void Prints and ends with wp_send_json_success(["fee" => string]) or wp_send_json_error
+ */
+?>
+<?php
+/**
  * calculateRelocation.php
  *
- * Endpoint de WordPress para calcular automáticamente la "Relocation Fee".
- * Este script lee parámetros enviados por POST (distancia, horas, consumo,
- * precio del combustible, tripulación, salarios, tasas de puerto y gastos extra),
- * calcula un coste aproximado y devuelve la tarifa formateada según la moneda.
+ * WordPress endpoint to automatically calculate the "Relocation Fee".
+ * This script reads parameters sent via POST (distance, hours, consumption,
+ * fuel price, crew, wages, port fees and extra expenses),
+ * calculates an approximate cost and returns the formatted fee according to the currency.
  *
- * Para su correcto funcionamiento, debes registrar el manejador de la acción
- * `calculate_relocation` en tu archivo bootstrap.
+ * For proper operation, you must register the action handler
+ * `calculate_relocation` in your bootstrap file.
  */
 
 // Comprobar nonce de seguridad
@@ -50,7 +74,7 @@ if ( ! empty( $features['data_validation'] ) && class_exists( 'DataValidator' ) 
         $errors['currency'] = 'Currency is required';
     }
 
-    // distance u hours pueden ser opcionales pero al menos uno debe existir y ser número positivo
+    // distance or hours can be optional but at least one must exist and be a positive number
     $hasDistance = $distanceStr !== '' && DataValidator::isPositiveNumber( $distanceStr );
     $hasHours    = $hoursStr !== '' && DataValidator::isPositiveNumber( $hoursStr );
     if ( ! $hasDistance && ! $hasHours ) {
@@ -83,40 +107,40 @@ if ( ! empty( $features['data_validation'] ) && class_exists( 'DataValidator' ) 
 // Recoger parámetros opcionales
 $distance        = isset( $_POST['distance'] ) ? floatval( str_replace( ',', '', $_POST['distance'] ) ) : null; // NM
 $hours           = isset( $_POST['hours'] ) ? floatval( str_replace( ',', '', $_POST['hours'] ) ) : null;
-$speed           = isset( $_POST['speed'] ) ? floatval( str_replace( ',', '', $_POST['speed'] ) ) : null; // nudos
-// Calcular horas a partir de distancia y velocidad si no se proporcionan directamente
+$speed           = isset( $_POST['speed'] ) ? floatval( str_replace( ',', '', $_POST['speed'] ) ) : null; // knots
+// Calculate hours from distance and speed if not provided directly
 if ( is_null( $hours ) && ! is_null( $distance ) && ! is_null( $speed ) && $speed > 0 ) {
     $hours = $distance / $speed;
 }
-$fuelConsumption = isset( $_POST['fuelConsumption'] ) ? floatval( str_replace( ',', '', $_POST['fuelConsumption'] ) ) : null; // l/h o l/nm
-$fuelPrice       = isset( $_POST['fuelPrice'] ) ? floatval( str_replace( ',', '', $_POST['fuelPrice'] ) ) : null; // €/L
+$fuelConsumption = isset( $_POST['fuelConsumption'] ) ? floatval( str_replace( ',', '', $_POST['fuelConsumption'] ) ) : null; // l/h or l/nm
+$fuelPrice       = isset( $_POST['fuelPrice'] ) ? floatval( str_replace( ',', '', $_POST['fuelPrice'] ) ) : null; // currency/L
 $crewCount       = isset( $_POST['crewCount'] ) ? floatval( str_replace( ',', '', $_POST['crewCount'] ) ) : null;
-$crewWage        = isset( $_POST['crewWage'] ) ? floatval( str_replace( ',', '', $_POST['crewWage'] ) ) : null; // €/día
+$crewWage        = isset( $_POST['crewWage'] ) ? floatval( str_replace( ',', '', $_POST['crewWage'] ) ) : null; // currency/day
 $portFees        = isset( $_POST['portFees'] ) ? floatval( str_replace( ',', '', $_POST['portFees'] ) ) : 0.0;
 $extraCosts      = isset( $_POST['extraCosts'] ) ? floatval( str_replace( ',', '', $_POST['extraCosts'] ) ) : 0.0;
 $currency        = isset( $_POST['currency'] ) ? sanitize_text_field( $_POST['currency'] ) : '€';
 
-// Al menos se debe especificar distancia u horas
+// At least distance or hours must be specified
 if ( is_null( $distance ) && is_null( $hours ) ) {
     wp_send_json_error( [ 'error' => 'You must provide either distance or hours to calculate fuel cost.' ] );
     return;
 }
 
-// Calcular coste de combustible
+// Calculate fuel cost
 $fuelCost = 0.0;
-// Fórmula principal: (millas náuticas / velocidad) * consumo * precio combustible
+// Main formula: (nautical miles / speed) * consumption * fuel price
 if ( ! is_null( $distance ) && ! is_null( $speed ) && $distance > 0 && $speed > 0 && ! is_null( $fuelConsumption ) && ! is_null( $fuelPrice ) ) {
     $hours    = $distance / $speed;
     $fuelCost = $hours * $fuelConsumption * $fuelPrice;
-// Fallback: si falta velocidad pero el usuario proporcionó horas manualmente
+// Fallback: if speed is missing but the user provided hours manually
 } elseif ( ! is_null( $hours ) && $hours > 0 && ! is_null( $fuelConsumption ) && ! is_null( $fuelPrice ) ) {
     $fuelCost = $hours * $fuelConsumption * $fuelPrice;
 }
 
-// Calcular coste de tripulación (salario diario * días)
+// Calculate crew cost (daily wage * days)
 $crewCost = 0.0;
 if ( ! is_null( $crewCount ) && ! is_null( $crewWage ) && $crewCount > 0 ) {
-    // Estimar horas si sólo hay distancia (asumiendo 8 nudos)
+    // Estimate hours if only distance is provided (assuming 8 knots)
     $estimatedHours = 0.0;
     if ( ! is_null( $hours ) && $hours > 0 ) {
         $estimatedHours = $hours;
@@ -124,17 +148,17 @@ if ( ! is_null( $crewCount ) && ! is_null( $crewWage ) && $crewCount > 0 ) {
         if ( ! is_null( $speed ) && $speed > 0 ) {
             $estimatedHours = $distance / $speed;
         } else {
-            $estimatedHours = $distance / 8.0; // fallback velocidad default
+            $estimatedHours = $distance / 8.0; // default speed fallback
         }
     }
     $estimatedDays = max( 1, ceil( $estimatedHours / 24.0 ) );
     $crewCost      = $crewCount * $crewWage * $estimatedDays;
 }
 
-// Sumar todos los conceptos
+// Sum all components
 $total = $fuelCost + $crewCost + $portFees + $extraCosts;
 
-// Formatear resultado
+// Format result
 require_once __DIR__ . '/../../../shared/php/currency-functions.php';
 $feeFormatted = formatCurrency( $total, $currency, false );
 

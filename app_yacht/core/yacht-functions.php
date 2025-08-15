@@ -222,12 +222,12 @@ function pb_handle_auth_endpoint() {
 		if ( isset( $_GET['code'] ) ) {
 			try {
 				if ( ! function_exists( 'pb_log_security_event' ) || ! function_exists( 'pb_outlook_exchange_code_for_tokens' ) || ! function_exists( 'pb_outlook_save_tokens_to_user' ) ) {
-					error_log( 'Error crítico: Funciones de Outlook o seguridad no encontradas durante el callback de Outlook en template_redirect.' );
-					wp_die( 'Error interno: Faltan funciones esenciales. Contacta al administrador.' );
+					error_log( 'Critical error: Outlook or security functions not found during Outlook callback in template_redirect.' );
+					wp_die( 'Internal error: Essential functions are missing. Contact the administrator.' );
 				}
 
 				if ( ! is_user_logged_in() ) {
-					wp_die( 'Debes iniciar sesión en WP antes de conectar tu cuenta de Outlook.' );
+					wp_die( 'You must be logged in to WordPress before connecting your Outlook account.' );
 				}
 
 				$user_id = get_current_user_id();
@@ -235,7 +235,7 @@ function pb_handle_auth_endpoint() {
 				$tokens  = pb_outlook_exchange_code_for_tokens( $code );
 				if ( is_wp_error( $tokens ) ) {
 					error_log( 'OAuth Token Exchange Error for user ' . $user_id . ': ' . $tokens->get_error_message() );
-					wp_die( 'Error al obtener tokens Outlook: ' . esc_html( $tokens->get_error_message() ) );
+					wp_die( 'Error obtaining Outlook tokens: ' . esc_html( $tokens->get_error_message() ) );
 				}
 
 				pb_outlook_save_tokens_to_user( $user_id, $tokens );
@@ -243,7 +243,7 @@ function pb_handle_auth_endpoint() {
 				exit;
 			} catch ( Throwable $e ) {
 				error_log( 'Critical Error during Outlook auth endpoint handling: ' . $e->getMessage() . "\nTrace: " . $e->getTraceAsString() );
-				wp_die( 'Se produjo un error inesperado durante la autenticación. Por favor, contacta al administrador. Detalles: ' . esc_html( $e->getMessage() ) );
+				wp_die( 'An unexpected error occurred during authentication. Please contact the administrator. Details: ' . esc_html( $e->getMessage() ) );
 			}
 		} else {
 			wp_redirect( home_url( '/appyacht/' ) );

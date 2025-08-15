@@ -172,9 +172,11 @@ Implementar mejoras de forma fraccionada y segura, testando cada cambio antes de
 ## 📋 FASE 4: MANTENIBILIDAD (Prioridad MEDIA)
 
 ### ✅ 4.1 Documentación de Código
-- [ ] **Tarea 4.1.1**: Documentar funciones críticas
-  - Añadir PHPDoc a funciones de cálculo
-  - **Test**: Verificar que código sigue funcionando
+- [x] **Tarea 4.1.1**: Documentar funciones críticas
+  - ✅ Añadir PHPDoc a funciones de cálculo
+  - ✅ Documentado CalcService, calculate.php, calculatemix.php, calculateRelocation.php
+  - ✅ PHPDoc completo en clases y métodos públicos/privados
+  - ✅ **Test**: PhpDocumentor/IDE reconocen la documentación correctamente
   - **Rollback**: No hay riesgo, solo documentación
 
 - [ ] **Tarea 4.1.2**: Crear guía de debugging

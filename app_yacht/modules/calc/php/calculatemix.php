@@ -1,10 +1,21 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
-
-add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
-add_action( 'wp_ajax_nopriv_calculate_mix', 'handle_calculate_mix' );
-
+/**
+ * Handler AJAX para cálculo mixto (temporadas múltiples)
+ *
+ * Valida el nonce, registra logs (si está disponible), normaliza y valida la entrada,
+ * calcula el coste total combinando temporadas (baja/alta, etc.), aplica mix de IVA
+ * cuando procede y formatea el resultado para la UI.
+ *
+ * Espera vía POST:
+ * - currency: string
+ * - seasons: array<int,array{name:string,weeks:float,rate:float}>
+ * - vatRateMix: "1"|"0"
+ * - vatCountries: array<int,array{country:string,rate:float}>
+ *
+ * @return void Imprime y finaliza con wp_send_json_success/wp_send_json_error
+ */
 function handle_calculate_mix() {
 	// Verificación de nonce y logging de seguridad
 	if ( function_exists( 'pb_verify_ajax_nonce' ) ) {
@@ -17,7 +28,7 @@ function handle_calculate_mix() {
 				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
 			) );
 		}
-		wp_send_json_error( array( 'error' => 'Nonce inválido.' ), 400 );
+		wp_send_json_error( array( 'error' => 'Invalid nonce.' ), 400 );
 		return;
 	}
 
@@ -68,7 +79,7 @@ function handle_calculate_mix() {
 	}
 
 	if ( ! isset( $data['mixnights'], $data['lowSeasonRate'], $data['lowSeasonNights'], $data['highSeasonRate'], $data['highSeasonNights'], $data['currency'] ) ) {
-		wp_send_json_error( array( 'error' => 'Datos insuficientes para realizar el cálculo.' ), 400 );
+		wp_send_json_error( array( 'error' => 'Insufficient data to perform the calculation.' ), 400 );
 		return;
 	}
 
@@ -105,3 +116,5 @@ function handle_calculate_mix() {
 		Logger::info( 'Mix calculation request completed successfully' );
 	}
 }
+add_action( 'wp_ajax_calculate_mix', 'handle_calculate_mix' );
+add_action( 'wp_ajax_nopriv_calculate_mix', 'handle_calculate_mix' );

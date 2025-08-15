@@ -32,8 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Maneja el clic en el botón de cálculo
- * Refactorizado para usar async/await en lugar de callbacks anidados
+ * Maneja el clic en el botón de cálculo principal.
+ * Valida los datos del formulario, recolecta todos los campos de entrada,
+ * envía una solicitud AJAX al endpoint `calculate_charter` de WordPress,
+ * y muestra los resultados en la UI.
+ * 
+ * @async
+ * @function handleCalculateButtonClick
+ * @returns {Promise<void>} Promesa que se resuelve cuando el cálculo se completa
+ * 
+ * @description
+ * - Valida campos obligatorios usando validateFields()
+ * - Recolecta datos: currency, VAT, APA, relocation, security, extras, guests, nights, base rates
+ * - Procesa extras dinámicos y campos de fecha
+ * - Maneja caché de resultados en sessionStorage
+ * - Actualiza UI con loading states y notificaciones
+ * - Publica eventos en eventBus si está disponible
+ * 
+ * @throws {Error} Si falla la validación, la solicitud de red o el procesamiento de respuesta
  */
 async function handleCalculateButtonClick() {
     try {
@@ -231,7 +247,7 @@ if (vatRateMixEnabled) {
             }
             cacheKey = `pb_calc_${Math.abs(hash).toString(16)}`;
         } catch (e) {
-            (window.AppYacht?.warn || console.warn)('No se pudo generar clave de caché:', e);
+            (window.AppYacht?.warn || console.warn)('Could not generate cache key:', e);
         }
 
         const cacheMaxAge = (window.AppYacht?.config?.cacheMaxAgeMs) ?? (60 * 60 * 1000); // 1h por defecto
@@ -252,7 +268,7 @@ if (vatRateMixEnabled) {
                     }
                 }
             } catch (e) {
-                (window.AppYacht?.warn || console.warn)('Fallo al acceder al caché de sesión (legacy):', e);
+                (window.AppYacht?.warn || console.warn)('Failed to access session cache (legacy):', e);
             }
         }
 
@@ -266,7 +282,7 @@ if (vatRateMixEnabled) {
         
         if (!response.ok) {
             // Enhanced error handling (feature-flagged)
-            try { window.AppYacht?.ui?.notifyError?.('Error de servidor en cálculo'); } catch (e) {}
+            try { window.AppYacht?.ui?.notifyError?.('Server error during calculation'); } catch (e) {}
             throw new Error('Server response error (calculate.php).');
         }
         
@@ -280,7 +296,7 @@ if (vatRateMixEnabled) {
                 try {
                     sessionStorage.setItem(cacheKey, JSON.stringify({ result: result.data, timestamp: Date.now() }));
                 } catch (e) {
-                    (window.AppYacht?.warn || console.warn)('No se pudo guardar el resultado en caché (legacy):', e);
+                    (window.AppYacht?.warn || console.warn)('Could not save result to cache (legacy):', e);
                 }
             }
 
@@ -289,7 +305,7 @@ if (vatRateMixEnabled) {
             if (calculateBtn) calculateBtn.textContent = 'Recalculate';
             
             // Notificación de éxito y limpieza de errores
-            try { window.AppYacht?.ui?.notifySuccess?.('Cálculo completado'); } catch (e) {}
+            try { window.AppYacht?.ui?.notifySuccess?.('Calculation completed'); } catch (e) {}
             const errorMessage = document.getElementById('errorMessage');
             if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
             
@@ -305,8 +321,8 @@ if (vatRateMixEnabled) {
                 errorMessage.style.display = 'block';
             }
             
-            // Notificación de error unificada
-            try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo'); } catch (e) {}
+            // Unified error notification
+            try { window.AppYacht?.ui?.notifyError?.('Calculation error'); } catch (e) {}
             
             // Publicar evento si hay eventBus disponible
             if (window.eventBus) {
@@ -317,12 +333,12 @@ if (vatRateMixEnabled) {
         (window.AppYacht?.error || console.error)('Request error:', err);
         const errorMessage = document.getElementById('errorMessage');
         if (errorMessage) {
-            errorMessage.textContent = 'Error general.';
+            errorMessage.textContent = 'General error.';
             errorMessage.style.display = 'block';
         }
         
         // Notificación de error unificada
-        try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo: ' + err.message); } catch (e) {}
+        try { window.AppYacht?.ui?.notifyError?.('Error during calculation: ' + err.message); } catch (e) {}
         
         // Publicar evento si hay eventBus disponible
         if (window.eventBus) {
@@ -337,6 +353,21 @@ if (vatRateMixEnabled) {
 
 /**
  * Muestra los resultados en #result, permitiendo múltiples bloques incluso si son idénticos.
+ */
+/**
+ * Muestra los resultados del cálculo en la interfaz de usuario.
+ * Incluye resultados de Mixed Seasons si están disponibles.
+ * 
+ * @function displayCalculatorResult
+ * @param {Array|Object} data - Datos del resultado del cálculo
+ * @returns {void}
+ * 
+ * @description
+ * - Procesa los datos del resultado (array o objeto único)
+ * - Integra resultados de Mixed Seasons si están activos
+ * - Renderiza los resultados en divs responsivos
+ * - Actualiza el estado de los botones (Calculate → Recalculate)
+ * - Habilita el botón de copia
  */
 function displayCalculatorResult(data) {
     let finalTextArray = [];
@@ -383,7 +414,18 @@ function displayCalculatorResult(data) {
 }
 
 /**
- * Copia el contenido de #result al portapapeles.
+ * Copia el contenido de los resultados al portapapeles del usuario.
+ * Incluye fallback para navegadores sin Clipboard API.
+ * 
+ * @function copyToClipboard
+ * @returns {void}
+ * 
+ * @description
+ * - Recopila todo el texto de los resultados mostrados
+ * - Intenta usar la Clipboard API moderna
+ * - Proporciona fallback con document.execCommand
+ * - Muestra feedback visual en el botón
+ * - Maneja errores de copia graciosamente
  */
 function copyToClipboard() {
     const resultDiv  = document.getElementById('result');
@@ -397,12 +439,12 @@ function copyToClipboard() {
         textToCopy += div.innerText + '\n\n';
     });
 
-    // Copiar al portapapeles
+    // Copy to clipboard
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textToCopy.trim()).then(() => {
-            // Notificación de éxito usando UI helpers
-            try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
-                // Fallback visual en el botón
+            // Success notification using UI helpers
+            try { window.AppYacht?.ui?.notifySuccess?.('Result copied to clipboard'); } catch (e) {
+                // Visual fallback on the button
                 copyButton.textContent = 'Copied!';
                 copyButton.classList.add('btn-success');
                 setTimeout(() => {
@@ -411,13 +453,13 @@ function copyToClipboard() {
                 }, 2000);
             }
         }).catch(err => {
-            (window.AppYacht?.error || console.error)('Error al copiar:', err);
-            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
-                alert('Error al copiar al portapapeles');
+            (window.AppYacht?.error || console.error)('Error copying:', err);
+            try { window.AppYacht?.ui?.notifyError?.('Could not copy the result'); } catch (e) {
+                alert('Error copying to clipboard');
             }
         });
     } else {
-        // Fallback para navegadores sin Clipboard API
+        // Fallback for browsers without Clipboard API
         const tempEl = document.createElement('textarea');
         tempEl.value = textToCopy.trim();
         document.body.appendChild(tempEl);
@@ -425,7 +467,7 @@ function copyToClipboard() {
         try {
             const success = document.execCommand('copy');
             if (success) {
-                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
+                try { window.AppYacht?.ui?.notifySuccess?.('Result copied to clipboard'); } catch (e) {
                     copyButton.textContent = 'Copied!';
                     copyButton.classList.add('btn-success');
                     setTimeout(() => {
@@ -434,14 +476,14 @@ function copyToClipboard() {
                     }, 2000);
                 }
             } else {
-                try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
-                    alert('Error al copiar al portapapeles');
+                try { window.AppYacht?.ui?.notifyError?.('Could not copy result'); } catch (e) {
+                    alert('Error copying to clipboard');
                 }
             }
         } catch (err) {
             (window.AppYacht?.error || console.error)('Error copying (fallback):', err);
-            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {
-                alert('Error al copiar al portapapeles');
+            try { window.AppYacht?.ui?.notifyError?.('Could not copy result'); } catch (e) {
+                alert('Error copying to clipboard');
             }
         } finally {
             document.body.removeChild(tempEl);

@@ -9,8 +9,8 @@ get_header(); ?>
 <div class="container">
 	<div class="row justify-content-center text-center my-5">
 		<div class="col-lg-8">
-			<h1 class="main-title-heading">Estamos en modo creativo en <strong>Creativoypunto.com</strong></h1>
-			<h2 class="main-title-subheading">Y cuando lleguemos al punto, podrás ver todo lo que podemos hacer para ti. ¡Prometemos que valdrá la pena la espera!</h2>
+			<h1 class="main-title-heading">We are in creative mode at <strong>Creativoypunto.com</strong></h1>
+			<h2 class="main-title-subheading">And when we get to the point, you'll be able to see everything we can do for you. We promise it will be worth the wait!</h2>
 		</div>
 	</div>
 	<div class="row justify-content-center align-items-center">

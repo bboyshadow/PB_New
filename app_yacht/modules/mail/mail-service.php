@@ -138,7 +138,7 @@ class MailService implements MailServiceInterface {
 		if ( isset( $data['to'] ) ) {
 			$recipients = explode( ',', $data['to'] );
 			if ( count( $recipients ) > $this->config['max_recipients'] ) {
-				$errors[] = 'Excede el límite máximo de ' . $this->config['max_recipients'] . ' destinatarios';
+				$errors[] = 'Exceeds the maximum limit of ' . $this->config['max_recipients'] . ' recipients';
 			}
 		}
 		

@@ -16,7 +16,7 @@ class MailComposer {
     constructor(config = {}) {
         // Configuración por defecto
         this.config = {
-            editorId: 'contenido',
+            editorId: 'email-content',
             onContentChange: null,
             onError: null,
             ...config
@@ -118,11 +118,11 @@ class MailComposer {
     }
     
     /**
-     * Aplica un comando de formato al editor
-     * @param {string} command - Comando a ejecutar
-     * @param {string} value - Valor opcional para el comando
-     * @param {object} [execOptions={}] - Opciones adicionales para la ejecución del comando.
-     * @param {boolean} [execOptions.preserveFocusAndScroll=false] - Si es true, esta función no gestionará el foco ni el scroll; se asume que el llamador lo hace.
+     * Applies a formatting command to the editor
+     * @param {string} command - Command to execute
+     * @param {string} value - Optional value for the command
+     * @param {object} [execOptions={}] - Additional options for command execution.
+     * @param {boolean} [execOptions.preserveFocusAndScroll=false] - If true, this function will not manage focus or scroll; the caller is expected to do so.
      */
     applyCommand(command, value = null, execOptions = {}) {
         const manageFocusAndScroll = !(execOptions && execOptions.preserveFocusAndScroll);
@@ -130,15 +130,15 @@ class MailComposer {
 
         if (manageFocusAndScroll) {
             savedWindowScrollY = window.scrollY;
-            // Es importante enfocar el editor para que execCommand funcione correctamente.
-            // Si el llamador quiere un control de foco más fino (ej. con preventScroll),
-            // debe hacerlo antes de llamar a applyCommand con preserveFocusAndScroll = true.
+            // It is important to focus the editor so execCommand works correctly.
+            // If the caller wants finer focus control (e.g., with preventScroll),
+            // it must do so before calling applyCommand with preserveFocusAndScroll = true.
             this.editor.focus(); 
             savedEditorScrollTop = this.editor.scrollTop;
         } else {
-            // Si preserveFocusAndScroll es true, se asume que el editor ya tiene el foco
-            // y que el scroll será manejado por el llamador.
-            // document.execCommand debería funcionar si el editor ya está enfocado.
+            // If preserveFocusAndScroll is true, we assume the editor already has focus
+            // and that scroll will be handled by the caller.
+            // document.execCommand should work if the editor is already focused.
         }
         
         document.execCommand(command, false, value);
@@ -162,13 +162,13 @@ class MailComposer {
         }
     }
 
-    // loadGoogleFonts() eliminado ya que no son fiables en email
+    // loadGoogleFonts() removed as they are not reliable in email
 
     /**
-     * Actualiza el selector de fuentes con estilos de previsualización (solo fuentes seguras)
-     * @param {Array<string>} fontsList - Lista de fuentes (ignorada, siempre usa seguras)
+     * Updates the font selector with preview styles (email-safe fonts only)
+     * @param {Array<string>} fontsList - List of fonts (ignored, always uses safe fonts)
      */
-    updateFontSelector(fontsList) { // fontsList ya no se usa pero se mantiene la firma por si acaso
+    updateFontSelector(fontsList) { // fontsList is no longer used but the signature is kept just in case
         const fontSelect = document.getElementById('fontSelect');
         if (!fontSelect) return;
         
@@ -190,7 +190,7 @@ class MailComposer {
         
         // Añadir grupo de fuentes seguras para email
         const systemGroup = document.createElement('optgroup');
-        systemGroup.label = 'Fuentes seguras para email';
+        systemGroup.label = 'Email-safe fonts';
         
         emailSafeFonts.forEach(font => {
             const option = document.createElement('option');
@@ -244,7 +244,7 @@ class MailComposer {
                 fontSelect.value = savedFont;
                 fontSelect.style.fontFamily = savedFont;
             } else {
-                 (window.AppYacht?.warn || console.warn)('Fuente guardada "' + savedFont + '" no encontrada en el selector.');
+                 (window.AppYacht?.warn || console.warn)('Saved font "' + savedFont + '" not found in the selector.');
             }
         }
     }

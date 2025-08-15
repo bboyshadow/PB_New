@@ -7,11 +7,32 @@
  * maneja la exclusividad APA, actualiza ARIA y mueve el foco.
  * @param {string} fieldId - El ID del contenedor del campo a mostrar/ocultar.
  */
+/**
+ * Alterna la visibilidad de un campo opcional de la calculadora y gestiona exclusividades (APA vs APA%, VAT vs VAT Mix).
+ * Actualiza atributos ARIA, sincroniza estados de checkboxes relacionados y mueve el foco al primer input visible.
+ * 
+ * Efectos colaterales:
+ * - Muestra/oculta contenedores en el DOM.
+ * - Activa/desactiva checkboxes de exclusividad.
+ * - Puede crear dinámicamente países para VAT Mix si el contenedor está vacío.
+ * - Actualiza el estado de aria-expanded en el checkbox controlador.
+ * 
+ * @function toggleCalcOptionalField
+ * @param {string} fieldId - ID del contenedor a mostrar/ocultar.
+ * @returns {boolean} true si el contenedor queda visible; false en caso contrario.
+ */
 function toggleCalcOptionalField(fieldId) {
     // Obtener referencias de checkboxes globales para VAT y VAT Mix
     const vatCheck = document.getElementById('vatCheck');
     const vatMixCheck = document.getElementById('vatRateMix');
     // Callback para manejar la exclusividad entre APA y APA Percentage, y entre VAT y VAT Mix
+    /**
+     * Callback interno que maneja la exclusividad entre campos APA/APA% y VAT/VAT Mix cuando se muestra/oculta un bloque.
+     * Actualiza checkboxes relacionados, visibilidad de contenedores y atributos ARIA según corresponda.
+     * @param {boolean} isVisible - Indica si el contenedor objetivo quedó visible tras el toggle.
+     * @param {HTMLElement} fieldElement - Elemento del contenedor que se está mostrando/ocultando.
+     * @returns {void}
+     */
     const handleExclusivity = (isVisible, fieldElement) => {
         if (!isVisible || !fieldElement) return; 
         
@@ -44,7 +65,7 @@ function toggleCalcOptionalField(fieldId) {
             const vatMixField = document.getElementById('vatCountriesContainer');
             const vatField = document.getElementById('vatField');
             const vatInputGroup = vatField ? vatField.querySelector('.input-group') : null;
-
+    
             if (fieldId === 'vatField' && vatCheck.checked) {
                 // Activamos VAT fijo, desactivamos Mix
                 vatMixCheck.checked = false;
@@ -71,7 +92,7 @@ function toggleCalcOptionalField(fieldId) {
             } else if (fieldId === 'vatField' && !vatCheck.checked && !vatMixCheck.checked) {
                 // Ocultar el switch Mix y el botón + cuando VAT se desactiva y Mix no está activo
                 document.querySelectorAll('.vat-mix-controls').forEach(el => el.style.display = 'none');
-
+    
             } else if (fieldId === 'vatCountriesContainer' && vatMixCheck.checked) {
                 // Activamos Mix: ocultamos solo el input de tasa fija pero mantenemos visible el contenedor para mostrar el switch y el botón +
                 // Mantenemos VAT Rate activo para que los controles Mix permanezcan visibles
@@ -100,7 +121,7 @@ function toggleCalcOptionalField(fieldId) {
     
     const field = document.getElementById(fieldId);
     if (!field) {
-        (window.AppYacht?.error || console.error)(`Elemento con ID ${fieldId} no encontrado.`);
+        (window.AppYacht?.error || console.error)(`Element with ID ${fieldId} not found.`);
         return false;
     }
     
@@ -178,11 +199,24 @@ function toggleCalcOptionalField(fieldId) {
 
 
 // Function to toggle discount fields and make them required if shown
+/**
+ * Muestra u oculta los campos de descuento dentro de un grupo de tarifa
+ * y limpia sus valores cuando se ocantan.
+ *
+ * Efectos colaterales: cambia display del contenedor, puede mover el foco al primer campo del bloque.
+ * @param {HTMLButtonElement} button - Botón dentro del grupo .charter-rate-group que dispara el toggle.
+ * @returns {boolean} true si el contenedor queda visible; false en caso contrario.
+ */
 function toggleDiscountField(button) {
     const charterRateGroup = button.closest('.charter-rate-group');
     if (!charterRateGroup) return;
     const discountContainer = charterRateGroup.querySelector('.discount-container');
     if (!discountContainer) return;
+    /**
+     * Limpia los valores de los campos de descuento dentro del contenedor dado.
+     * @param {HTMLElement} container - Contenedor .discount-container cuyo estado cambia.
+     * @returns {void}
+     */
     const clearDiscountValues = (container) => {
         const discountType = container.querySelector('[name="discountType"]');
         const discountAmount = container.querySelector('[name="discountAmount"]');
@@ -200,11 +234,24 @@ function toggleDiscountField(button) {
 }
 
 // Function to toggle promotion fields
+/**
+ * Muestra u oculta los campos de promoción dentro de un grupo de tarifa
+ * y limpia sus valores cuando se ocantan.
+ *
+ * Efectos colaterales: cambia display del contenedor, puede mover el foco al primer campo del bloque.
+ * @param {HTMLButtonElement} button - Botón dentro del grupo .charter-rate-group que dispara el toggle.
+ * @returns {boolean} true si el contenedor queda visible; false en caso contrario.
+ */
 function togglePromotionField(button) {
     const charterRateGroup = button.closest('.charter-rate-group');
     if (!charterRateGroup) return;
     const promotionContainer = charterRateGroup.querySelector('.promotion-container');
     if (!promotionContainer) return;
+    /**
+     * Limpia los valores de los campos de promoción dentro del contenedor dado.
+     * @param {HTMLElement} container - Contenedor .promotion-container cuyo estado cambia.
+     * @returns {void}
+     */
     const clearPromotionValues = (container) => {
         const promotionNights = container.querySelector('[name="promotionNights"]');
         if (promotionNights) promotionNights.value = '';
@@ -220,9 +267,22 @@ function togglePromotionField(button) {
 }
 
 // Function to toggle VAT field (asociada a un botón, no al checkbox directamente)
+/**
+ * Muestra/oculta el bloque de VAT (tasa fija) desde un botón y sincroniza el checkbox correspondiente.
+ * Limpia valores al ocultar, mueve el foco al primer input al mostrar y respeta la exclusividad con VAT Mix.
+ *
+ * @function toggleVATField
+ * @param {HTMLButtonElement} button - Botón que dispara el toggle del bloque VAT.
+ * @returns {boolean} true si el bloque queda visible; false en caso contrario.
+ */
 function toggleVATField(button) {
     const fieldToToggle = document.getElementById('vatField'); 
     if (!fieldToToggle) return;
+    /**
+     * Limpia los valores del campo de VAT (tasa fija) dentro del contenedor dado.
+     * @param {HTMLElement} container - Contenedor del bloque VAT cuyo estado cambia.
+     * @returns {void}
+     */
     const clearVATValues = (container) => {
         const vatRate = container.querySelector('[name="vatRate"]');
         if (vatRate) vatRate.value = '';
@@ -240,14 +300,35 @@ function toggleVATField(button) {
 }
 
 // Function to toggle APA field (asociada a un botón) - NO USADA, se usa checkbox
+/**
+ * Advertencia de uso: esta función está asociada a un botón para APA fijo y no se utiliza en la UI.
+ * El manejo de APA y APA Percentage debe realizarse mediante sus checkboxes con toggleCalcOptionalField.
+ *
+ * @function toggleAPAField
+ * @param {HTMLButtonElement} button - Botón no soportado para alternar el bloque de APA.
+ * @returns {void}
+ */
 function toggleAPAField(button) {
-     (window.AppYacht?.warn || console.warn)('toggleAPAField llamada desde botón no implementada, usar checkbox con toggleCalcOptionalField');
+     (window.AppYacht?.warn || console.warn)('toggleAPAField called from button is not implemented, use the checkbox with toggleCalcOptionalField');
 }
 
 // Function to toggle Relocation field (asociada a un botón)
+/**
+ * Muestra/oculta el bloque de Relocation desde un botón y sincroniza el checkbox correspondiente.
+ * Al ocultar, limpia los inputs del bloque; al mostrar, mueve el foco al primer input disponible.
+ *
+ * @function toggleRelocationField
+ * @param {HTMLButtonElement} button - Botón que dispara el toggle del bloque de Relocation.
+ * @returns {boolean} true si el bloque queda visible; false si queda oculto o falla.
+ */
 function toggleRelocationField(button) {
      const fieldToToggle = document.getElementById('relocationField');
      if (!fieldToToggle) return;
+    /**
+     * Limpia los valores del bloque de Relocation cuando se oculta.
+     * @param {HTMLElement} container - Contenedor del bloque de Relocation.
+     * @returns {void}
+     */
     const clearRelocationValues = (container) => {
         const relocationAmount = container.querySelector('[name="relocationAmount"]');
         if (relocationAmount) relocationAmount.value = '';
@@ -265,9 +346,22 @@ function toggleRelocationField(button) {
 }
 
 // Function to toggle Security field (asociada a un botón)
+/**
+ * Muestra/oculta el bloque de Security desde un botón y sincroniza el checkbox correspondiente.
+ * Al ocultar, limpia los inputs del bloque; al mostrar, mueve el foco al primer input disponible.
+ *
+ * @function toggleSecurityField
+ * @param {HTMLButtonElement} button - Botón que dispara el toggle del bloque de Security.
+ * @returns {boolean} true si el bloque queda visible; false si queda oculto o falla.
+ */
 function toggleSecurityField(button) {
      const fieldToToggle = document.getElementById('securityField');
      if (!fieldToToggle) return;
+    /**
+     * Limpia los valores del bloque de Security cuando se oculta.
+     * @param {HTMLElement} container - Contenedor del bloque de Security.
+     * @returns {void}
+     */
     const clearSecurityValues = (container) => {
         const securityAmount = container.querySelector('[name="securityAmount"]');
         if (securityAmount) securityAmount.value = '';
@@ -285,6 +379,17 @@ function toggleSecurityField(button) {
 }
 
 // Crea un nuevo grupo de tarifas
+/**
+ * Crea y añade dinámicamente un nuevo grupo de "Charter Rate" al contenedor.
+ * Configura listeners para formato numérico con debounce y para mostrar/ocultar descuento y promoción.
+ * Gestiona el botón "+" inicial y los botones "-" para eliminar grupos existentes.
+ *
+ * Accesibilidad: al añadir un grupo, se mueve el foco al primer input del nuevo grupo.
+ *
+ * @function addCharterRate
+ * @param {boolean} [isFirst=false] - Indica si es el primer grupo (muestra botón "+" en el bloque principal).
+ * @returns {HTMLElement|null} El elemento de grupo añadido o null si no se pudo añadir.
+ */
 function addCharterRate(isFirst = false) {
     const newRateGroupHTML = `
         <div class="charter-rate-group row mb-3">
@@ -370,7 +475,14 @@ function addCharterRate(isFirst = false) {
 
 // Yacht info functionality is now handled by the yachtinfo module
 
-// Remueve un grupo de tarifas
+/**
+ * Remueve un grupo de tarifas del DOM utilizando utilidades de UI compartidas.
+ * Si la eliminación tiene éxito, devuelve el foco al botón de añadir tarifa.
+ * 
+ * @function removeCharterRate
+ * @param {HTMLButtonElement} button - Botón que pertenece al grupo de tarifa a eliminar.
+ * @returns {boolean} true si se removió el grupo; false en caso contrario.
+ */
 function removeCharterRate(button) {
     const addButton = document.querySelector('.add-rate-btn'); 
     const removed = typeof removeDynamicField === 'function' 
@@ -520,7 +632,7 @@ function updateUIConstraints() {
 function initCalcInterface() {
     // Check si funciones compartidas existen
     if (!window.toggleContainer || !window.addDynamicField || !window.removeDynamicField) {
-        (window.AppYacht?.warn || console.warn)('Las funciones UI compartidas (toggleContainer, addDynamicField, removeDynamicField) no están disponibles.');
+        (window.AppYacht?.warn || console.warn)('Shared UI functions (toggleContainer, addDynamicField, removeDynamicField) are not available.');
     }
     
     // Ocultar los controles de vat-mix-controls al inicio
@@ -565,7 +677,7 @@ function initCalcInterface() {
         });
     }
     
-    // Listeners para checkboxes que controlan restricciones
+    // Listeners for checkboxes that control constraints
     const mixedCheckbox  = document.getElementById('enableMixedSeasons');
     const oneDayCheckbox = document.getElementById('enableOneDayCharter');
     if (mixedCheckbox) {
@@ -576,45 +688,45 @@ function initCalcInterface() {
         oneDayCheckbox.addEventListener('change', function () {
             toggleOneDayCharter(this.checked);
         });
-        toggleOneDayCharter(oneDayCheckbox.checked); // Inicializar
+        toggleOneDayCharter(oneDayCheckbox.checked); // Initialize
     }
-    updateUIConstraints(); // Llamada inicial
+    updateUIConstraints(); // Initial call
 
-    // Listeners para botones globales de añadir campos
-     const addRateBtnInitial = document.querySelector('.add-rate-btn'); // El botón inicial '+'
+    // Listeners for global buttons to add fields
+     const addRateBtnInitial = document.querySelector('.add-rate-btn'); // The initial "+" button
      if (addRateBtnInitial) {
-         // No quitar onclick si todavía existe en el HTML original
+         // Do not remove onclick if it still exists in the original HTML
          // addRateBtnInitial.removeAttribute('onclick'); 
          addRateBtnInitial.addEventListener('click', () => addCharterRate(true));
      }
-     const addExtraBtnGlobal = document.querySelector('.btn-estras'); // Botón 'Extras'
+     const addExtraBtnGlobal = document.querySelector('.btn-estras'); // 'Extras' Button
      if (addExtraBtnGlobal) {
-         // No quitar onclick si todavía existe en el HTML original
+         // Do not remove onclick if it still exists in the original HTML
          // addExtraBtnGlobal.removeAttribute('onclick'); 
          addExtraBtnGlobal.addEventListener('click', addExtraField);
      }
      
-     // Listener para el botón de Guest Fee (si no se ha quitado el onclick)
+     // Listener for the Guest Fee button (if onclick hasn't been removed)
      const addGuestFeeBtn = document.querySelector('button[onclick="addExtraPerPersonField()"]');
      if (addGuestFeeBtn && typeof addExtraPerPersonField === 'function') {
-         // No añadir listener adicional si ya tiene onclick
+         // Do not add an extra listener if it already has onclick
          // addGuestFeeBtn.addEventListener('click', addExtraPerPersonField);
      }
      
 }
 
-// --- Ejecución de Inicialización ---
-// Llamar a la inicialización después de que el DOM esté listo
+// --- Initialization Execution ---
+// Call initialization after the DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCalcInterface);
 } else {
-    initCalcInterface(); // Llamar inmediatamente si ya está listo
+    initCalcInterface(); // Call immediately if it's already ready
 }
 
 
-// --- Asignaciones Globales ---
-// Asignar funciones al objeto window para que sean accesibles desde onclick en HTML
-// o desde otros scripts como template.js
+// --- Global Assignments ---
+// Assign functions to the window object so they are accessible from HTML onclick
+// or from other scripts such as template.js
 window.toggleCalcOptionalField = toggleCalcOptionalField; 
 window.toggleDiscountField = toggleDiscountField;
 window.toggleVATField = toggleVATField;

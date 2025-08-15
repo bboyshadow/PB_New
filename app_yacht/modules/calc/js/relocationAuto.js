@@ -39,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const speedInput    = document.getElementById('reloc-cruising-speed');
     const hoursInput    = document.getElementById('reloc-hours');
     if (distanceInput && speedInput && hoursInput) {
+        /**
+         * Actualiza automáticamente las horas basándose en distancia y velocidad.
+         * @function updateHours
+         * @returns {void}
+         */
         const updateHours = () => {
             const dist = parseFloat(distanceInput.value);
             const spd  = parseFloat(speedInput.value);
@@ -61,8 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
  });
 
 /**
- * Configures required (no checkbox) and optional (with checkbox)
- * fields according to client requirements.
+ * Configura campos requeridos (siempre visibles, sin checkbox) y opcionales (con checkbox)
+ * según los requerimientos del cliente.
+ * @function setupRequiredFields
+ * @returns {void}
  */
 function setupRequiredFields() {
     // Required fields (always visible, no checkbox)
@@ -115,8 +122,10 @@ function setupRequiredFields() {
 }
 
 /**
- * Prefills values in the calculator fields using information available
- * in `window.yachtInfoData`. If not present, they are left blank.
+ * Pre-llena valores en los campos de la calculadora usando información disponible
+ * en `window.yachtInfoData`. Si no está presente, se dejan en blanco.
+ * @function prefillRelocationFields
+ * @returns {void}
  */
 function prefillRelocationFields() {
     // Add a log for debugging
@@ -124,6 +133,12 @@ function prefillRelocationFields() {
 
     const data = window.yachtInfoData || {};
 
+    /**
+     * Extrae un número de un valor que puede ser string o number.
+     * @function extractNumber
+     * @param {string|number} val - Valor a procesar
+     * @returns {string} Número extraído como string o string vacío
+     */
     const extractNumber = (val) => {
         if (typeof val === 'number') return val;
         if (typeof val === 'string') {
@@ -166,9 +181,11 @@ function prefillRelocationFields() {
 }
 
 /**
- * Collects the values of the selected fields and performs an AJAX request
- * to the server to calculate the Relocation Fee. The result is inserted
- * into the `relocationFee` field of the main calculator.
+ * Recopila los valores de los campos seleccionados y realiza una petición AJAX
+ * al servidor para calcular la Relocation Fee. El resultado se inserta
+ * en el campo `relocationFee` de la calculadora principal.
+ * @function calculateRelocation
+ * @returns {void}
  */
 function calculateRelocation() {
     // Create object with selected data

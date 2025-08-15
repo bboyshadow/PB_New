@@ -2,19 +2,222 @@
 (function($){
     $(document).ready(function() {
         
+        // Inline message helpers (scoped inside IIFE to use the local $ alias)
+        function getEmailInlineMsgContainer() {
+            let $container = $('#outlook-send-mail-messages');
+            if ($container.length === 0) {
+                $container = $('<div id="outlook-send-mail-messages" class="email-inline-messages" aria-live="polite" aria-atomic="true" style="margin-top:10px;"></div>');
+                const $btn = $('#outlook-send-mail');
+                if ($btn.length) {
+                    $btn.after($container);
+                }
+            }
+            return $container;
+        }
+
+        function showEmailInlineMessage(type, text) {
+            const $container = getEmailInlineMsgContainer();
+            const cls = type === 'success' ? 'alert-success' : type === 'warning' ? 'alert-warning' : 'alert-danger';
+            const $alert = $('<div role="alert" class="alert"></div>').addClass(cls).text(text);
+            $container.empty().append($alert);
+        }
+
         // loadGoogleFontsAPI() eliminada - no usar Google Fonts en email.
         
-        // Las funciones saveFormContent y restoreFormContent ahora están definidas en mail.js
-        // y se asume que mail.js se carga antes que este script.
+        // The saveFormContent and restoreFormContent functions are now defined in mail.js
+        // and it's assumed that mail.js is loaded before this script.
 
-        // Verificar si pbOutlookData está definido
+        // Check if pbOutlookData is defined
         if (typeof pbOutlookData === 'undefined') {
-            (window.AppYacht?.error || console.error)('Error: La variable pbOutlookData no está definida. Asegúrate de que yacht-functions.php está cargando correctamente.');
+            (window.AppYacht?.error || console.error)('Error: pbOutlookData variable is not defined. Make sure yacht-functions.php is loading correctly.');
         } else {
             
         }
+
+        // --- Email Confirmation Modal Creation ---
+        let emailConfirmModal = null;
+
+        function createEmailConfirmModal() {
+            if (emailConfirmModal) return;
+
+            emailConfirmModal = document.createElement('div');
+            emailConfirmModal.id = 'email-confirm-modal';
+            emailConfirmModal.className = 'email-modal';
+            emailConfirmModal.style.display = 'none';
+            emailConfirmModal.setAttribute('role', 'dialog');
+            emailConfirmModal.setAttribute('aria-modal', 'true');
+            emailConfirmModal.setAttribute('aria-labelledby', 'email-confirm-title');
+
+            emailConfirmModal.innerHTML = `
+                <div class="modal-content">
+                    <h3 id="email-confirm-title">Confirm Email Sending</h3>
+                    <div class="modal-body">
+                        <div class="email-preview">
+                            <p><strong>To:</strong> <span id="preview-to"></span></p>
+                            <div id="preview-cc-container" style="display: none;">
+                                <p><strong>CC:</strong> <span id="preview-cc"></span></p>
+                            </div>
+                            <div id="preview-bcc-container" style="display: none;">
+                                <p><strong>BCC:</strong> <span id="preview-bcc"></span></p>
+                            </div>
+                            <p><strong>Subject:</strong> <span id="preview-subject"></span></p>
+                            <div class="email-content-preview">
+                                <p><strong>Content:</strong></p>
+                                <div id="preview-content" class="content-preview-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="email-confirm-btn" class="button btn-primary">Send</button>
+                        <button type="button" id="email-cancel-btn" class="button btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(emailConfirmModal);
+
+            // Add event listeners
+            document.getElementById('email-confirm-btn').addEventListener('click', handleEmailConfirmOk);
+            document.getElementById('email-cancel-btn').addEventListener('click', hideEmailConfirmModal);
+
+            // Close modal on Escape key
+            emailConfirmModal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    hideEmailConfirmModal();
+                }
+            });
+        }
+
+        function showEmailConfirmModal(emailData) {
+            if (!emailConfirmModal) createEmailConfirmModal();
+
+            // Populate preview data
+            document.getElementById('preview-to').textContent = emailData.to;
+            
+            // Handle CC and BCC visibility
+            const ccContainer = document.getElementById('preview-cc-container');
+            const bccContainer = document.getElementById('preview-bcc-container');
+            
+            if (emailData.cc) {
+                document.getElementById('preview-cc').textContent = emailData.cc;
+                ccContainer.style.display = 'block';
+            } else {
+                ccContainer.style.display = 'none';
+            }
+            
+            if (emailData.bcc) {
+                document.getElementById('preview-bcc').textContent = emailData.bcc;
+                bccContainer.style.display = 'block';
+            } else {
+                bccContainer.style.display = 'none';
+            }
+            
+            document.getElementById('preview-subject').textContent = emailData.subject;
+            document.getElementById('preview-content').innerHTML = emailData.body;
+
+            // Store email data for sending
+            emailConfirmModal.pendingEmailData = emailData;
+
+            // Show modal centered
+            emailConfirmModal.style.display = 'block';
+            emailConfirmModal.style.position = 'fixed';
+            emailConfirmModal.style.top = '50%';
+            emailConfirmModal.style.left = '50%';
+            emailConfirmModal.style.transform = 'translate(-50%, -50%)';
+            emailConfirmModal.style.zIndex = '9999';
+
+            // Focus on confirm button
+            document.getElementById('email-confirm-btn').focus();
+        }
+
+        function hideEmailConfirmModal() {
+            if (emailConfirmModal) {
+                emailConfirmModal.style.display = 'none';
+                emailConfirmModal.pendingEmailData = null;
+            }
+        }
+
+        function handleEmailConfirmOk() {
+            const emailData = emailConfirmModal.pendingEmailData;
+            if (!emailData) return;
+
+            hideEmailConfirmModal();
+            sendEmailRequest(emailData);
+        }
+
+        // --- Email Content Validation Functions ---
+        function validateEmailContent(bodyHtml, bodyText) {
+            const errors = [];
+
+            // 1. Empty content validation
+            if (!bodyText || bodyText.length === 0) {
+                errors.push("Email body cannot be empty. Please add some content before sending.");
+                return errors;
+            }
+
+            // 2. Minimum content validation
+            const minCharacters = 10;
+            const minWords = 3;
+            const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
+
+            if (bodyText.length < minCharacters || wordCount < minWords) {
+                errors.push("Email content is too short. Please provide more details.");
+            }
+
+            return errors;
+        }
+
+        // --- Enhanced Email Sending Function ---
+        function sendEmailRequest(emailData) {
+            // Use loading state if available
+            try {
+                window.AppYacht?.ui?.setLoading?.(true);
+            } catch (e) {}
+
+            $.post(pbOutlookData.ajaxurl, emailData)
+            .done(function(response){
+                try {
+                    window.AppYacht?.ui?.setLoading?.(false);
+                } catch (e) {}
+
+                if (response && response.success){
+                    const message = 'Email sent: ' + (response.data || 'OK');
+                    // Display success message only in email module container
+                    showEmailInlineMessage('success', message);
+                 } else {
+                     const msg = (response && response.data) ? response.data : 'Server error while sending the email.';
+                     (window.AppYacht?.error || console.error)('Server response error:', response);
+                     // Display error message only in email module container
+                     showEmailInlineMessage('error', msg);
+                 }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown){
+                try {
+                    window.AppYacht?.ui?.setLoading?.(false);
+                } catch (e) {}
+
+                (window.AppYacht?.error || console.error)('AJAX error sending email:', textStatus, errorThrown, jqXHR && jqXHR.responseText);
+                
+                let message = 'Server connection error while sending email.';
+                try {
+                    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.data) {
+                        message = jqXHR.responseJSON.data;
+                    } else if (jqXHR && jqXHR.responseText) {
+                        const maybe = JSON.parse(jqXHR.responseText);
+                        if (maybe && typeof maybe === 'object' && 'data' in maybe) {
+                            message = maybe.data || message;
+                        }
+                    }
+                } catch (err) {
+                    (window.AppYacht?.log || console.log)('Error parsing error response:', err);
+                }
+                
+                // Display error message only in email module container
+                showEmailInlineMessage('error', message);
+            });
+        }
         
-        // Verificar si hay parámetro outlook=success en la URL y mostrar mensaje
+        // Check if there is an outlook=success parameter in the URL and show a message
         function checkOutlookSuccess() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('outlook') === 'success') {
@@ -35,7 +238,7 @@
                 // Actualizar el botón a "Disconnect"
                 updateButtonToDisconnect();
                 
-                // Restaurar el contenido del formulario después de la conexión exitosa
+                // Restore form content after successful connection
                 restoreFormContent();
             }
         }
@@ -69,7 +272,7 @@
             e.preventDefault();
             e.stopPropagation();
             
-            // Guardar el contenido del formulario antes de cualquier acción
+            // Save form content before any action
             // Llamar a la función global definida en mail.js
             if (typeof saveFormContent === 'function') {
                  saveFormContent();
@@ -79,25 +282,26 @@
 
             // Verificar si es acción de desconexión
             if ($(this).data('action') === 'disconnect') {
-                // Confirmar antes de desconectar
-                if (confirm('¿Estás seguro de que deseas desconectar tu cuenta de Outlook?')) {
-                    // Mostrar indicador de carga
+                // Confirmar antes de desconectar usando UI system
+                const confirmDisconnect = () => {
+                    // Show loading indicator
                     const $button = $(this);
                     const originalText = $button.text();
-                    $button.text('Desconectando...').prop('disabled', true);
+                    $button.text('Disconnecting...').prop('disabled', true);
                     
                     // Verificar si pbOutlookData está definido
                     if (typeof pbOutlookData === 'undefined') {
-                        alert('Error: No se puede desconectar porque faltan datos de configuración. Por favor, recarga la página e intenta de nuevo.');
+                        // Show error only in mail module
+                        showEmailInlineMessage('error', 'Error: Cannot disconnect because configuration data is missing. Please reload the page and try again.');
                         $button.text(originalText).prop('disabled', false);
                         return;
                     }
                     
                     // Registrar datos para depuración
-                (window.AppYacht?.log || console.log)('Enviando solicitud de desconexión con nonce:', pbOutlookData.nonce);
-                (window.AppYacht?.log || console.log)('Timestamp del nonce:', pbOutlookData.timestamp);
-                (window.AppYacht?.log || console.log)('Tiempo actual:', Math.floor(Date.now() / 1000));
-                (window.AppYacht?.log || console.log)('Diferencia de tiempo:', Math.floor(Date.now() / 1000) - pbOutlookData.timestamp);
+                (window.AppYacht?.log || console.log)('Sending disconnect request with nonce:', pbOutlookData.nonce);
+                (window.AppYacht?.log || console.log)('Nonce timestamp:', pbOutlookData.timestamp);
+                (window.AppYacht?.log || console.log)('Current time:', Math.floor(Date.now() / 1000));
+                (window.AppYacht?.log || console.log)('Time difference:', Math.floor(Date.now() / 1000) - pbOutlookData.timestamp);
                     
                     // Enviar solicitud AJAX para desconectar
                     $.ajax({
@@ -109,55 +313,56 @@
                         },
                         success: function(response) {
                             if (response.success) {
-                                alert(response.data);
-                                // Recargar la página para actualizar el estado del botón
+                                // Show success only in mail module and reload to update state
+                                showEmailInlineMessage('success', response.data || 'Account disconnected successfully.');
                                 window.location.reload();
                             } else {
-                                (window.AppYacht?.error || console.error)('Error en la respuesta:', response);
-                                alert('Error: ' + (response.data || 'Unknown error when disconnecting'));
-                                // Restaurar el botón
+                                (window.AppYacht?.error || console.error)('Response error:', response);
+                                const errorMsg = 'Error: ' + (response.data || 'Unknown error when disconnecting');
+                                showEmailInlineMessage('error', errorMsg);
+                                // Restore button
                                 $button.text(originalText).prop('disabled', false);
                             }
                         },
                         error: function(xhr, status, error) {
-                            (window.AppYacht?.error || console.error)('Error AJAX:', error);
-                            // Extraer solo el mensaje de error, no todo el HTML
+                            (window.AppYacht?.error || console.error)('AJAX error:', error);
+                            // Extract only the error message, not the full HTML
                             let errorMessage = 'Server connection error';
                             try {
-                                (window.AppYacht?.log || console.log)('Error AJAX completo:', xhr);
+                                (window.AppYacht?.log || console.log)('Full AJAX error:', xhr);
                                 
-                                // Intentar extraer mensaje de error de la respuesta JSON si existe
+                                // Try to extract error message from JSON response if exists
                                 if (xhr.responseJSON && xhr.responseJSON.data) {
                                     errorMessage = xhr.responseJSON.data;
-                                    (window.AppYacht?.log || console.log)('Error extraído de JSON:', errorMessage);
+                                    (window.AppYacht?.log || console.log)('Error extracted from JSON:', errorMessage);
                                 }
-                                // Si no hay JSON, intentar extraer del HTML
+                                // If no JSON, try to extract from HTML
                                 else if (xhr.responseText) {
                                     const responseText = xhr.responseText;
-                                    (window.AppYacht?.log || console.log)('Respuesta de texto completa:', responseText);
+                                    (window.AppYacht?.log || console.log)('Full text response:', responseText);
                                     
-                                    // Verificar si es un error 400 (Bad Request) - Probablemente error de nonce
+                                    // Check for 400 (Bad Request) - likely nonce error
                                     if (xhr.status === 400) {
-                                        (window.AppYacht?.log || console.log)('Error 400 detectado, respuesta completa:', responseText);
+                                        (window.AppYacht?.log || console.log)('400 error detected, full response:', responseText);
                                         errorMessage = 'Security error. Please reload the page and try again';
                                         
-                                        // Intentar regenerar el nonce automáticamente
+                                        // Try to regenerate the nonce automatically
                                         if (typeof ajaxurl !== 'undefined') {
-                                            (window.AppYacht?.log || console.log)('Intentando regenerar nonce...');
-                                            // Esta parte requeriría un endpoint adicional en el servidor
+                                            (window.AppYacht?.log || console.log)('Attempting to regenerate nonce...');
+                                            // This would require an additional server endpoint
                                         }
                                     }
-                                    // Verificar si es un error 403 (Forbidden) - Error de nonce
+                                    // Check for 403 (Forbidden) - nonce error
                                     else if (xhr.status === 403) {
-                                        (window.AppYacht?.log || console.log)('Error 403 detectado, respuesta completa:', responseText);
+                                        (window.AppYacht?.log || console.log)('403 error detected, full response:', responseText);
                                         errorMessage = 'Security error. Please reload the page to refresh your session';
                                     }
-                                    // Verificar si es un error 500 con mensaje específico
+                                    // Check for 500 with specific message
                                     else if (xhr.status === 500) {
-                                        (window.AppYacht?.log || console.log)('Error 500 detectado, respuesta completa:', responseText);
-                                        errorMessage = 'Error interno del servidor al desconectar la cuenta';
+                                        (window.AppYacht?.log || console.log)('500 error detected, full response:', responseText);
+                                        errorMessage = 'Internal server error when disconnecting the account';
                                     }
-                                    // Intentar extraer mensaje de error del HTML
+                                    // Try to extract error message from HTML
                                     else if (responseText.includes('<p>')) {
                                         const errorStart = responseText.indexOf('<p>') + 3;
                                         const errorEnd = responseText.indexOf('</p>', errorStart);
@@ -167,67 +372,167 @@
                                     }
                                 }
                             } catch (e) {
-                                (window.AppYacht?.error || console.error)('Error al procesar respuesta:', e);
+                                (window.AppYacht?.error || console.error)('Error processing response:', e);
                             }
                             
-                            // Mostrar mensaje de error más descriptivo
-                            alert('No se pudo desconectar la cuenta: ' + errorMessage + '. Por favor, inténtalo de nuevo más tarde.');
-                            // Restaurar el botón
+                            // Show a more descriptive error message in the email module only
+                            const fullErrorMsg = 'Could not disconnect the account: ' + errorMessage + '. Please try again later.';
+                            showEmailInlineMessage('error', fullErrorMsg);
+                            // Restore button
                             $button.text(originalText).prop('disabled', false);
                         }
                     });
-                }
+                };
+
+                // Show confirmation modal instead of browser confirm()
+                showDisconnectConfirmModal(confirmDisconnect);
             } else {
                 // Acción de conexión (comportamiento original)
                 let authUrl = $(this).attr('href');
                 if (!authUrl) {
-                    alert('Error: No se encontró la URL de autenticación de Outlook.');
+                    showEmailInlineMessage('error', 'Error: Outlook authentication URL not found.');
                     return;
                 }
-                // Guardar el contenido del formulario antes de redirigir
+                // Save form content before redirecting
                 saveFormContent();
                 window.location.href = authUrl;
             }
         });
 
-        // Enviar correo al hacer clic en #outlook-send-mail
+        // Enhanced email sending with validation and confirmation (only on Mail module)
+        if ($('#form-outlook-mail').length) {
             $('#outlook-send-mail').on('click', function(e) {
                 e.preventDefault();
 
-                // (window.AppYacht?.log || console.log)('Send button clicked. pbOutlookData:', pbOutlookData); // DEBUG REMOVED
+            // Verificación básica de datos críticos de configuración
+            if (typeof pbOutlookData === 'undefined' || !pbOutlookData.nonce || !pbOutlookData.ajaxurl) {
+                // Show error only in mail module
+                showEmailInlineMessage('error', 'Error: Missing critical data to send the email. Please reload the page.');
+                (window.AppYacht?.error || console.error)('pbOutlookData is missing or incomplete:', pbOutlookData);
+                return; 
+            }
 
-                // Basic check if pbOutlookData exists
-                if (typeof pbOutlookData === 'undefined' || !pbOutlookData.nonce || !pbOutlookData.ajaxurl) {
-                    alert('Error: Missing critical data for sending email. Please reload.');
-                    (window.AppYacht?.error || console.error)('pbOutlookData is missing or incomplete:', pbOutlookData);
-                    return; 
-                }
+            // Obtener y limpiar valores
+            const $toInput = $('#email-to');
+            const $ccInput = $('#email-cc');
+            const $bccInput = $('#email-bcc');
+            const $subjectInput = $('#email-subject');
+            const $bodyEl = $('#email-content');
 
-                const data = {
-                    action:   'pb_outlook_send_mail',
-                    nonce:    pbOutlookData.nonce,
-                to:       $('#correo-destino').val(),
-                cc:       $('#correo-cc').val(),
-                bcc:      $('#correo-bcc').val(),
-                subject:  $('#asunto').val(),
-                body:     $('#contenido').html() // Enviar HTML
+            const to = ($toInput.val() || '').trim();
+            const cc = ($ccInput.val() || '').trim();
+            const bcc = ($bccInput.val() || '').trim();
+            const subject = ($subjectInput.val() || '').trim();
+            const bodyHtml = $bodyEl.html() || '';
+            // Extraer texto plano del HTML para validar que haya contenido real
+            const bodyText = $('<div>').html(bodyHtml).text().trim();
+
+            // Resetear estados visuales de error
+            $toInput.removeClass('is-invalid');
+            $subjectInput.removeClass('is-invalid');
+            $bodyEl.removeClass('border border-danger');
+
+            // Basic field validation
+            const missing = [];
+            if (!to) { missing.push('To'); $toInput.addClass('is-invalid'); }
+            if (!subject) { missing.push('Subject'); $subjectInput.addClass('is-invalid'); }
+            if (!bodyText) { missing.push('Body'); $bodyEl.addClass('border border-danger'); }
+
+            if (missing.length > 0) {
+                const missingMsg = 'Please complete the required fields: ' + missing.join(', ') + '.';
+                showEmailInlineMessage('warning', missingMsg);
+                if (!to) { $toInput.trigger('focus'); }
+                else if (!subject) { $subjectInput.trigger('focus'); }
+                else { $bodyEl.trigger('focus'); }
+                return;
+            }
+
+            // Advanced content validation
+            const contentErrors = validateEmailContent(bodyHtml, bodyText);
+            if (contentErrors.length > 0) {
+                $bodyEl.addClass('border border-danger');
+                showEmailInlineMessage('warning', contentErrors[0]);
+                $bodyEl.trigger('focus');
+                return;
+            }
+
+            // Prepare email data
+            const emailData = {
+                action:   'pb_outlook_send_mail',
+                nonce:    pbOutlookData.nonce,
+                to:       to,
+                cc:       cc,
+                bcc:      bcc,
+                subject:  subject,
+                body:     bodyHtml
             };
 
-            $.post(pbOutlookData.ajaxurl, data)
-            .done(function(response){
-                if (response.success){
-                    alert('Correo enviado: ' + response.data);
-                } else {
-                    (window.AppYacht?.error || console.error)('Server response error:', response.data);
-                    alert('Server connection error while sending email.');
-                }
-            })
-            .fail(function(jqXHR, textStatus, errorThrown){
-                // Log genérico
-                (window.AppYacht?.error || console.error)('Error AJAX al enviar correo:', textStatus, errorThrown, jqXHR.responseText); 
-                // Alerta simple
-                alert('Error en la conexión con el servidor al enviar el correo.'); 
+            // Show confirmation modal before sending
+            showEmailConfirmModal(emailData);
             });
-        });
+        }
     });
 })(jQuery);
+
+// Inline message helpers are scoped inside the IIFE above to ensure `$` is defined and to avoid leaking into other modules.
+
+function showDisconnectConfirmModal(onConfirm) {
+    // Always use a dedicated, temporary modal for disconnect confirmation
+    let modal = document.getElementById('outlook-disconnect-confirm-modal');
+    let createdTemp = false;
+
+    if (!modal) {
+        // Create a lightweight modal
+        modal = document.createElement('div');
+        modal.id = 'outlook-disconnect-confirm-modal';
+        modal.style.display = 'none';
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.zIndex = '9999';
+        modal.style.background = '#fff';
+        modal.style.padding = '16px';
+        modal.style.border = '1px solid #ccc';
+        modal.style.borderRadius = '8px';
+        modal.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+        modal.innerHTML = `
+            <div id="outlook-disconnect-confirm-content" style="margin-bottom:8px; font-size:14px;"></div>
+            <div class="confirm-actions" style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+                <button id="outlook-disconnect-cancel-btn" type="button" class="btn btn-secondary btn-sm">Cancel</button>
+                <button id="outlook-disconnect-confirm-btn" type="button" class="btn btn-danger btn-sm">Disconnect</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        createdTemp = true;
+    }
+
+    // Set confirmation text
+    const content = document.getElementById('outlook-disconnect-confirm-content');
+    if (content) content.textContent = 'Are you sure you want to disconnect your Outlook account?';
+
+    // Wire up buttons
+    const cancelBtn = document.getElementById('outlook-disconnect-cancel-btn');
+    const okBtn = document.getElementById('outlook-disconnect-confirm-btn');
+
+    const cleanup = () => {
+        modal.style.display = 'none';
+        // Remove temp modal if it was created here
+        if (createdTemp && modal && modal.parentNode) modal.parentNode.removeChild(modal);
+        // Remove listeners
+        cancelBtn?.removeEventListener('click', onCancel);
+        okBtn?.removeEventListener('click', onOk);
+        document.removeEventListener('keydown', onKeyDown);
+    };
+
+    const onCancel = () => cleanup();
+    const onOk = () => { cleanup(); try { onConfirm && onConfirm(); } catch (e) { (window.AppYacht?.error||console.error)(e); } };
+    const onKeyDown = (e) => { if (e.key === 'Escape') onCancel(); };
+
+    cancelBtn?.addEventListener('click', onCancel);
+    okBtn?.addEventListener('click', onOk);
+    document.addEventListener('keydown', onKeyDown);
+
+    // Show modal centered
+    modal.style.display = 'block';
+}

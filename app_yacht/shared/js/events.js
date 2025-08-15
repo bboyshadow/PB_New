@@ -12,7 +12,7 @@ class EventBus {
     
     /**
      * Suscribe una función callback a un evento específico
-     * @param {string} event - Nombre del evento
+     * @param {string} event - Event name
      * @param {Function} callback - Función a ejecutar cuando se publique el evento
      * @returns {Function} - Función para cancelar la suscripción
      */
@@ -27,7 +27,7 @@ class EventBus {
     
     /**
      * Cancela la suscripción de una función callback a un evento
-     * @param {string} event - Nombre del evento
+     * @param {string} event - Event name
      * @param {Function} callback - Función a eliminar de la lista de suscriptores
      */
     unsubscribe(event, callback) {
@@ -39,7 +39,7 @@ class EventBus {
     
     /**
      * Publica un evento con datos opcionales
-     * @param {string} event - Nombre del evento a publicar
+     * @param {string} event - Event name to publish
      * @param {*} data - Datos a pasar a los suscriptores
      */
     publish(event, data) {
@@ -59,15 +59,15 @@ class EventBus {
     
     /**
      * Elimina todos los suscriptores de un evento específico
-     * @param {string} event - Nombre del evento a limpiar
+     * @param {string} event - Event name to clear
      */
     clear(event) {
         if (event) {
             delete this.events[event];
-            (window.AppYacht?.log || console.log)(`Todos los suscriptores del evento '${event}' eliminados`);
+            (window.AppYacht?.log || console.log)(`All subscribers for event '${event}' removed`);
         } else {
             this.events = {};
-            (window.AppYacht?.log || console.log)('Todos los eventos y suscriptores eliminados');
+            (window.AppYacht?.log || console.log)('All events and subscribers removed');
         }
     }
 }
@@ -90,7 +90,7 @@ if (typeof module !== 'undefined' && module.exports) {
  * 
  * // Suscribirse a un evento
  * const unsubscribe = eventBus.subscribe('calculationComplete', (result) => {
- *     console.log('Cálculo completado:', result);
+ *     console.log('Calculation completed:', result);
  *     updateUI(result);
  * });
  * 

@@ -4,7 +4,21 @@
  * Funciones para manejar los guest fees en la calculadora
  */
 
-// Función para agregar un campo de guest fee
+/**
+ * Agrega un bloque de "Guest Fee" al contenedor de extras.
+ * El bloque contiene: nombre, número de huéspedes, coste por huésped y total calculado.
+ * Actualiza los símbolos de moneda mediante updateCurrencySymbols().
+ * 
+ * @function addExtraPerPersonField
+ * @returns {void}
+ * 
+ * @description
+ * - Crea un nuevo div con estructura completa de Guest Fee
+ * - Incluye inputs con validación numérica y formato
+ * - El campo Total es readonly y se calcula automáticamente
+ * - Conecta eventos oninput para formateo y cálculo
+ * - Sincroniza símbolos de moneda mediante updateCurrencySymbols()
+ */
 function addExtraPerPersonField() {
     const container = document.getElementById('extrasContainer');
     const newExtra = document.createElement('div');
@@ -46,7 +60,19 @@ function addExtraPerPersonField() {
     updateCurrencySymbols();
 }
 
-// Función para eliminar un campo de guest fee
+/**
+ * Elimina un bloque de "Guest Fee".
+ * Busca el contenedor padre más cercano con clase .extra-per-person-group y lo remueve completamente.
+ * 
+ * @function removeExtraPerPersonField
+ * @param {HTMLButtonElement} button - Botón "-" dentro del bloque de Guest Fee a eliminar.
+ * @returns {void}
+ * 
+ * @description
+ * - Utiliza closest() para localizar el contenedor completo
+ * - Elimina todo el bloque incluyendo todos sus campos
+ * - Seguro: valida existencia del elemento antes de eliminar
+ */
 function removeExtraPerPersonField(button) {
     const extraGroup = button.closest('.extra-per-person-group');
     if (extraGroup) {
@@ -54,7 +80,22 @@ function removeExtraPerPersonField(button) {
     }
 }
 
-// Función para calcular el total del guest fee
+/**
+ * Calcula automáticamente el total del Guest Fee (huéspedes × coste por huésped).
+ * Busca los campos dentro del mismo bloque, realiza el cálculo y formatea el resultado.
+ * 
+ * @function calculateExtraPerPersonTotal
+ * @param {HTMLElement} input - Cualquier input dentro del bloque Guest Fee (gatillo del cálculo).
+ * @returns {void}
+ * 
+ * @description
+ * - Localiza el bloque contenedor usando closest()
+ * - Extrae valores de huéspedes y coste, limpiando separadores de miles
+ * - Calcula: total = huéspedes × coste por huésped
+ * - Formatea el resultado con separadores de miles (sin decimales)
+ * - Actualiza el campo Total (readonly) automáticamente
+ * - Maneja valores no numéricos como 0
+ */
 function calculateExtraPerPersonTotal(input) {
     const extraGroup = input.closest('.extra-per-person-group');
     if (!extraGroup) return;

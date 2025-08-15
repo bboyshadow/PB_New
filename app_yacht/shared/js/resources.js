@@ -85,9 +85,9 @@ function loadScript(url, config = {}) {
 		return script;
 	} catch (error) {
 		if (window.AppYacht && window.AppYacht.error) {
-			window.AppYacht.error('Error al crear el elemento script:', error);
+			window.AppYacht.error('Error creating script element:', error);
 		} else {
-			(window.AppYacht?.error || console.error)( 'Error al crear el elemento script:', error );
+			(window.AppYacht?.error || console.error)( 'Error creating script element:', error );
 		}
 		if (options.onError) {
 			options.onError( error );
@@ -158,11 +158,11 @@ function loadStylesheet(url, config = {}) {
 		if (options.onError) {
 			link.onerror = function() {
 				if (window.AppYacht && window.AppYacht.error) {
-					window.AppYacht.error('Error al cargar hoja de estilos:', url);
+					window.AppYacht.error('Error loading stylesheet:', url);
 				} else {
-					(window.AppYacht?.error || console.error)('Error al cargar hoja de estilos:', url);
+					(window.AppYacht?.error || console.error)('Error loading stylesheet:', url);
 				}
-				options.onError( new Error( `Error al cargar hoja de estilos: ${url}` ) );
+				options.onError( new Error( `Error loading stylesheet: ${url}` ) );
 			};
 		}
 
@@ -174,9 +174,9 @@ function loadStylesheet(url, config = {}) {
 		return link;
 	} catch (error) {
 		if (window.AppYacht && window.AppYacht.error) {
-			window.AppYacht.error('Error al crear el elemento link:', error);
+			window.AppYacht.error('Error creating link element:', error);
 		} else {
-			(window.AppYacht?.error || console.error)('Error al crear el elemento link:', error);
+			(window.AppYacht?.error || console.error)('Error creating link element:', error);
 		}
 		if (options.onError) {
 			options.onError( error );

@@ -296,7 +296,7 @@ class Calculator {
                     if (cachedStr) {
                         const cached = JSON.parse(cachedStr);
                         if (cached && cached.timestamp && (Date.now() - cached.timestamp) <= this.config.cacheMaxAge) {
-                            (window.AppYacht?.log || console.log)('Usando resultado cacheado para la clave', cacheKey);
+                            (window.AppYacht?.log || console.log)('Using cached result for key', cacheKey);
                             this.lastResult = cached.result;
                             
                             // Notificar finalización exitosa desde caché
@@ -310,7 +310,7 @@ class Calculator {
                         }
                     }
                 } catch (e) {
-                    (window.AppYacht?.warn || console.warn)('Fallo al acceder al caché de sesión:', e);
+                    (window.AppYacht?.warn || console.warn)('Failed to access session cache:', e);
                 }
             }
             
@@ -338,7 +338,7 @@ class Calculator {
                 try {
                     sessionStorage.setItem(cacheKey, JSON.stringify({ result: result.data, timestamp: Date.now() }));
                 } catch (e) {
-                    (window.AppYacht?.warn || console.warn)('No se pudo guardar el resultado en caché:', e);
+                    (window.AppYacht?.warn || console.warn)('Could not save the result to cache:', e);
                 }
             }
             
@@ -347,8 +347,8 @@ class Calculator {
                 this.config.onCalculationComplete(result.data);
             }
             
-            // Usar UI helper si está disponible para notificar éxito
-            try { window.AppYacht?.ui?.notifySuccess?.('Cálculo completado exitosamente'); } catch (e) {}
+            // Use UI helper if available to notify success
+        try { window.AppYacht?.ui?.notifySuccess?.('Calculation completed successfully'); } catch (e) {}
             
             // Publicar evento de finalización si eventBus está disponible
             if (this.eventBus) {
@@ -360,7 +360,7 @@ class Calculator {
             (window.AppYacht?.error || console.error)('Calculation error:', error);
             
             // Usar UI helper si está disponible para notificar error
-            try { window.AppYacht?.ui?.notifyError?.('Error en el cálculo: ' + error.message); } catch (e) {}
+            try { window.AppYacht?.ui?.notifyError?.('Calculation error: ' + error.message); } catch (e) {}
             
             // Notificar error
             if (this.config.onCalculationError) {
@@ -372,7 +372,7 @@ class Calculator {
                 this.eventBus.publish('calculationError', { error: error.message });
             }
             
-            return Promise.reject(error);
+            return Promise.reject(new Error(`Result container with ID '${resultContainerId}' not found`));
         } finally {
             this.isCalculating = false;
             
@@ -389,7 +389,7 @@ class Calculator {
     displayResult(result, resultContainerId = 'result') {
         const resultContainer = document.getElementById(resultContainerId);
         if (!resultContainer) {
-            (window.AppYacht?.error || console.error)(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`);
+            (window.AppYacht?.error || console.error)(`Result container with ID '${resultContainerId}' not found`);
             return;
         }
         
@@ -421,7 +421,7 @@ class Calculator {
     async copyResultToClipboard(resultContainerId = 'result') {
         const resultContainer = document.getElementById(resultContainerId);
         if (!resultContainer) {
-            return Promise.reject(new Error(`Contenedor de resultados con ID '${resultContainerId}' no encontrado`));
+            return Promise.reject(new Error(`Result container with ID '${resultContainerId}' not found`));
         }
         
         try {
@@ -436,9 +436,8 @@ class Calculator {
             // Usar la API moderna de portapapeles si está disponible
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(tempElement.innerText);
-                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
-                    (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando Clipboard API');
-                }
+                try { window.AppYacht?.ui?.notifySuccess?.('Result copied to clipboard'); } catch (e) {}
+                (window.AppYacht?.log || console.log)('Result copied to clipboard using Clipboard API');
                 return true;
             }
             
@@ -453,16 +452,15 @@ class Calculator {
             document.body.removeChild(tempElement);
             
             if (success) {
-                try { window.AppYacht?.ui?.notifySuccess?.('Resultado copiado al portapapeles'); } catch (e) {
-                    (window.AppYacht?.log || console.log)('Resultado copiado al portapapeles usando execCommand');
-                }
+                try { window.AppYacht?.ui?.notifySuccess?.('Result copied to clipboard'); } catch (e) {}
+                (window.AppYacht?.log || console.log)('Result copied to clipboard using execCommand');
                 return true;
             } else {
-                throw new Error('No se pudo copiar el texto');
+                throw new Error('Could not copy the text');
             }
         } catch (error) {
-            (window.AppYacht?.error || console.error)('Error al copiar al portapapeles:', error);
-            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar el resultado'); } catch (e) {}
+            (window.AppYacht?.error || console.error)('Error copying to clipboard:', error);
+            try { window.AppYacht?.ui?.notifyError?.('Could not copy the result'); } catch (e) {}
             return Promise.reject(error);
         }
     }
@@ -481,16 +479,16 @@ if (typeof window !== 'undefined') {
 /**
  * Ejemplo de uso:
  * 
- * // Inicializar la calculadora
+ * // Initialize the calculator
  * const calculator = new Calculator({
  *     ajaxUrl: ajaxCalculatorData.ajaxurl,
  *     nonce: ajaxCalculatorData.nonce,
  *     onCalculationComplete: result => {
- *         console.log('Cálculo completado:', result);
+ *         console.log('Calculation completed:', result);
  *     }
  * });
  * 
- * // Configurar el botón de cálculo
+ * // Configure the calculation button
  * document.getElementById('calculateButton').addEventListener('click', async () => {
  *     try {
  *         const result = await calculator.calculate();
@@ -500,13 +498,13 @@ if (typeof window !== 'undefined') {
  *     }
  * });
  * 
- * // Configurar el botón de copia
+ * // Configure the copy button
  * document.getElementById('copyButton').addEventListener('click', async () => {
  *     try {
  *         await calculator.copyResultToClipboard();
- *         alert('Resultado copiado al portapapeles');
+ *         alert('Result copied to clipboard');
  *     } catch (error) {
- *         alert('Error al copiar: ' + error.message);
+ *         alert('Error copying: ' + error.message);
  *     }
  * });
  */

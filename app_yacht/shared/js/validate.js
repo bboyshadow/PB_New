@@ -185,24 +185,24 @@ function validateFieldsWithWarnings() {
         const mixValue = parseInt(mixNights?.value) || 0;
         
         if (mixValue <= 0) {
-            warnings.push('Mixed Seasons: Mix Nights debe ser mayor a 0');
-            addFieldWarning(mixNights, 'Debe ser mayor a 0');
+            warnings.push('Mixed Seasons: Mix Nights must be greater than 0');
+            addFieldWarning(mixNights, 'Must be greater than 0');
         }
         
         if (lowValue <= 0) {
-            warnings.push('Mixed Seasons: Low Season Nights debe ser mayor a 0');
-            addFieldWarning(lowSeasonNights, 'Debe ser mayor a 0');
+            warnings.push('Mixed Seasons: Low Season Nights must be greater than 0');
+            addFieldWarning(lowSeasonNights, 'Must be greater than 0');
         }
         
         if (highValue <= 0) {
-            warnings.push('Mixed Seasons: High Season Nights debe ser mayor a 0');
-            addFieldWarning(highSeasonNights, 'Debe ser mayor a 0');
+            warnings.push('Mixed Seasons: High Season Nights must be greater than 0');
+            addFieldWarning(highSeasonNights, 'Must be greater than 0');
         }
         
         if (mixValue > 0 && (lowValue + highValue !== mixValue)) {
-            warnings.push('Mixed Seasons: La suma de Low + High Season debe igual a Mix Nights');
-            addFieldWarning(lowSeasonNights, 'Suma no coincide con Mix Nights');
-            addFieldWarning(highSeasonNights, 'Suma no coincide con Mix Nights');
+            warnings.push('Mixed Seasons: The sum of Low + High Season must equal Mix Nights');
+            addFieldWarning(lowSeasonNights, 'Sum does not match Mix Nights');
+            addFieldWarning(highSeasonNights, 'Sum does not match Mix Nights');
         }
     }
     
@@ -226,20 +226,20 @@ function validateFieldsWithWarnings() {
             }
             
             if (country && rate <= 0) {
-                addFieldWarning(vatRate, 'Debe ser mayor a 0%');
+                addFieldWarning(vatRate, 'Must be greater than 0%');
             }
             
             if (country && nightsValue <= 0) {
-                addFieldWarning(nights, 'Debe ser mayor a 0');
+                addFieldWarning(nights, 'Must be greater than 0');
             }
             
             if (!country && (rate > 0 || nightsValue > 0)) {
-                addFieldWarning(countryName, 'Nombre del país requerido');
+                addFieldWarning(countryName, 'Country name is required');
             }
         });
         
         if (!hasValidVatEntry) {
-            warnings.push('VAT Mix: Debe agregar al menos un país con datos válidos');
+            warnings.push('VAT Mix: You must add at least one country with valid data');
         }
     }
     
@@ -291,7 +291,7 @@ function showWarnings(warnings) {
             return;
         }
     } catch (e) {
-        console.warn('AppYacht.ui.notifyWarning no disponible:', e);
+        console.warn('AppYacht.ui.notifyWarning not available:', e);
     }
     
     // Fallback: mostrar en el área de mensajes existente
@@ -300,7 +300,7 @@ function showWarnings(warnings) {
         const warningDiv = document.createElement('div');
         warningDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
         warningDiv.innerHTML = `
-            <strong>⚠ Advertencias:</strong>
+            <strong>⚠ Warnings:</strong>
             <ul class="mb-0 mt-1">
                 ${warnings.map(w => `<li>${w}</li>`).join('')}
             </ul>
@@ -343,10 +343,16 @@ function validateSingleField(field) {
     } else if (tag === 'input' || tag === 'textarea') {
         const type = (field.getAttribute('type') || '').toLowerCase();
         if (type === 'checkbox' || type === 'radio') {
-            const form = field.form || document.getElementById('charterForm');
-            const checked = form ? form.querySelectorAll(`input[name="${field.name}"]:checked`) : [];
-            if (!checked || checked.length === 0) {
-                fieldValid = false;
+            // Solo validar checkboxes que son requeridos
+            if (field.hasAttribute('required')) {
+                const form = field.form || document.getElementById('charterForm');
+                const checked = form ? form.querySelectorAll(`input[name="${field.name}"]:checked`) : [];
+                if (!checked || checked.length === 0) {
+                    fieldValid = false;
+                }
+            } else {
+                // Los checkboxes opcionales siempre son válidos
+                fieldValid = true;
             }
         } else {
             const val = field.value != null ? String(field.value).trim() : '';

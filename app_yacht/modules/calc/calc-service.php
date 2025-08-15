@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * CalcService class
+ * 
+ * Servicio principal para realizar cálculos de chárter de yates.
+ * Implementa la lógica de negocio para cálculos estándar y mixtos (temporadas múltiples).
+ * 
+ * @package AppYacht
+ * @subpackage Calculator
+ * @since 1.0.0
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -7,18 +17,65 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/../../shared/helpers/validator-helper.php';
 
-
+/**
+ * CalcService - Servicio de cálculo de chárteres de yates
+ * 
+ * Esta clase maneja todos los cálculos relacionados con tarifas de chárter,
+ * aplicación de IVA, APA, extras y formateo de resultados.
+ * 
+ * @implements CalcServiceInterface
+ */
 class CalcService implements CalcServiceInterface {
 	
-	
+	/**
+	 * Configuración del servicio de cálculo
+	 * 
+	 * @var array Configuración que incluye precisión de decimales y otros parámetros
+	 */
 	private $config;
 	
-	
+	/**
+	 * Constructor de CalcService
+	 * 
+	 * @param array $config Configuración del servicio que debe incluir:
+	 *                      - precision: int Número de decimales para formateo de moneda
+	 */
 	public function __construct( array $config ) {
 		$this->config = $config;
 	}
 	
-	
+	/**
+	 * Calcula una tarifa de chárter estándar
+	 * 
+	 * Procesa todos los componentes de un chárter: tarifa base, IVA, APA,
+	 * tasas de reubicación, depósito de seguridad y extras.
+	 * 
+	 * @param array $data Datos del cálculo que deben incluir:
+	 *                    - currency: string Moneda para el cálculo (€, $USD, $AUD)
+	 *                    - charterRate: float Tarifa base del chárter
+	 *                    - vatRate: float Porcentaje de IVA
+	 *                    - apaAmount: float Cantidad fija de APA
+	 *                    - apaPercentage: float Porcentaje de APA sobre tarifa base
+	 *                    - relocationFee: float Tarifa de reubicación
+	 *                    - securityFee: float Depósito de seguridad
+	 *                    - extras: array Lista de extras con nombre y cantidad
+	 *                    
+	 * @return array|WP_Error Resultado del cálculo con estructura:
+	 *                        - base_rate: float Tarifa base calculada
+	 *                        - vat_amount: float Cantidad de IVA
+	 *                        - apa_amount: float Cantidad de APA
+	 *                        - relocation_fee: float Tarifa de reubicación
+	 *                        - security_deposit: float Depósito de seguridad
+	 *                        - extras: array Lista de extras procesados
+	 *                        - extras_total: float Total de extras
+	 *                        - subtotal: float Subtotal sin tasas adicionales
+	 *                        - total: float Total final
+	 *                        - currency: string Moneda utilizada
+	 *                        - breakdown: array Desglose detallado
+	 *                        - formatted: array Versión formateada para mostrar
+	 *                        
+	 * @throws Exception Si ocurre un error durante el cálculo
+	 */
 	public function calculateCharter( array $data ) {
 		try {
 			
@@ -95,6 +152,19 @@ class CalcService implements CalcServiceInterface {
 	}
 	
 	
+	/**
+	 * Calcula una tarifa mixta combinando varias temporadas
+	 *
+	 * Recorre las temporadas aportadas, calcula importes por periodo, el promedio
+	 * ponderado semanal/noches y aplica el mix de IVA si procede.
+	 *
+	 * @param array $data Datos con:
+	 *                    - currency: string
+	 *                    - seasons: array<int,array{name:string,weeks:float,rate:float}>
+	 *                    - vatRateMix: bool
+	 *                    - vatCountries: array<int,array{country:string,rate:float}>
+	 * @return array|WP_Error Resultado con temporadas, promedio ponderado, IVA mix y totales (incluye versión formateada)
+	 */
 	public function calculateMix( array $data ) {
 		try {
 			

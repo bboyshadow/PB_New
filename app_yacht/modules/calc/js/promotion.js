@@ -4,10 +4,22 @@
  */
 
 const Promotion = {
+    /**
+     * Inicializa listeners y estado para la sección de promoción.
+     * Actualmente no requiere configuración adicional.
+     * @function init
+     * @returns {void}
+     */
     init: function() {
         // Inicialización mínima
     },
 
+    /**
+     * Muestra u oculta el campo de promoción según el checkbox.
+     * @function toggleVisibility
+     * @param {HTMLInputElement} checkbox - Checkbox que habilita la promoción
+     * @returns {void}
+     */
     toggleVisibility: function(checkbox) {
         const promotionField = document.getElementById('promotionField');
         if (!promotionField) return;

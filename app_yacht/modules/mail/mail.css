@@ -212,7 +212,7 @@ button:hover {
 }
 
 /* Estilos para el editor contenteditable */
-#contenido.email-content {
+#email-content.email-content {
     min-height: 150px;
     border: 1px solid #ddd;
     border-radius: 0 0 4px 4px;
@@ -224,7 +224,7 @@ button:hover {
     line-height: 1.5;
 }
 
-#contenido.email-content:focus {
+#email-content.email-content:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);

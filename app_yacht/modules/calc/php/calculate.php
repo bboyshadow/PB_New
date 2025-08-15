@@ -6,6 +6,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 require_once __DIR__ . '/../../../shared/php/currency-functions.php'; 
 
 
@@ -13,6 +23,24 @@ add_action( 'wp_ajax_calculate_charter', 'handle_calculate_charter' );
 add_action( 'wp_ajax_nopriv_calculate_charter', 'handle_calculate_charter' );
 
 
+/**
+ * Handler AJAX para cálculo de chárter estándar
+ *
+ * Valida el nonce, normaliza y valida entradas, ejecuta el cálculo principal
+ * y devuelve un JSON con el resultado formateado para la UI.
+ *
+ * Espera vía POST:
+ * - currency: string
+ * - charterRate: float
+ * - vatRate: float
+ * - apaAmount: float
+ * - apaPercentage: float
+ * - relocationFee: float
+ * - securityFee: float
+ * - extras: array
+ *
+ * @return void Imprime y finaliza con wp_send_json_success/wp_send_json_error
+ */
 function handle_calculate_charter() {
 	
 	// Verificación de nonce con helper centralizado
@@ -26,7 +54,7 @@ function handle_calculate_charter() {
 				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
 			) );
 		}
-		wp_send_json_error( array( 'error' => 'Nonce inválido.' ), 400 );
+		wp_send_json_error( array( 'error' => 'Invalid nonce.' ), 400 );
 		return;
 	}
 

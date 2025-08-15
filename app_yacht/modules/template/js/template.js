@@ -78,14 +78,14 @@ function addCharterRateGroup(isFirst = false, initialData = null) {
         if (toggleDiscountBtn && typeof window.toggleDiscountField === 'function') {
             toggleDiscountBtn.addEventListener('click', () => window.toggleDiscountField(toggleDiscountBtn));
         } else if (toggleDiscountBtn) {
-             (window.AppYacht?.warn || console.warn)('Función global toggleDiscountField no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Global function toggleDiscountField not found.');
         }
 
         const removeBtn = newGroup.querySelector('.remove-rate-btn');
         if (removeBtn && typeof window.removeCharterRate === 'function') {
             removeBtn.addEventListener('click', () => window.removeCharterRate(removeBtn));
         } else if (removeBtn) {
-             (window.AppYacht?.warn || console.warn)('Función global removeCharterRate no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Global function removeCharterRate not found.');
         }
         
         const addBtn = newGroup.querySelector('.add-rate-btn');
@@ -159,7 +159,7 @@ function addExtraGroup(initialData = null) {
         if (removeBtn && typeof window.removeExtraField === 'function') {
             removeBtn.addEventListener('click', () => window.removeExtraField(removeBtn));
         } else if (removeBtn) {
-             (window.AppYacht?.warn || console.warn)('Función global removeExtraField no encontrada.');
+             (window.AppYacht?.warn || console.warn)('Global function removeExtraField not found.');
         }
 
         // Añadir listener formatNumber
@@ -255,13 +255,13 @@ function restoreTemplateFormData() {
 // Callbacks para los eventos de TemplateManager
 function handleTemplateCreated(data) {
     // Notificar éxito visualmente y limpiar errores visibles
-    try { window.AppYacht?.ui?.notifySuccess?.('Plantilla creada exitosamente'); } catch (e) {}
+    try { window.AppYacht?.ui?.notifySuccess?.('Template created successfully'); } catch (e) {}
     const errorMessage = document.getElementById('errorMessage');
     if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
 }
 function handleTemplateLoaded(data) {
     // Notificar éxito al cargar datos de plantilla
-    try { window.AppYacht?.ui?.notifySuccess?.('Plantilla cargada'); } catch (e) {}
+    try { window.AppYacht?.ui?.notifySuccess?.('Template loaded'); } catch (e) {}
     const errorMessage = document.getElementById('errorMessage');
     if (errorMessage) { errorMessage.style.display = 'none'; errorMessage.textContent = ''; }
 }
@@ -276,7 +276,7 @@ function handleTemplateError(error) {
         errorMessage.style.display = 'block';
     }
     // Notificación de error unificada
-    try { window.AppYacht?.ui?.notifyError?.(error?.message || 'Error de plantilla'); } catch (e) {}
+    try { window.AppYacht?.ui?.notifyError?.(error?.message || 'Template error'); } catch (e) {}
 }
 
 function toggleCreateTemplateButton() {
@@ -317,7 +317,7 @@ function saveTemplateFormData() {
         dynamicGroups: dynamicGroupsConfig, 
         saveCheckbox: true 
     });
-    // console.log('Datos estáticos y dinámicos del formulario de plantilla guardados.'); // Opcional
+    // console.log('Static and dynamic template form data saved.'); // Optional
 }
 
 /**
@@ -328,7 +328,7 @@ function copyTemplate() {
     if (!container || !container.innerHTML.trim()) {
          const fallbackContainer = document.getElementById('yachtInfoContainer');
          if (!fallbackContainer || !fallbackContainer.innerHTML.trim()) {
-            try { window.AppYacht?.ui?.notifyWarning?.('No hay contenido de plantilla para copiar.'); } catch (e) { alert('No template content found to copy.'); }
+            try { window.AppYacht?.ui?.notifyWarning?.('No template content to copy.'); } catch (e) { alert('No template content found to copy.'); }
             return;
          }
          container = fallbackContainer;
@@ -336,10 +336,10 @@ function copyTemplate() {
     const htmlContent = container.innerHTML; 
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(htmlContent).then(() => {
-            try { window.AppYacht?.ui?.notifySuccess?.('Contenido de plantilla copiado al portapapeles.'); } catch (e) { alert('Template content copied to clipboard.'); }
+            try { window.AppYacht?.ui?.notifySuccess?.('Template content copied to clipboard.'); } catch (e) { alert('Template content copied to clipboard.'); }
         }).catch(err => {
             (window.AppYacht?.error || console.error)('Error copying template:', err);
-            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e2) { alert('Unable to copy template.'); }
+            try { window.AppYacht?.ui?.notifyError?.('Could not copy template.'); } catch (e2) { alert('Unable to copy template.'); }
         });
     } else {
         // Fallback básico usando selección
@@ -350,13 +350,13 @@ function copyTemplate() {
         try {
             const ok = document.execCommand('copy');
             if (ok) {
-                try { window.AppYacht?.ui?.notifySuccess?.('Contenido de plantilla copiado al portapapeles.'); } catch (e) { alert('Template content copied to clipboard.'); }
+                try { window.AppYacht?.ui?.notifySuccess?.('Template content copied to clipboard.'); } catch (e) { alert('Template content copied to clipboard.'); }
             } else {
-                try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e) { alert('Unable to copy template.'); }
+                try { window.AppYacht?.ui?.notifyError?.('Could not copy template.'); } catch (e) { alert('Unable to copy template.'); }
             }
         } catch (err) {
             (window.AppYacht?.error || console.error)('Error copying template (fallback):', err);
-            try { window.AppYacht?.ui?.notifyError?.('No se pudo copiar la plantilla.'); } catch (e) { alert('Unable to copy template.'); }
+            try { window.AppYacht?.ui?.notifyError?.('Could not copy template.'); } catch (e) { alert('Unable to copy template.'); }
         } finally {
             tempEl.remove();
         }
@@ -460,7 +460,7 @@ function loadTemplatePreview(selectedTemplate, resultContainer) {
     })
     .catch(err => {
         (window.AppYacht?.error || console.error)('Error loading template preview:', err);
-        try { window.AppYacht?.ui?.notifyError?.('Error cargando vista previa: ' + (err?.message || '')); } catch (e) {}
+        try { window.AppYacht?.ui?.notifyError?.('Error loading template preview: ' + (err?.message || '')); } catch (e) {}
         resultContainer.innerHTML = '<p>Error loading template preview.</p>';
     })
     .finally(() => {
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.toggleOneDayCharter === 'function') {
                  window.toggleOneDayCharter(this.checked); 
             } else {
-                 (window.AppYacht?.warn || console.warn)('toggleOneDayCharter no está definida globalmente');
+                 (window.AppYacht?.warn || console.warn)('toggleOneDayCharter is not defined globally');
             }
             // Actualizar la propia clase TemplateManager si es necesario
             templateManager.toggleOneDayCharter(this.checked); 

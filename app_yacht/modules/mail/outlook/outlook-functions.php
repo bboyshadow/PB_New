@@ -328,7 +328,7 @@ function pb_outlook_send_mail_ajax_handler() {
 	$limit_key = 'mail_send_' . $user_id;
 
 	if ( ! pb_check_rate_limit( $limit_key, 10, 300 ) ) {
-		wp_send_json_error( 'Has excedido el límite de intentos. Por favor, inténtalo más tarde.', 429 );
+		wp_send_json_error( 'You have exceeded the attempt limit. Please try again later.', 429 );
 		 return;
 	}
 	// Verificación de nonce con helper centralizado
@@ -341,7 +341,7 @@ function pb_outlook_send_mail_ajax_handler() {
  	 
  
 	if ( ! is_user_logged_in() ) {
-		wp_send_json_error( 'No estás autenticado en WordPress.', 401 );
+		wp_send_json_error( 'You are not authenticated in WordPress.', 401 );
 	}
 	$user_id = get_current_user_id();
 	
@@ -357,7 +357,7 @@ function pb_outlook_send_mail_ajax_handler() {
 	$body    = wp_unslash( $_POST['body'] ?? '' );
 
 	if ( empty( $to ) || empty( $subject ) || empty( $body ) ) {
-		wp_send_json_error( 'Faltan campos obligatorios.', 400 );
+		wp_send_json_error( 'Missing required fields.', 400 );
 	}
 
 	
@@ -376,7 +376,7 @@ function pb_outlook_send_mail_ajax_handler() {
 		
 		wp_send_json_error( $result->get_error_message(), 500 ); 
 	}
-	wp_send_json_success( 'Correo enviado exitosamente.' );
+	wp_send_json_success( 'Email sent successfully.' );
 }
 
 
@@ -441,7 +441,7 @@ function pb_outlook_disconnect_user( $user_id ) {
 				'message'    => $e->getMessage(),
 			)
 		);
-		error_log( 'Excepción en pb_outlook_disconnect_user: ' . $e->getMessage() );
+		error_log( 'Exception in pb_outlook_disconnect_user: ' . $e->getMessage() );
 		return false; 
 	} catch ( Throwable $t ) {
 		
@@ -488,7 +488,7 @@ function pb_outlook_disconnect_ajax_handler() {
 		
 		if ( ! is_user_logged_in() ) {
 			pb_log_security_event( 0, 'outlook_disconnect_ajax_failed', array( 'reason' => 'not_authenticated' ) );
-			wp_send_json_error( 'Debes iniciar sesión para realizar esta acción.', 401 );
+			wp_send_json_error( 'You must be logged in to perform this action.', 401 );
 			return;
 		}
 		
@@ -502,7 +502,7 @@ function pb_outlook_disconnect_ajax_handler() {
 		
 		if ( $result ) {
 			pb_log_security_event( $user_id, 'outlook_disconnect_ajax_success' );
-			wp_send_json_success( 'Tu cuenta de Outlook ha sido desconectada correctamente.' );
+			wp_send_json_success( 'Your Outlook account has been disconnected successfully.' );
 		} else {
 			pb_log_security_event( $user_id, 'outlook_disconnect_ajax_failed', array( 'reason' => 'disconnect_failed' ) );
 			wp_send_json_error( 'Could not disconnect your Outlook account. Please try again later.' );
@@ -516,8 +516,8 @@ function pb_outlook_disconnect_ajax_handler() {
 				'message'    => $e->getMessage(),
 			) 
 		);
-		error_log( 'Excepción en pb_outlook_disconnect_ajax_handler: ' . $e->getMessage() );
-		wp_send_json_error( 'Error al procesar la solicitud: ' . $e->getMessage() );
+		error_log( 'Exception in pb_outlook_disconnect_ajax_handler: ' . $e->getMessage() );
+		wp_send_json_error( 'Error processing the request: ' . $e->getMessage() );
 	} catch ( Throwable $t ) {
 		pb_log_security_event(
 			get_current_user_id(),
@@ -528,6 +528,6 @@ function pb_outlook_disconnect_ajax_handler() {
 			) 
 		);
 		error_log( 'Error fatal en pb_outlook_disconnect_ajax_handler: ' . $t->getMessage() );
-		wp_send_json_error( 'Error interno al procesar la solicitud.' );
+		wp_send_json_error( 'Internal error while processing the request.' );
 	}
 }

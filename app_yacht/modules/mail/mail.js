@@ -16,11 +16,11 @@ function saveFormContent() {
         'fontSelect', 'fontSizeSelect', 'textColorBtn', 'bgColorBtn'
     ];
     const selectors = {
-        'mail_content': '#contenido', // Guardará innerHTML
-        'mail_to': '#correo-destino',
-        'mail_cc': '#correo-cc',
-        'mail_bcc': '#correo-bcc',
-        'mail_subject': '#asunto',
+        'mail_content': '#email-content', // Will save innerHTML
+        'mail_to': '#email-to',
+        'mail_cc': '#email-cc',
+        'mail_bcc': '#email-bcc',
+        'mail_subject': '#email-subject',
         'fontSelect': '#fontSelect',
         'fontSizeSelect': '#fontSizeSelect',
         'textColorBtn': '#textColorBtn',
@@ -42,11 +42,11 @@ function restoreFormContent() {
         'fontSelect', 'fontSizeSelect', 'textColorBtn', 'bgColorBtn'
     ];
     const selectors = {
-        'mail_content': '#contenido', // Se restaura como innerHTML
-        'mail_to': '#correo-destino',
-        'mail_cc': '#correo-cc',
-        'mail_bcc': '#correo-bcc',
-        'mail_subject': '#asunto',
+        'mail_content': '#email-content', // Restored as innerHTML
+        'mail_to': '#email-to',
+        'mail_cc': '#email-cc',
+        'mail_bcc': '#email-bcc',
+        'mail_subject': '#email-subject',
         'fontSelect': '#fontSelect',
         'fontSizeSelect': '#fontSizeSelect',
         'textColorBtn': '#textColorBtn',
@@ -75,7 +75,7 @@ function restoreFormContent() {
         
         // Inicializar el compositor de correo
         mailComposer = new MailComposer({
-            editorId: 'contenido',
+            editorId: 'email-content',
             onContentChange: handleContentChange,
             onError: handleMailError
         });
@@ -315,10 +315,10 @@ function restoreFormContent() {
                 // Usar setContent para asegurar que el evento onContentChange se dispare
                 const currentContent = mailComposer.getContent();
                 mailComposer.setContent(currentContent + "<br><br>" + resultDiv.html() + "<br><br>");
-                focusCaretEnd($("#contenido")[0]);
+                focusCaretEnd($("#email-content")[0]);
                 // saveFormContent se llamará automáticamente por el onContentChange
             } else {
-                (window.AppYacht?.error || console.error)("No se encontró el div con id 'result'");
+                (window.AppYacht?.error || console.error)("Could not find div with id 'result'");
             }
         });
 
@@ -405,13 +405,13 @@ function restoreFormContent() {
                             .catch(err => {
                                 (window.AppYacht?.error || console.error)('Error al leer el portapapeles:', err);
                                 // Opcional: Informar al usuario que el pegado falló o requiere permisos
-                                alert('No se pudo pegar desde el portapapeles. Asegúrate de haber otorgado permisos.');
+                                alert('Could not paste from clipboard. Make sure you have granted permissions.');
                                 // Como fallback, intentar el método antiguo (puede no funcionar)
                                 mailComposer.applyCommand(command, value);
                                 saveFormContent();
                             });
                     } else {
-                        (window.AppYacht?.warn || console.warn)('La API del portapapeles no está disponible. Usando execCommand("paste").');
+                        (window.AppYacht?.warn || console.warn)('Clipboard API is not available. Using execCommand("paste").');
                         // Fallback si la API no está soportada
                         mailComposer.applyCommand(command, value);
                         saveFormContent();
@@ -431,31 +431,31 @@ function restoreFormContent() {
             };
 
             const menuItems = [
-                { text: 'Cortar', action: () => applyCommandWithSavedRange('cut') }, // Use helper
-                { text: 'Copiar', action: () => applyCommandWithSavedRange('copy') }, // Use helper
-                { text: 'Pegar', action: () => applyCommandWithSavedRange('paste') }, // La lógica ahora está dentro de applyCommandWithSavedRange
+                { text: 'Cut', action: () => applyCommandWithSavedRange('cut') }, // Use helper
+                { text: 'Copy', action: () => applyCommandWithSavedRange('copy') }, // Use helper
+                { text: 'Paste', action: () => applyCommandWithSavedRange('paste') }, // La lógica ahora está dentro de applyCommandWithSavedRange
                 { separator: true },
-                { text: 'Negrita', action: () => applyCommandWithSavedRange('bold') }, // Use helper
-                { text: 'Cursiva', action: () => applyCommandWithSavedRange('italic') }, // Use helper
-                { text: 'Subrayado', action: () => applyCommandWithSavedRange('underline') }, // Use helper
+                { text: 'Bold', action: () => applyCommandWithSavedRange('bold') }, // Use helper
+                { text: 'Italic', action: () => applyCommandWithSavedRange('italic') }, // Use helper
+                { text: 'Underline', action: () => applyCommandWithSavedRange('underline') }, // Use helper
                 { separator: true },
-                { text: 'Insertar enlace', action: () => {
-                    (window.AppYacht?.log || console.log)("Context menu 'Insertar enlace' clicked. Using range saved from contextmenu event if available.");
+                { text: 'Insert link', action: () => {
+                    (window.AppYacht?.log || console.log)("Context menu 'Insert link' clicked. Using range saved from contextmenu event if available.");
                     // insertLinkHandler already uses rangeFromContextMenu internally
                     insertLinkHandler(true); 
                 } },
-                { text: 'Insertar imagen', action: () => { 
+                { text: 'Insert image', action: () => { 
                     // Image insertion uses prompt, focus handled internally
                     insertImageHandler(); 
                 } },
                 { separator: true },
-                { text: 'Lista con viñetas', action: () => applyCommandWithSavedRange('insertUnorderedList') }, // Use helper
-                { text: 'Lista numerada', action: () => applyCommandWithSavedRange('insertOrderedList') }, // Use helper
+                { text: 'Bulleted list', action: () => applyCommandWithSavedRange('insertUnorderedList') }, // Use helper
+                { text: 'Numbered list', action: () => applyCommandWithSavedRange('insertOrderedList') }, // Use helper
                 { separator: true },
-                { text: 'Seleccionar todo', action: () => applyCommandWithSavedRange('selectAll') }, // Use helper
+                { text: 'Select all', action: () => applyCommandWithSavedRange('selectAll') }, // Use helper
                 { separator: true }, 
-                { text: 'Limpiar Contenido', action: () => {
-                    if (confirm('¿Estás seguro de que deseas limpiar todo el contenido del correo?')) {
+                { text: 'Clear content', action: () => {
+                    if (confirm('Are you sure you want to clear all email content?')) {
                         mailComposer.setContent(''); 
                         // saveFormContent called by setContent's onContentChange
                     }
@@ -556,7 +556,7 @@ function restoreFormContent() {
             }
         }
         
-        $('#contenido').on('contextmenu', showContextMenu);
+        $('#email-content').on('contextmenu', showContextMenu);
         // Modificado: No ocultar el menú si se hace clic dentro del modal
         $(document).on('click', function(event) {
             // Si el clic NO fue dentro del menú contextual Y NO fue dentro del modal de enlace
@@ -570,7 +570,7 @@ function restoreFormContent() {
             //     hideLinkModal();
             // }
         });
-        $('#contenido').on('contextmenu', function(e) { e.preventDefault(); });
+        $('#email-content').on('contextmenu', function(e) { e.preventDefault(); });
         
         // --- Fin Menú contextual ---
 
@@ -579,12 +579,12 @@ function restoreFormContent() {
         
         // Guardar contenido automáticamente cuando se modifica el editor
         // El listener 'input' ahora se maneja a través del callback onContentChange de MailComposer
-        // $('#contenido').on('input', function() {
+        // $('#email-content').on('input', function() {
         //     saveFormContent(); 
         // }); 
         
         // Guardar contenido cuando se modifican los campos del formulario
-        $('#correo-destino, #correo-cc, #correo-bcc, #asunto').on('input', debounce(saveFormContent, 300)); // Usar debounce aquí también
+        $('#email-to, #email-cc, #email-bcc, #email-subject').on('input', debounce(saveFormContent, 300)); // Usar debounce aquí también
 
     });
 })(jQuery);
@@ -609,12 +609,12 @@ function createLinkModal() {
 
     linkModal.innerHTML = `
         <div class="modal-content">
-            <h3 id="link-modal-title">Insertar Enlace</h3>
+            <h3 id="link-modal-title">Insert Link</h3>
             <label for="link-url-input">URL:</label>
-            <input type="url" id="link-url-input" placeholder="https://ejemplo.com" required>
+            <input type="url" id="link-url-input" placeholder="https://example.com" required>
             <div class="modal-actions">
-                <button type="button" id="link-ok-btn" class="button button-primary">Aceptar</button>
-                <button type="button" id="link-cancel-btn" class="button">Cancelar</button>
+                <button type="button" id="link-ok-btn" class="button button-primary">OK</button>
+                <button type="button" id="link-cancel-btn" class="button">Cancel</button>
             </div>
         </div>
     `;
@@ -820,7 +820,7 @@ function handleLinkModalOk(event) {
 
     } else {
         // Opcional: Mostrar un mensaje si la URL no es válida o está vacía
-        alert('Por favor, introduce una URL válida.');
+        alert('Please enter a valid URL.');
         urlInput.focus();
     }
 }

@@ -245,7 +245,7 @@ class TemplateManager {
             // Verificar que tenemos los datos mínimos necesarios
             const yachtUrl = formData.get('yachtUrl');
             if (!yachtUrl) {
-                throw new Error('La URL del yate es obligatoria');
+                throw new Error('Yacht URL is required');
             }
             
             // Verificar que tenemos un nonce válido
@@ -267,7 +267,7 @@ class TemplateManager {
             const result = await response.json();
             
             if (!result.success) {
-                throw new Error(result.data || 'Error al crear la plantilla');
+                throw new Error(result.data || 'Error creating template');
             }
             
             // Actualizar la UI si hay un contenedor de resultado
@@ -287,7 +287,7 @@ class TemplateManager {
             this.currentTemplate = result.data;
             
             // Usar UI helper si está disponible para notificar éxito
-            try { window.AppYacht?.ui?.notifySuccess?.('Plantilla creada exitosamente'); } catch (e) {}
+            try { window.AppYacht?.ui?.notifySuccess?.('Template created successfully'); } catch (e) {}
             
             // Notificar éxito si hay callback
             if (typeof this.config.onTemplateCreated === 'function') {
@@ -308,12 +308,12 @@ class TemplateManager {
             
             // Usar UI helper si está disponible para notificar error, fallback a #errorMessage
             try { 
-                window.AppYacht?.ui?.notifyError?.('Error al crear plantilla: ' + error.message); 
+                window.AppYacht?.ui?.notifyError?.('Error creating template: ' + error.message); 
             } catch (e) {
                 // Fallback a #errorMessage
                 const errorEl = document.getElementById('errorMessage');
                 if (errorEl) {
-                    errorEl.textContent = 'Error al crear plantilla: ' + error.message;
+                    errorEl.textContent = 'Error creating template: ' + error.message;
                     errorEl.style.display = 'block';
                     errorEl.classList.add('text-danger');
                 }
@@ -390,14 +390,14 @@ class TemplateManager {
             const result = await response.json();
             
             if (!result.success) {
-                throw new Error(result.data || 'Error al cargar la plantilla');
+                throw new Error(result.data || 'Error loading template');
             }
             
             // Guardar la plantilla actual
             this.currentTemplate = result.data;
             
             // Usar UI helper si está disponible para notificar éxito
-            try { window.AppYacht?.ui?.notifySuccess?.('Plantilla cargada exitosamente'); } catch (e) {}
+            try { window.AppYacht?.ui?.notifySuccess?.('Template loaded successfully'); } catch (e) {}
             
             // Notificar éxito si hay callback
             if (typeof this.config.onTemplateLoaded === 'function') {
@@ -411,16 +411,16 @@ class TemplateManager {
             
             return result.data;
         } catch (error) {
-            (window.AppYacht?.error || console.error)('Error al cargar plantilla:', error);
+            (window.AppYacht?.error || console.error)('Error loading template:', error);
             
             // Usar UI helper si está disponible para notificar error, fallback a #errorMessage
             try { 
-                window.AppYacht?.ui?.notifyError?.('Error al cargar plantilla: ' + error.message); 
+                window.AppYacht?.ui?.notifyError?.('Error loading template: ' + error.message); 
             } catch (e) {
                 // Fallback a #errorMessage
                 const errorEl = document.getElementById('errorMessage');
                 if (errorEl) {
-                    errorEl.textContent = 'Error al cargar plantilla: ' + error.message;
+                    errorEl.textContent = 'Error loading template: ' + error.message;
                     errorEl.style.display = 'block';
                     errorEl.classList.add('text-danger');
                 }

@@ -22,77 +22,77 @@ $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_con
 
 	<div class="d-flex justify-content-left align-items-center mb-3">
 		<?php if ( $is_connected ) : ?>
-		<!-- Botón para desconectar Outlook -->
+		<!-- Button to disconnect Outlook -->
 		<a class="btn btn-danger btn-sm outlook-auth-button" href="#" data-action="disconnect">
 			Disconnect my Outlook account
 		</a>
 		<?php else : ?>
-		<!-- Botón para conectar Outlook -->
+		<!-- Button to connect Outlook -->
 		<a class="btn btn-primary btn-sm outlook-auth-button" href="<?php echo esc_url( $login_url ); ?>">
 			Connect my Outlook account
 		</a>
 		<?php endif; ?>
 	</div>
 
-	<!-- Mensaje de cuenta conectada -->
+	<!-- Connected account message -->
 	<?php if ( isset( $_GET['outlook'] ) && $_GET['outlook'] === 'success' ) : ?>
 		<p style="color:green; font-weight: 600;">
 			Your account <?php echo ( ! empty( $user_email ) ? '<strong>' . $user_email . '</strong>' : 'Outlook' ); ?> has been successfully connected!
 		</p>
 	<?php endif; ?>
 
-	<!-- Formulario para enviar (Outlook en este ejemplo) -->
+	<!-- Form to send (Outlook in this example) -->
 	<div class="mail-send-form mt-4">
 		<form id="form-outlook-mail" class="mail-form">
 			<div class="row">
 				<div class="col-md-12">
-					<label for="correo-destino">To: <small>(separate multiple emails with commas)</small></label>
-					<input type="text" id="correo-destino" name="correo-destino" class="form-control" required>
+					<label for="email-to">To: <small>(separate multiple emails with commas)</small></label>
+					<input type="text" id="email-to" name="correo-destino" class="form-control" required>
 				</div>
 			</div>
 			<div class="row mt-2">
 				<div class="col-md-6">
-					<label for="correo-cc">CC: <small>(optional)</small></label>
-					<input type="text" id="correo-cc" name="correo-cc" class="form-control">
+					<label for="email-cc">CC: <small>(optional)</small></label>
+					<input type="text" id="email-cc" name="correo-cc" class="form-control">
 				</div>
 				<div class="col-md-6">
-					<label for="correo-bcc">BCC: <small>(optional)</small></label>
-					<input type="text" id="correo-bcc" name="correo-bcc" class="form-control">
+					<label for="email-bcc">BCC: <small>(optional)</small></label>
+					<input type="text" id="email-bcc" name="correo-bcc" class="form-control">
 				</div>
 			</div>
 			<div class="row mt-2">
 				<div class="col-md-12">
-					<label for="asunto">Subject:</label>
-					<input type="text" id="asunto" name="asunto" class="form-control" required>
+					<label for="email-subject">Subject:</label>
+					<input type="text" id="email-subject" name="asunto" class="form-control" required>
 				</div>
 			</div>
 
 			<p id="contentLabel" class="m-0 mt-2">Content:</p>
 			<div class="toolbar my-0" role="toolbar" aria-label="Editor toolbar">
-				<!-- Formato de texto -->
-				<button id="boldBtn" type="button" title="Negrita" aria-label="Bold"><b>B</b></button>
-				<button id="italicBtn" type="button" title="Cursiva" aria-label="Italic"><i>I</i></button>
-				<button id="underlineBtn" type="button" title="Subrayado" aria-label="Underline"><u>U</u></button>
+				<!-- Text formatting -->
+				<button id="boldBtn" type="button" title="Bold" aria-label="Bold"><b>B</b></button>
+				<button id="italicBtn" type="button" title="Italic" aria-label="Italic"><i>I</i></button>
+				<button id="underlineBtn" type="button" title="Underline" aria-label="Underline"><u>U</u></button>
 				
 				<div class="toolbar-divider"></div>
 				
-				<!-- Alineación -->
-				<button id="alignLeftBtn" type="button" title="Alinear a la izquierda" aria-label="Align left"><i class="fas fa-align-left"></i></button>
-				<button id="alignCenterBtn" type="button" title="Centrar" aria-label="Align center">≡</button>
-				<button id="alignRightBtn" type="button" title="Alinear a la derecha" aria-label="Align right"><i class="fas fa-align-right"></i></button>
+				<!-- Alignment -->
+				<button id="alignLeftBtn" type="button" title="Align left" aria-label="Align left"><i class="fas fa-align-left"></i></button>
+				<button id="alignCenterBtn" type="button" title="Align center" aria-label="Align center">≡</button>
+				<button id="alignRightBtn" type="button" title="Align right" aria-label="Align right"><i class="fas fa-align-right"></i></button>
 				
 				<div class="toolbar-divider"></div>
 				
-				<!-- Listas -->
-				<button id="bulletListBtn" type="button" title="Lista con viñetas" aria-label="Bulleted list">•</button>
-				<button id="numberedListBtn" type="button" title="Lista numerada" aria-label="Numbered list">1.</button>
-				<button id="indentBtn" type="button" title="Aumentar sangría" aria-label="Increase indent">→</button>
-				<button id="outdentBtn" type="button" title="Disminuir sangría" aria-label="Decrease indent">←</button>
+				<!-- Lists -->
+				<button id="bulletListBtn" type="button" title="Bulleted list" aria-label="Bulleted list">•</button>
+				<button id="numberedListBtn" type="button" title="Numbered list" aria-label="Numbered list">1.</button>
+				<button id="indentBtn" type="button" title="Increase indent" aria-label="Increase indent">→</button>
+				<button id="outdentBtn" type="button" title="Decrease indent" aria-label="Decrease indent">←</button>
 				
 				<div class="toolbar-divider"></div>
 				
-				<!-- Fuentes seguras para email -->
-				<select id="fontSelect" title="Fuente" class="email-fonts-select">
+				<!-- Safe email fonts -->
+				<select id="fontSelect" title="Font" class="email-fonts-select">
 					<option value="Arial" selected>Arial</option>
 					<option value="Times New Roman">Times New Roman</option>
 					<option value="Courier New">Courier New</option>
@@ -102,39 +102,38 @@ $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_con
 					<option value="Helvetica">Helvetica</option>
 				</select>
 				
-				<select id="fontSizeSelect" title="Tamaño de fuente">
-					<option value="1">Pequeño</option>
+				<select id="fontSizeSelect" title="Font size">
+					<option value="1">Small</option>
 					<option value="3" selected>Normal</option>
-					<option value="5">Grande</option>
-					<option value="7">Muy grande</option>
+					<option value="5">Large</option>
+					<option value="7">Very large</option>
 				</select>
 				
 				<div class="toolbar-divider"></div>
 				
-				<!-- Colores -->
+				<!-- Colors -->
 				<label for="textColorBtn" class="visually-hidden">Text color</label> <!-- Hidden label for accessibility -->
-				<input type="color" id="textColorBtn" title="Color de texto" aria-label="Text color" value="#000000">
+				<input type="color" id="textColorBtn" title="Text color" aria-label="Text color" value="#000000">
 				 <label for="bgColorBtn" class="visually-hidden">Background color</label> <!-- Hidden label for accessibility -->
-				<input type="color" id="bgColorBtn" title="Color de fondo" aria-label="Background color" value="#ffffff">
+				<input type="color" id="bgColorBtn" title="Background color" aria-label="Background color" value="#ffffff">
 				
 				<div class="toolbar-divider"></div>
 				
-				<!-- Enlaces e imágenes -->
-				<button id="linkBtn" type="button" title="Insertar enlace" aria-label="Insert link">🔗</button>
-				<button id="imageBtn" type="button" title="Insertar imagen" aria-label="Insert image">🖼️</button>
+				<!-- Links and images -->
+				<button id="linkBtn" type="button" title="Insert link" aria-label="Insert link">🔗</button>
+				<button id="imageBtn" type="button" title="Insert image" aria-label="Insert image">🖼️</button>
 			</div>
 
 			<div class="form-group mt-0">
-				<div id="contenido" class="email-content form-control" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contentLabel"></div>
+				<div id="email-content" class="email-content form-control" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contentLabel"></div>
 			</div>
 
 			<div class="row">
 				<div class="col-12">
-					<button type="submit" id="outlook-send-mail" class="btn btn-primary w-100 mt-3">Send Email</button>
+					<button type="button" id="outlook-send-mail" class="btn btn-primary w-100 mt-3">Send Email</button>
 				</div>
 				<div class="col-12">
 					<?php 
-					
 					
 					
 					echo do_shortcode( '[outlook_signature]' );
@@ -150,5 +149,5 @@ $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_con
 	</div>
 </div>
 
-<!-- Campo oculto para almacenar la fuente seleccionada (usado por storage.js) -->
+<!-- Hidden field to store selected font (used by storage.js) -->
 <input type="hidden" id="selected_font" name="selected_font" value="Arial">

@@ -1,6 +1,17 @@
 // ARCHIVO modules\calc\js\mix.js
 
 //===============================add the Mixed Seasons fields ===============================||
+/**
+ * Gestiona la UI y la lógica de cálculo para "Mixed Seasons".
+ * Permite introducir varias filas con noches y selección de temporada (Low/High),
+ * valida la entrada, envía los datos al endpoint AJAX y muestra el resultado.
+ */
+
+/**
+ * Crea una nueva fila de mezcla en el contenedor.
+ * @function addMix
+ * @returns {void}
+ */
 function addMix() {
     const container = document.getElementById('mixedSeasonsContainer');
 
@@ -125,73 +136,76 @@ function addMix() {
              if(applyMixButtonEl) {
                  applyMixButtonEl.addEventListener('click', applyMix);
              } else {
-                 (window.AppYacht?.error || console.error)("El botón 'applymixButton' no se encontró después de agregarlo al DOM.");
+                 (window.AppYacht?.error || console.error)("The 'applymixButton' button was not found after adding it to the DOM.");
              }
         }
     }, 0);
 }
 
 // Quitar el contenido Mix
+/**
+ * Elimina todas las filas de mezcla del contenedor.
+ * @function clearMixContainer
+ * @returns {void}
+ */
 function clearMixContainer() {
     const container = document.getElementById('mixedSeasonsContainer');
     container.innerHTML = '';
 }
 
+// Manejo de eventos después de DOM cargado
 document.addEventListener('DOMContentLoaded', () => {
-    // Checkbox MixedSeasons
-    const enableMixedSeasonsCheckbox = document.getElementById('enableMixedSeasons');
-    if (enableMixedSeasonsCheckbox) {
-        enableMixedSeasonsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                addMix();
-            } else {
-                clearMixContainer();
-            }
-        });
-    } else {
-        (window.AppYacht?.error || console.error)("El elemento con ID 'enableMixedSeasons' no se encontró en el DOM.");
-    }
-
-    // Delegación de eventos en #mixedSeasonsContainer
+    const mixedSeasonsCheckbox = document.getElementById('enableMixedSeasons');
     const mixedSeasonsContainer = document.getElementById('mixedSeasonsContainer');
-    if (mixedSeasonsContainer) {
-        mixedSeasonsContainer.addEventListener('click', (event) => {
-            if (event.target && event.target.id === 'applymixButton') {
-                applyMix();
+
+    if (mixedSeasonsCheckbox) {
+        mixedSeasonsCheckbox.addEventListener('change', () => {
+            if (mixedSeasonsCheckbox.checked) {
+                clearMixContainer();
+                addMix();
             }
         });
     }
 
-    // Manejo de cambio de currency
-    const currencySelector = document.getElementById('currency');
-    if (currencySelector) {
-        currencySelector.addEventListener('change', updateCurrencySymbols);
+    // Delegación de eventos en el contenedor
+    if (mixedSeasonsContainer) {
+        mixedSeasonsContainer.addEventListener('input', (event) => {
+            if (event.target.classList.contains('mix-nights')) {
+                handleMixNightsInput(event);
+            } else if (event.target.classList.contains('mix-season')) {
+                handleSeasonInput(event);
+            }
+        });
+
+        mixedSeasonsContainer.addEventListener('keydown', handleArrowKeys);
+        mixedSeasonsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-mix-row')) {
+                event.target.closest('.mix-row').remove();
+                updateValues(mixedSeasonsContainer);
+            }
+        });
     }
 });
 
-//===============================autocomplete Nights===============================||
-// Manejo en tiempo real de Low/HighSeason
-document.addEventListener("DOMContentLoaded", function () {
-    const mixedSeasonsContainer = document.getElementById("mixedSeasonsContainer");
-    if (!mixedSeasonsContainer) return;
-
-    mixedSeasonsContainer.addEventListener("input", function (event) {
-        if (event.target && (event.target.id === "lowSeasonNights" || event.target.id === "highSeasonNights")) {
-            updateValues();
-        }
-    });
-
-    mixedSeasonsContainer.addEventListener("keydown", function (event) {
-        if (event.target && (event.target.id === "lowSeasonNights" || event.target.id === "highSeasonNights")) {
-            handleArrowKeys(event, event.target);
-        }
-    });
-});
-
-// Nueva función para manejar el input de Mix Nights
+/**
+ * Maneja cambios en el input de noches dentro de Mixed Seasons.
+ * Actualiza automáticamente los campos Low/High Season según el valor total.
+ * 
+ * @function handleMixNightsInput
+ * @param {Element|Event} input - El elemento input o el evento input
+ * @returns {void}
+ * 
+ * @description
+ * - Formatea el número en el input
+ * - Calcula y sincroniza noches Low/High Season
+ * - Mantiene proporciones cuando ambos campos tienen valores
+ */
 function handleMixNightsInput(input) {
-    formatNumber(input);
-    const mixNights = parseInt(input.value) || 0;
+    // Normalizar parámetro: puede ser event.target o el input directamente
+    const inputElement = input.target || input;
+    
+    formatNumber(inputElement);
+    const mixNights = parseInt(inputElement.value) || 0;
     const lowSeasonInput = document.getElementById("lowSeasonNights");
     const highSeasonInput = document.getElementById("highSeasonNights");
     
@@ -211,26 +225,55 @@ function handleMixNightsInput(input) {
     }
 }
 
-// Nueva función para manejar el input de las temporadas
+/**
+ * Maneja cambios en los inputs de temporada (Low/High Season Nights).
+ * Ajusta automáticamente el valor del otro campo para mantener el total.
+ * 
+ * @function handleSeasonInput
+ * @param {Element|Event} input - El elemento input o el evento input
+ * @returns {void}
+ * 
+ * @description
+ * - Formatea el número en el input
+ * - Calcula el valor complementario para el otro campo de temporada
+ * - Asegura que la suma sea igual a Mix Nights
+ */
 function handleSeasonInput(input) {
-    formatNumber(input);
+    // Normalizar parámetro
+    const inputElement = input.target || input;
+    
+    formatNumber(inputElement);
     const mixNightsInput = document.querySelector("input[name='mixnights']");
     const mixNights = parseInt(mixNightsInput?.value) || 0;
     
     if (mixNights > 0) {
-        const otherSeasonInput = input.id === "lowSeasonNights" 
+        const otherSeasonInput = inputElement.id === "lowSeasonNights" 
             ? document.getElementById("highSeasonNights")
             : document.getElementById("lowSeasonNights");
             
         if (otherSeasonInput) {
-            const currentValue = parseInt(input.value) || 0;
+            const currentValue = parseInt(inputElement.value) || 0;
             const otherValue = mixNights - currentValue;
             otherSeasonInput.value = Math.max(1, otherValue);
         }
     }
 }
 
-function updateValues() {
+/**
+ * Recalcula y actualiza los totales de noches Low/High en la UI.
+ * Sincroniza los valores según el input activo.
+ * 
+ * @function updateValues
+ * @param {HTMLElement} container - Contenedor principal de mixed seasons
+ * @returns {void}
+ * 
+ * @description
+ * - Valida que Mix Nights sea mayor a 0
+ * - Ajusta valores según el campo que tiene el foco
+ * - Asegura que la suma no exceda Mix Nights
+ * - Limpia campos si Mix Nights es 0
+ */
+function updateValues(container) {
     const mixNightsInput = document.querySelector("input[name='mixnights']");
     const lowSeasonInput = document.getElementById("lowSeasonNights");
     const highSeasonInput = document.getElementById("highSeasonNights");
@@ -259,41 +302,81 @@ function updateValues() {
     highSeasonInput.value = highSeasonNights;
 }
 
-function handleArrowKeys(event, inputElement) {
+/**
+ * Permite navegar entre inputs de temporada con teclas de flecha.
+ * Ajusta automáticamente los valores complementarios según la dirección.
+ * 
+ * @function handleArrowKeys
+ * @param {KeyboardEvent} e - Evento de teclado
+ * @returns {void}
+ * 
+ * @description
+ * - Valida que Mix Nights sea mayor a 0
+ * - Intercepta teclas ArrowUp/ArrowDown en inputs de temporada
+ * - Previene comportamiento por defecto del navegador
+ * - Mantiene total igual a Mix Nights ajustando el campo opuesto
+ * - Asegura valores mínimos (≥1) para ambos campos
+ */
+function handleArrowKeys(e) {
     const mixNightsInput = document.querySelector("input[name='mixnights']");
     const lowSeasonInput = document.getElementById("lowSeasonNights");
     const highSeasonInput = document.getElementById("highSeasonNights");
 
     if (!mixNightsInput || !lowSeasonInput || !highSeasonInput) return;
 
+    const inputElement = e.target;
+    if (!inputElement || !(inputElement instanceof HTMLElement)) return;
+
     const mixNights = parseInt(mixNightsInput.value) || 0;
+    if (mixNights <= 0) return;
 
     if (inputElement.id === "lowSeasonNights") {
-        if (event.key === "ArrowUp") {
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
             lowSeasonInput.stepUp();
-            lowSeasonInput.value = Math.min(parseInt(lowSeasonInput.value), mixNights - 1);
-            highSeasonInput.value = mixNights - parseInt(lowSeasonInput.value);
-        } else if (event.key === "ArrowDown") {
+            lowSeasonInput.value = Math.min(parseInt(lowSeasonInput.value) || 0, mixNights - 1);
+            highSeasonInput.value = Math.max(1, mixNights - (parseInt(lowSeasonInput.value) || 0));
+        } else if (e.key === "ArrowDown") {
+            e.preventDefault();
             lowSeasonInput.stepDown();
-            lowSeasonInput.value = Math.max(parseInt(lowSeasonInput.value), 1);
-            highSeasonInput.value = mixNights - parseInt(lowSeasonInput.value);
+            lowSeasonInput.value = Math.max(parseInt(lowSeasonInput.value) || 0, 1);
+            highSeasonInput.value = Math.max(0, mixNights - (parseInt(lowSeasonInput.value) || 0));
         }
     } else if (inputElement.id === "highSeasonNights") {
-        if (event.key === "ArrowUp") {
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
             highSeasonInput.stepUp();
-            highSeasonInput.value = Math.min(parseInt(highSeasonInput.value), mixNights - 1);
-            lowSeasonInput.value = mixNights - parseInt(highSeasonInput.value);
-        } else if (event.key === "ArrowDown") {
+            highSeasonInput.value = Math.min(parseInt(highSeasonInput.value) || 0, mixNights - 1);
+            lowSeasonInput.value = Math.max(1, mixNights - (parseInt(highSeasonInput.value) || 0));
+        } else if (e.key === "ArrowDown") {
+            e.preventDefault();
             highSeasonInput.stepDown();
-            highSeasonInput.value = Math.max(parseInt(highSeasonInput.value), 1);
-            lowSeasonInput.value = mixNights - parseInt(highSeasonInput.value);
+            highSeasonInput.value = Math.max(parseInt(highSeasonInput.value) || 0, 1);
+            lowSeasonInput.value = Math.max(0, mixNights - (parseInt(highSeasonInput.value) || 0));
         }
     }
 }
 
 //===============================calculate the mix result===============================||
 
-function applyMix() {
+/**
+ * Valida las filas, construye el payload y llama al endpoint AJAX para calcular la mezcla.
+ * Muestra el resultado en un contenedor específico dentro de la calculadora principal.
+ * 
+ * @async
+ * @function applyMix
+ * @param {HTMLElement} container - Contenedor principal de mixed seasons
+ * @returns {Promise<void>}
+ * 
+ * @description
+ * - Valida que haya al menos una fila con noches > 0
+ * - Normaliza números de noches
+ * - Construye FormData con action, nonce y filas
+ * - Envía POST a handle_calculate_mix (calculatemix.php)
+ * - Maneja errores de red y del backend
+ * - Escribe el resultado y lo cachea para la calculadora principal
+ */
+async function applyMix(container) {
     // Validación
     if (typeof validateFields === 'function') {
         const isValid = validateFields(true); // Pasar true para indicar que es una validación de Apply Mix
@@ -312,91 +395,158 @@ function applyMix() {
 
     // Validar datos
     if (!mixNights || !lowSeasonRate || !lowSeasonNights || !highSeasonRate || !highSeasonNights || !currency) {
-        alert('Por favor, completa todos los campos de la calculadora mixta.');
+        alert('Please complete all fields in the mixed calculator.');
         return;
     }
+
+    // Normalizar valores numéricos para el backend
+    const toNumber = (val) => {
+        if (val == null) return '';
+        const s = String(val).replace(/\s/g, '').replace(/,/g, '');
+        const n = parseFloat(s);
+        return Number.isFinite(n) ? String(n) : '';
+    };
+    const toInt = (val) => {
+        if (val == null) return '';
+        const s = String(val).replace(/[^\d-]/g, '');
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) ? String(n) : '';
+    };
+
+    const mixNightsNum = toInt(mixNights);
+    const lowSeasonRateNum = toNumber(lowSeasonRate);
+    const lowSeasonNightsNum = toInt(lowSeasonNights);
+    const highSeasonRateNum = toNumber(highSeasonRate);
+    const highSeasonNightsNum = toInt(highSeasonNights);
 
     // Crear FormData
     const formData = new FormData();
     formData.append('action', 'calculate_mix');
     formData.append('nonce', ajaxData?.nonce || ''); // Añadir nonce para seguridad CSRF
-    formData.append('mixnights', mixNights);
-    formData.append('lowSeasonRate', lowSeasonRate);
-    formData.append('lowSeasonNights', lowSeasonNights);
-    formData.append('highSeasonRate', highSeasonRate);
-    formData.append('highSeasonNights', highSeasonNights);
+
+    // Datos específicos del mix (compatibilidad con backend en minúsculas y legado camelCase)
+    formData.append('mixnights', mixNightsNum);
+    formData.append('lowseasonrate', lowSeasonRateNum);
+    formData.append('lowseasonnights', lowSeasonNightsNum);
+    formData.append('highseasonrate', highSeasonRateNum);
+    formData.append('highseasonnights', highSeasonNightsNum);
     formData.append('currency', currency);
 
-    try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
-    fetch(ajaxData.ajaxurl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData)
-    })
-    .then(response => {
+    // Claves camelCase por compatibilidad si algún entorno aún las espera
+    formData.append('mixNights', mixNightsNum);
+    formData.append('lowSeasonRate', lowSeasonRateNum);
+    formData.append('lowSeasonNights', lowSeasonNightsNum);
+    formData.append('highSeasonRate', highSeasonRateNum);
+    formData.append('highSeasonNights', highSeasonNightsNum);
+    // formData.append('currency', currency); // (ya añadida arriba)
+
+    try {
+        // Loading state start
+        try { window.AppYacht?.ui?.setLoading?.(true); } catch (e) {}
+
+        const response = await fetch(ajaxData.ajaxurl, {
+            method: 'POST',
+            body: formData
+        });
+
         if (!response.ok) {
-            try { window.AppYacht?.ui?.notifyError?.('Error en cálculo mixto'); } catch (e) {}
-            throw new Error('Server error in calculatemix.php');
+            throw new Error('Server response error');
         }
-        return response.json();
-    })
-    .then(result => {
-         try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {};
+
+        const result = await response.json();
+
+        // Loading state end
+        try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
+
         if (result.success) {
-            const { lowSeasonResult, highSeasonResult, mixedResult: totalMixedResult } = result.data;
-
-            // Imprimir en pantalla
-            const lowMixedResult = document.getElementById('lowmixedResult');
-            const highMixedResult = document.getElementById('highmixedResult');
+            // Mostrar resultados
+            const lowResult = document.getElementById('lowmixedResult');
+            const highResult = document.getElementById('highmixedResult');
             const mixedResult = document.getElementById('mixedResult');
-            
-            if (lowMixedResult) lowMixedResult.textContent = lowSeasonResult;
-            if (highMixedResult) highMixedResult.textContent = highSeasonResult;
-            if (mixedResult) mixedResult.textContent = totalMixedResult;
+            const hiddenResults = document.querySelectorAll('.hiddenmixresult');
 
-            // Mostrar los signos
-            document.querySelectorAll('#mixedResultcontainer .hiddenmixresult')
-                .forEach(span => span.classList.remove('hiddenmixresult'));
+            if (lowResult && highResult && mixedResult) {
+                lowResult.textContent = result.data.lowSeasonResult || '';
+                highResult.textContent = result.data.highSeasonResult || '';
+                mixedResult.textContent = result.data.mixedResult || '';
 
-            // Actualizar la calculadora principal
-            const nightsInput = document.querySelector('input[name="nights"]');
-            const mixNightsField = document.getElementById('mix-nights');
-            if (nightsInput && mixNightsField) {
-                nightsInput.value = mixNightsField.value;
-                nightsInput.dispatchEvent(new Event('input'));
-            }
-            const baseRateInput = document.querySelector('input[name="baseRate"]');
-            if (baseRateInput) {
-                const numericMatch = totalMixedResult.match(/([\d,]+\.\d{2})/);
-                if (numericMatch) {
-                    baseRateInput.value = numericMatch[1].replace(/,/g, '');
-                } else {
-                    baseRateInput.value = totalMixedResult.replace(/[^\d.-]/g, '');
+                // Mostrar elementos ocultos
+                hiddenResults.forEach(el => el.style.display = 'inline');
+
+                // Populate main calculator fields with mixed values
+                try {
+                    // Ensure at least one charter rate group exists
+                    const charterRateContainer = document.getElementById('charterRateContainer');
+                    const existingGroups = document.querySelectorAll('.charter-rate-group');
+                    (window.AppYacht?.log || console.log)('[mix] existing charter-rate groups:', existingGroups.length);
+                    
+                    if (existingGroups.length === 0 && typeof addCharterRate === 'function') {
+                        (window.AppYacht?.log || console.log)('[mix] No groups found. Calling addCharterRate(true)');
+                        // Add first charter rate group if none exists
+                        addCharterRate(true);
+                        // Wait a bit for DOM to update
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    }
+                    
+                    // Get the first available inputs (could be in first charter-rate-group)
+                    const nightsInput = document.querySelector('.charter-rate-group input[name="nights"], .charter-rate-group input[name="hours"], input[name="nights"], input[name="hours"]');
+                    const baseRateInput = document.querySelector('.charter-rate-group input[name="baseRate"], input[name="baseRate"]');
+                    (window.AppYacht?.log || console.log)('[mix] inputs found', { hasNights: !!nightsInput, hasBaseRate: !!baseRateInput });
+                    
+                    if (nightsInput && mixNights) {
+                        nightsInput.value = mixNights;
+                        (window.AppYacht?.log || console.log)('[mix] setting nights input to', mixNights);
+                        // Don't trigger input event to avoid formatNumber interference
+                        nightsInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    
+                    if (baseRateInput && result.data.mixedResult) {
+                        // Extract total value from "Total: € 66,666.67" format
+                        const totalMatch = result.data.mixedResult.match(/[\d,]+\.?\d*/);
+                        if (totalMatch) {
+                            const totalValue = totalMatch[0]; // Keep formatting
+                            baseRateInput.value = totalValue;
+                            (window.AppYacht?.log || console.log)('[mix] setting baseRate input to', totalValue);
+                            // Use change event instead of input to avoid formatNumber clearing
+                            baseRateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            (window.AppYacht?.warn || console.warn)('[mix] Could not parse mixedResult for baseRate:', result.data.mixedResult);
+                        }
+                    } else {
+                        (window.AppYacht?.warn || console.warn)('[mix] baseRateInput or mixedResult missing.', { hasBaseRate: !!baseRateInput, mixedResult: result.data.mixedResult });
+                    }
+                    
+                    // Publish event to notify other components
+                    if (window.eventBus) {
+                        window.eventBus.publish('mix:applied', {
+                            nights: mixNights,
+                            baseRate: result.data.mixedResult,
+                            lowSeasonResult: result.data.lowSeasonResult,
+                            highSeasonResult: result.data.highSeasonResult
+                        });
+                    }
+                } catch (e) {
+                    (window.AppYacht?.warn || console.warn)('Could not populate main calculator fields:', e);
                 }
-                baseRateInput.dispatchEvent(new Event('input'));
             }
 
-            // Cambiar el botón a "Recalculate"
-            const calculateBtn = document.getElementById('calculateButton');
-            if (calculateBtn) calculateBtn.textContent = 'Recalculate';
-
+            // Notificación de éxito
+            try { window.AppYacht?.ui?.notifySuccess?.('Mix calculation completed'); } catch (e) {}
         } else {
-            (window.AppYacht?.error || console.error)('Calculation error:', result.data);
-            const mixedResultError = document.getElementById('mixedResult');
-            if (mixedResultError) {
-                mixedResultError.textContent = 'Calculation error.';
-                mixedResultError.classList.add('text-danger');
+            // Manejar error del servidor
+            (window.AppYacht?.error || console.error)('Mixed calculation error:', result.data);
+            try { window.AppYacht?.ui?.notifyError?.('Mixed calculation error'); } catch (e) {
+                alert('Mixed calculation error: ' + (result.data || 'Unknown error'));
             }
         }
-    })
-    .catch(err => {
-        (window.AppYacht?.error || console.error)("Error in applyMix:", err);
-        const mixedResultError = document.getElementById('mixedResult');
-        if (mixedResultError) {
-            mixedResultError.textContent = 'Error durante el procesamiento.';
-            mixedResultError.classList.add('text-danger');
+    } catch (error) {
+        (window.AppYacht?.error || console.error)('Error on mixed calculation request:', error);
+        try { window.AppYacht?.ui?.notifyError?.('Connection error on mixed calculation'); } catch (e) {
+            alert('Connection error. Please try again.');
         }
-    });
+        // Asegurar desactivación del estado de carga
+        try { window.AppYacht?.ui?.setLoading?.(false); } catch (e) {}
+    }
 }
 
 // Utilizamos la función updateCurrencySymbols de shared/js/currency.js
