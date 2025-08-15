@@ -47,23 +47,23 @@ $is_connected = function_exists( 'pb_outlook_is_connected' ) ? pb_outlook_is_con
 			<div class="row">
 				<div class="col-md-12">
 					<label for="email-to">To: <small>(separate multiple emails with commas)</small></label>
-					<input type="text" id="email-to" name="correo-destino" class="form-control" required>
+					<input type="text" id="email-to" name="to" class="form-control" required>
 				</div>
 			</div>
 			<div class="row mt-2">
 				<div class="col-md-6">
 					<label for="email-cc">CC: <small>(optional)</small></label>
-					<input type="text" id="email-cc" name="correo-cc" class="form-control">
+					<input type="text" id="email-cc" name="cc" class="form-control">
 				</div>
 				<div class="col-md-6">
 					<label for="email-bcc">BCC: <small>(optional)</small></label>
-					<input type="text" id="email-bcc" name="correo-bcc" class="form-control">
+					<input type="text" id="email-bcc" name="bcc" class="form-control">
 				</div>
 			</div>
 			<div class="row mt-2">
 				<div class="col-md-12">
 					<label for="email-subject">Subject:</label>
-					<input type="text" id="email-subject" name="asunto" class="form-control" required>
+					<input type="text" id="email-subject" name="subject" class="form-control" required>
 				</div>
 			</div>
 

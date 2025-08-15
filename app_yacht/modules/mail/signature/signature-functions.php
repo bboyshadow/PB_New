@@ -14,6 +14,8 @@ function msp_save_signature_callback() {
 		wp_send_json_error( 'User not logged in', 401 );
 	}
 	$signature = isset( $_POST['signature'] ) ? urldecode( $_POST['signature'] ) : '';
+	// Sanitize HTML content before saving to prevent XSS
+	$signature = wp_kses_post( $signature );
 	$user_id   = get_current_user_id();
 	update_user_meta( $user_id, 'msp_signature', $signature );
 	wp_send_json_success( 'Signature saved' );
@@ -53,7 +55,7 @@ function msp_signature_shortcode() {
 	<div class="msp-signature-wrapper" style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
 		<h3>Signature Editor</h3>
 		<div id="mspEditor" contenteditable="true" style="min-height:100px; border:1px solid #ddd; padding:5px;">
-			<?php echo $signature; ?>
+			<?php echo wp_kses_post( $signature ); ?>
 		</div>
 		<div style="margin-top:10px;">
 			<button type="button" id="mspBtnSave" class="button button-primary">Save Signature</button>

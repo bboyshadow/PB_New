@@ -360,7 +360,24 @@ function pb_outlook_send_mail_ajax_handler() {
 		wp_send_json_error( 'Missing required fields.', 400 );
 	}
 
-	
+	// Normalize recipients (defense in depth) - trim, dedupe empties
+	$normalize_recipients = function( $value ) {
+		if ( is_array( $value ) ) {
+			$parts = $value;
+		} else {
+			$parts = is_string( $value ) && strpos( $value, ',' ) !== false
+				? explode( ',', $value )
+				: array( $value );
+		}
+		$parts = array_map( 'trim', $parts );
+		$parts = array_filter( $parts, function( $v ) { return $v !== ''; } );
+		return array_values( $parts );
+	};
+
+	$to  = $normalize_recipients( $to );
+	$cc  = $normalize_recipients( $cc );
+	$bcc = $normalize_recipients( $bcc );
+
 	$signature = get_user_meta( $user_id, 'msp_signature', true );
 	if ( ! empty( $signature ) ) {
 		 $body .= '<br><br>' . $signature;

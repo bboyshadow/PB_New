@@ -36,44 +36,81 @@
 
         // --- Email Confirmation Modal Creation ---
         let emailConfirmModal = null;
+        let modalBackdrop = null;
 
         function createEmailConfirmModal() {
             if (emailConfirmModal) return;
 
+            // Create backdrop
+            modalBackdrop = document.createElement('div');
+            modalBackdrop.id = 'email-modal-backdrop';
+            modalBackdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                z-index: 9998;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+
             emailConfirmModal = document.createElement('div');
             emailConfirmModal.id = 'email-confirm-modal';
             emailConfirmModal.className = 'email-modal';
-            emailConfirmModal.style.display = 'none';
+            emailConfirmModal.style.cssText = `
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.9);
+                z-index: 9999;
+                width: 95vw;
+                max-width: 1200px;
+                max-height: 90vh;
+                height: auto;
+                overflow: hidden;
+                background: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                opacity: 0;
+                transition: all 0.3s ease;
+            `;
             emailConfirmModal.setAttribute('role', 'dialog');
             emailConfirmModal.setAttribute('aria-modal', 'true');
             emailConfirmModal.setAttribute('aria-labelledby', 'email-confirm-title');
 
             emailConfirmModal.innerHTML = `
-                <div class="modal-content">
-                    <h3 id="email-confirm-title">Confirm Email Sending</h3>
-                    <div class="modal-body">
-                        <div class="email-preview">
-                            <p><strong>To:</strong> <span id="preview-to"></span></p>
-                            <div id="preview-cc-container" style="display: none;">
-                                <p><strong>CC:</strong> <span id="preview-cc"></span></p>
+                <div class="modal-content" style="display: flex; flex-direction: column; height: 100%; box-sizing: border-box; padding: 24px;">
+                    <h3 id="email-confirm-title" style="margin: 0 0 16px 0; color: #333; font-size: 20px; font-weight: 600;">Confirm Email Sending</h3>
+                    <div class="modal-body" style="flex: 1; overflow: hidden;">
+                        <div class="email-preview" style="background: #f8f9fa; padding: 16px; border-radius: 6px; height: 100%; display: flex; flex-direction: column;">
+                            <div style="margin: 0 0 8px 0;">
+                                <p style="margin: 0 0 6px 0;"><strong>To:</strong> <span id="preview-to" style="color: #666;"></span></p>
+                                <div id="preview-cc-container" style="display: none;">
+                                    <p style="margin: 0 0 6px 0;"><strong>CC:</strong> <span id="preview-cc" style="color: #666;"></span></p>
+                                </div>
+                                <div id="preview-bcc-container" style="display: none;">
+                                    <p style="margin: 0 0 6px 0;"><strong>BCC:</strong> <span id="preview-bcc" style="color: #666;"></span></p>
+                                </div>
+                                <p style="margin: 0 0 10px 0;"><strong>Subject:</strong> <span id="preview-subject" style="color: #666;"></span></p>
                             </div>
-                            <div id="preview-bcc-container" style="display: none;">
-                                <p><strong>BCC:</strong> <span id="preview-bcc"></span></p>
-                            </div>
-                            <p><strong>Subject:</strong> <span id="preview-subject"></span></p>
-                            <div class="email-content-preview">
-                                <p><strong>Content:</strong></p>
-                                <div id="preview-content" class="content-preview-box"></div>
+                            <div class="email-content-preview" style="display: flex; flex-direction: column; min-height: 0; flex: 1;">
+                                <p style="margin: 0 0 8px 0;"><strong>Content:</strong></p>
+                                <div id="preview-content" class="content-preview-box" style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 12px; flex: 1; overflow: auto; font-size: 14px; line-height: 1.5;"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-actions">
-                        <button type="button" id="email-confirm-btn" class="button btn-primary">Send</button>
-                        <button type="button" id="email-cancel-btn" class="button btn-secondary">Cancel</button>
+                    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 16px;">
+                        <button type="button" id="email-cancel-btn" class="button btn-secondary" style="padding: 10px 20px; border: 1px solid #ddd; background: #fff; color: #666; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
+                        <button type="button" id="email-confirm-btn" class="button btn-primary" style="padding: 10px 20px; border: none; background: #007cba; color: #fff; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">Send</button>
                     </div>
                 </div>
             `;
 
+            document.body.appendChild(modalBackdrop);
             document.body.appendChild(emailConfirmModal);
 
             // Add event listeners
@@ -85,6 +122,27 @@
                 if (e.key === 'Escape') {
                     hideEmailConfirmModal();
                 }
+            });
+
+            // Close modal when clicking backdrop
+            modalBackdrop.addEventListener('click', hideEmailConfirmModal);
+
+            // Add hover effects to buttons
+            const confirmBtn = document.getElementById('email-confirm-btn');
+            const cancelBtn = document.getElementById('email-cancel-btn');
+            
+            confirmBtn.addEventListener('mouseenter', () => {
+                confirmBtn.style.background = '#005a87';
+            });
+            confirmBtn.addEventListener('mouseleave', () => {
+                confirmBtn.style.background = '#007cba';
+            });
+
+            cancelBtn.addEventListener('mouseenter', () => {
+                cancelBtn.style.background = '#f1f1f1';
+            });
+            cancelBtn.addEventListener('mouseleave', () => {
+                cancelBtn.style.background = '#fff';
             });
         }
 
@@ -118,22 +176,35 @@
             // Store email data for sending
             emailConfirmModal.pendingEmailData = emailData;
 
-            // Show modal centered
+            // Show backdrop first
+            modalBackdrop.style.display = 'block';
             emailConfirmModal.style.display = 'block';
-            emailConfirmModal.style.position = 'fixed';
-            emailConfirmModal.style.top = '50%';
-            emailConfirmModal.style.left = '50%';
-            emailConfirmModal.style.transform = 'translate(-50%, -50%)';
-            emailConfirmModal.style.zIndex = '9999';
+
+            // Animate in
+            requestAnimationFrame(() => {
+                modalBackdrop.style.opacity = '1';
+                emailConfirmModal.style.opacity = '1';
+                emailConfirmModal.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
 
             // Focus on confirm button
-            document.getElementById('email-confirm-btn').focus();
+            setTimeout(() => {
+                document.getElementById('email-confirm-btn').focus();
+            }, 100);
         }
 
         function hideEmailConfirmModal() {
-            if (emailConfirmModal) {
-                emailConfirmModal.style.display = 'none';
-                emailConfirmModal.pendingEmailData = null;
+            if (emailConfirmModal && modalBackdrop) {
+                // Animate out
+                modalBackdrop.style.opacity = '0';
+                emailConfirmModal.style.opacity = '0';
+                emailConfirmModal.style.transform = 'translate(-50%, -50%) scale(0.9)';
+
+                setTimeout(() => {
+                    modalBackdrop.style.display = 'none';
+                    emailConfirmModal.style.display = 'none';
+                    emailConfirmModal.pendingEmailData = null;
+                }, 300);
             }
         }
 

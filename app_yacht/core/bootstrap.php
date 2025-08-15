@@ -273,7 +273,7 @@ class AppYachtBootstrap {
 				return;
 			}
 			
-			$url = sanitize_text_field( $_POST['yachtUrl'] );
+			$url = esc_url_raw( $_POST['yachtUrl'] );
 			$force_refresh = isset($_POST['force_refresh']) && intval($_POST['force_refresh']) === 1;
 			$container = self::getContainer();
 			$yachtInfoService = $container->get( 'yacht_info_service' );

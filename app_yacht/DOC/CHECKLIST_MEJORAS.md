@@ -78,9 +78,9 @@ Implementar mejoras de forma fraccionada y segura, testando cada cambio antes de
 
 ---
 
-## 📋 FASE 2: SEGURIDAD (Prioridad ALTA)
+## 📋 FASE 2: SEGURIDAD (Prioridad ALTA) - **COMPLETADO**
 
-### 🔄 2.1 Sanitización de Datos - **PARCIALMENTE COMPLETADO**
+### ✅ 2.1 Sanitización de Datos - **COMPLETADO**
 - [x] **Tarea 2.1.1**: Crear helper de sanitización
   - ✅ Archivo: `app_yacht/shared/helpers/sanitizer-helper.php`
   - ✅ Métodos para números, strings, arrays
@@ -97,7 +97,14 @@ Implementar mejoras de forma fraccionada y segura, testando cada cambio antes de
   - ✅ **Test**: Verificar funcionamiento normal
   - **Rollback**: Implementar gradualmente
 
-### 🔄 2.2 Validación de Nonces Mejorada - **COMPLETADO**
+- [x] **Tarea 2.1.4**: Correcciones de sanitización específicas - **COMPLETADO**
+  - ✅ Aplicar `wp_kses_post()` a las firmas en `signature-functions.php` (al guardar y mostrar)
+  - ✅ Cambiar `sanitize_text_field()` por `esc_url_raw()` para `yachtUrl` en `bootstrap.php`
+  - ✅ Normalizar campos `to/cc/bcc` en handler AJAX de Outlook (defensa en profundidad)
+  - ✅ **Test**: Verificar prevención de XSS en firmas y manejo correcto de URLs
+  - **Rollback**: Revertir cambios específicos si interfieren con funcionalidad
+
+### ✅ 2.2 Validación de Nonces Mejorada - **COMPLETADO**
 - [x] **Tarea 2.2.1**: Centralizar validación de nonces
   - Implementado helper pb_verify_ajax_nonce en app_yacht/shared/php/security.php
   - Aplicado en calculate.php, calculateRelocation.php, calculatemix.php, core/bootstrap.php (handlers), template/load-template.php y módulos de Outlook
