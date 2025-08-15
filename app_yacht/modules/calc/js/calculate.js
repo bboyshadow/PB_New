@@ -19,16 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Mostrar/Ocultar campos de Mixed Seasons
-    document.getElementById('enableMixedSeasons').addEventListener('change', function() {
-        const mixedSeasonsFields = document.getElementById('mixedSeasonsFields');
-        if (mixedSeasonsFields) {
-            if (this.checked) {
-                mixedSeasonsFields.style.display = 'block';
+    const mixedSeasonsCheckbox = document.getElementById('enableMixedSeasons');
+    const mixedSeasonsContainer = document.getElementById('mixedSeasonsContainer');
+    if (mixedSeasonsCheckbox && mixedSeasonsContainer) {
+        const updateMixedVisibility = () => {
+            if (mixedSeasonsCheckbox.checked) {
+                // Remove inline display to let Bootstrap .row (display:flex) apply
+                mixedSeasonsContainer.style.removeProperty('display');
             } else {
-                mixedSeasonsFields.style.display = 'none';
+                mixedSeasonsContainer.style.display = 'none';
             }
-        }
-    });
+        };
+        mixedSeasonsCheckbox.addEventListener('change', updateMixedVisibility);
+        // Set initial visibility on load
+        updateMixedVisibility();
+    }
 });
 
 /**
@@ -331,7 +336,6 @@ if (vatRateMixEnabled) {
         }
     } catch (err) {
         (window.AppYacht?.error || console.error)('Request error:', err);
-        const errorMessage = document.getElementById('errorMessage');
         if (errorMessage) {
             errorMessage.textContent = 'General error.';
             errorMessage.style.display = 'block';

@@ -163,8 +163,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mixedSeasonsCheckbox.checked) {
                 clearMixContainer();
                 addMix();
+                // Show respecting Bootstrap .row default display:flex
+                mixedSeasonsContainer.style.removeProperty('display');
+            } else {
+                // When disabling, clear and hide the container
+                clearMixContainer();
+                mixedSeasonsContainer.style.display = 'none';
             }
         });
+        // Set initial state respecting Bootstrap layout
+        if (mixedSeasonsCheckbox.checked) {
+            mixedSeasonsContainer.style.removeProperty('display');
+        } else {
+            mixedSeasonsContainer.style.display = 'none';
+        }
     }
 
     // Delegación de eventos en el contenedor
